@@ -1,0 +1,113 @@
+:root {
+  /* === СВЕТЛАЯ ТЕМА === */
+  --light-bg-primary: #ffffff;
+  --light-bg-secondary: #f5f5f5;
+  --light-bg-accent: #ededed;
+  --light-text-primary: #2d2d2d;
+  --light-text-secondary: #787878;
+  --light-text-accent: #bae1ff;
+  --light-icon-primary: #37352f;
+  --light-icon-accent: #b0d8ff;
+  --light-icon-inactive: #b3b3b3;
+  --light-border: #e0e0e0;
+  --light-border-dark: #d9d9d9;
+
+  /* === ТЕМНАЯ ТЕМА === */
+  --dark-bg-primary: #2d2d2d;
+  --dark-bg-secondary: #363636;
+  --dark-bg-accent: #404040;
+  --dark-text-primary: #ffffff;
+  --dark-text-secondary: #b3b3b3;
+  --dark-text-accent: #bae1ff;
+  --dark-icon-primary: rgba(255, 255, 255, 0.8);
+  --dark-icon-accent: #b0d8ff;
+  --dark-icon-inactive: #666666;
+  --dark-border: #404040;
+  --dark-border-dark: #4d4d4d;
+
+  /* === КОМПОНЕНТЫ === */
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --shadow-light: 0px 2px 8px rgba(0, 0, 0, 0.06);
+  --transition-default: all 0.2s ease-in-out;
+  --spacing-unit: 8px;
+
+  /* === ГРАФИК ЦВЕТА === */
+  --chart-pink: #ffb3ba;
+  --chart-green: #baffc9;
+  --chart-blue: #bae1ff;
+  --chart-orange: #ffdfba;
+  --chart-purple: #d0b0ff;
+  --chart-peach: #ffdab9;
+  --chart-mint: #d8f5e2;
+  --chart-sky: #d4efff;
+  --chart-lavender: #e8d5ff;
+  --chart-lemon: #fff5ba;
+
+  /* === СТАТУСЫ И ТЕГИ === */
+  --status-success: #baffc9;
+  --status-warning: #fff5ba;
+  --status-error: #ffb3ba;
+  --status-info: #d4efff;
+  --status-neutral: #e8e8e8;
+
+  /* === ЦВЕТОВЫЕ АКЦЕНТЫ === */
+  --accent-blue: #b0d8ff;
+  --accent-yellow: #ffeeb4;
+  --accent-red: #ffccbc;
+  --accent-green: #c2e9c3;
+  --accent-orange: #ffdab9;
+  --accent-purple: #c7a3ff;
+  --accent-pink: #f8c6d0;
+  --accent-gray: #f0f0f0;
+}
+
+/* Применение светлой темы по умолчанию */
+:root {
+  /* Фон */
+  --bg-primary: var(--light-bg-primary);
+  --bg-secondary: var(--light-bg-secondary);
+  --bg-accent: var(--light-bg-accent);
+
+  /* Текст */
+  --text-primary: var(--light-text-primary);
+  --text-secondary: var(--light-text-secondary);
+  --text-accent: var(--light-text-accent);
+
+  /* Иконки */
+  --icon-primary: var(--light-icon-primary);
+  --icon-accent: var(--light-icon-accent);
+  --icon-inactive: var(--light-icon-inactive);
+
+  /* Границы */
+  --border: var(--light-border);
+  --border-dark: var(--light-border-dark);
+
+  /* Тени */
+  --shadow: var(--shadow-light);
+}
+
+/* Темная тема */
+[data-theme='dark'] {
+  /* Фон */
+  --bg-primary: var(--dark-bg-primary);
+  --bg-secondary: var(--dark-bg-secondary);
+  --bg-accent: var(--dark-bg-accent);
+
+  /* Текст */
+  --text-primary: var(--dark-text-primary);
+  --text-secondary: var(--dark-text-secondary);
+  --text-accent: var(--dark-text-accent);
+
+  /* Иконки */
+  --icon-primary: var(--dark-icon-primary);
+  --icon-accent: var(--dark-icon-accent);
+  --icon-inactive: var(--dark-icon-inactive);
+
+  /* Границы */
+  --border: var(--dark-border);
+  --border-dark: var(--dark-border-dark);
+
+  /* Тени */
+  --shadow: none;
+}

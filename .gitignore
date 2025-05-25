@@ -1,0 +1,130 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+.yarn/
+.pnp
+.pnp.js
+
+# Сборка и кэш
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.vite/
+coverage/
+*.tsbuildinfo
+.nyc_output
+
+# Среда и конфигурация
+.env
+.env.*
+!.env.example
+!.env.template
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env-old
+
+# Логи
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Тестирование
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.jest/
+
+# IDE и редакторы
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# Операционная система
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Временные файлы
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Docker
+.docker/
+docker-data/
+docker-volumes/
+
+# Архивы
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Локальные файлы проекта
+/logs/
+/uploads/
+/storage/
+
+# Специфичные для проекта
+memory-bank/
+.cursor/temp/
+nul
+
+# Скрипты управления задачами
+task
+create-task
+git-sync
+dev
+fix-tasks
+task-master-guide.md
+PROJECT_MASTER.task
+progress-report.md
+ЛОКАЛЬНЫЙ_ЗАПУСК.md
+start-dev.bat
+start-local.bat

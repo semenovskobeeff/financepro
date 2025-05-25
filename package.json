@@ -1,0 +1,35 @@
+{
+	"name": "finance-app",
+	"version": "1.0.0",
+	"description": "Финансовое приложение для учёта личных финансов",
+	"main": "index.js",
+	"scripts": {
+		"start": "node server/src/app.js",
+		"dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+		"dev:server": "nodemon server/src/app.js",
+		"dev:client": "cd client && npm run dev",
+		"install:all": "npm install && cd client && npm install && cd ../server && npm install",
+		"build": "cd client && npm run build",
+		"test": "jest",
+		"test:e2e": "playwright test"
+	},
+	"keywords": [
+		"finance",
+		"personal finance",
+		"money management"
+	],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@playwright/test": "^1.52.0",
+		"@types/node": "^22.15.18",
+		"concurrently": "^8.2.2",
+		"jest": "^29.7.0",
+		"nodemon": "^3.1.0"
+	},
+	"dependencies": {
+		"mongoose": "^8.15.0",
+		"mongoose-version": "^1.1.0",
+		"recharts": "^2.15.3"
+	}
+}

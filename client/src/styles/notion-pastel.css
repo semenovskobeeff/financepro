@@ -1,0 +1,195 @@
+/**
+ * Пастельные цвета Notion
+ * Файл содержит определения CSS-переменных для пастельной палитры
+ */
+
+:root {
+  /* Розовые оттенки */
+  --notion-pastel-pink-1: #ffb3ba;
+  --notion-pastel-pink-2: #ffd7da;
+  --notion-pastel-pink-3: #ffebee;
+  --notion-pastel-pink-4: #f8c6d0;
+
+  /* Голубые и синие */
+  --notion-pastel-blue-1: #bae1ff;
+  --notion-pastel-blue-2: #d4efff;
+  --notion-pastel-blue-3: #b0d8ff;
+  --notion-pastel-blue-4: #e3f2fd;
+
+  /* Зеленые */
+  --notion-pastel-green-1: #baffc9;
+  --notion-pastel-green-2: #d8f5e2;
+  --notion-pastel-green-3: #c2e9c3;
+  --notion-pastel-green-4: #e6ffe9;
+
+  /* Фиолетовые и сиреневые */
+  --notion-pastel-purple-1: #d0b0ff;
+  --notion-pastel-purple-2: #e8d5ff;
+  --notion-pastel-purple-3: #f2ebff;
+  --notion-pastel-purple-4: #c7a3ff;
+
+  /* Желтые и персиковые */
+  --notion-pastel-yellow-1: #fff5ba;
+  --notion-pastel-yellow-2: #ffeeb4;
+  --notion-pastel-peach-1: #ffebd6;
+  --notion-pastel-peach-2: #ffdfba;
+
+  /* Коралловые и оранжевые */
+  --notion-pastel-coral-1: #ffccbc;
+  --notion-pastel-coral-2: #ffdab9;
+  --notion-pastel-coral-3: #ffe4cc;
+
+  /* Серые и нейтральные */
+  --notion-pastel-gray-1: #f0f0f0;
+  --notion-pastel-gray-2: #f5e6e8;
+  --notion-pastel-gray-3: #e8e8e8;
+
+  /* Семантические переменные */
+  --notion-status-success: var(--notion-pastel-green-1);
+  --notion-status-processing: var(--notion-pastel-blue-1);
+  --notion-status-warning: var(--notion-pastel-yellow-1);
+  --notion-status-error: var(--notion-pastel-coral-1);
+  --notion-status-info: var(--notion-pastel-purple-1);
+  --notion-status-blocked: var(--notion-pastel-gray-1);
+
+  /* Типы сущностей */
+  --notion-entity-account: var(--notion-pastel-blue-1);
+  --notion-entity-category: var(--notion-pastel-purple-1);
+  --notion-entity-transaction-income: var(--notion-pastel-green-1);
+  --notion-entity-transaction-expense: var(--notion-pastel-coral-1);
+  --notion-entity-goal: var(--notion-pastel-yellow-1);
+  --notion-entity-subscription: var(--notion-pastel-pink-1);
+  --notion-entity-debt: var(--notion-pastel-peach-1);
+}
+
+/* Темная тема */
+[data-theme='dark'] {
+  /* Розовые оттенки с прозрачностью */
+  --notion-pastel-pink-1: rgba(255, 179, 186, 0.8);
+  --notion-pastel-pink-2: rgba(255, 215, 218, 0.8);
+  --notion-pastel-pink-3: rgba(255, 235, 238, 0.8);
+  --notion-pastel-pink-4: rgba(248, 198, 208, 0.8);
+
+  /* Голубые и синие с прозрачностью */
+  --notion-pastel-blue-1: rgba(186, 225, 255, 0.8);
+  --notion-pastel-blue-2: rgba(212, 239, 255, 0.8);
+  --notion-pastel-blue-3: rgba(176, 216, 255, 0.8);
+  --notion-pastel-blue-4: rgba(227, 242, 253, 0.8);
+
+  /* Зеленые с прозрачностью */
+  --notion-pastel-green-1: rgba(186, 255, 201, 0.8);
+  --notion-pastel-green-2: rgba(216, 245, 226, 0.8);
+  --notion-pastel-green-3: rgba(194, 233, 195, 0.8);
+  --notion-pastel-green-4: rgba(230, 255, 233, 0.8);
+
+  /* Фиолетовые и сиреневые с прозрачностью */
+  --notion-pastel-purple-1: rgba(208, 176, 255, 0.8);
+  --notion-pastel-purple-2: rgba(232, 213, 255, 0.8);
+  --notion-pastel-purple-3: rgba(242, 235, 255, 0.8);
+  --notion-pastel-purple-4: rgba(199, 163, 255, 0.8);
+
+  /* Желтые и персиковые с прозрачностью */
+  --notion-pastel-yellow-1: rgba(255, 245, 186, 0.8);
+  --notion-pastel-yellow-2: rgba(255, 238, 180, 0.8);
+  --notion-pastel-peach-1: rgba(255, 235, 214, 0.8);
+  --notion-pastel-peach-2: rgba(255, 223, 186, 0.8);
+
+  /* Коралловые и оранжевые с прозрачностью */
+  --notion-pastel-coral-1: rgba(255, 204, 188, 0.8);
+  --notion-pastel-coral-2: rgba(255, 218, 185, 0.8);
+  --notion-pastel-coral-3: rgba(255, 228, 204, 0.8);
+
+  /* Серые и нейтральные с прозрачностью */
+  --notion-pastel-gray-1: rgba(240, 240, 240, 0.8);
+  --notion-pastel-gray-2: rgba(245, 230, 232, 0.8);
+  --notion-pastel-gray-3: rgba(232, 232, 232, 0.8);
+}
+
+/* Вспомогательные классы для фонов */
+.bg-notion-pink {
+  background-color: var(--notion-pastel-pink-1);
+}
+.bg-notion-blue {
+  background-color: var(--notion-pastel-blue-1);
+}
+.bg-notion-green {
+  background-color: var(--notion-pastel-green-1);
+}
+.bg-notion-purple {
+  background-color: var(--notion-pastel-purple-1);
+}
+.bg-notion-yellow {
+  background-color: var(--notion-pastel-yellow-1);
+}
+.bg-notion-peach {
+  background-color: var(--notion-pastel-peach-1);
+}
+.bg-notion-coral {
+  background-color: var(--notion-pastel-coral-1);
+}
+
+/* Вспомогательные классы для текста */
+.text-notion-pink {
+  color: var(--notion-pastel-pink-1);
+}
+.text-notion-blue {
+  color: var(--notion-pastel-blue-1);
+}
+.text-notion-green {
+  color: var(--notion-pastel-green-1);
+}
+.text-notion-purple {
+  color: var(--notion-pastel-purple-1);
+}
+.text-notion-yellow {
+  color: var(--notion-pastel-yellow-1);
+}
+.text-notion-peach {
+  color: var(--notion-pastel-peach-1);
+}
+.text-notion-coral {
+  color: var(--notion-pastel-coral-1);
+}
+
+/* Классы для статусов */
+.status-success {
+  background-color: var(--notion-status-success);
+}
+.status-processing {
+  background-color: var(--notion-status-processing);
+}
+.status-warning {
+  background-color: var(--notion-status-warning);
+}
+.status-error {
+  background-color: var(--notion-status-error);
+}
+.status-info {
+  background-color: var(--notion-status-info);
+}
+.status-blocked {
+  background-color: var(--notion-status-blocked);
+}
+
+/* Классы для границ */
+.border-notion-pink {
+  border-color: var(--notion-pastel-pink-1);
+}
+.border-notion-blue {
+  border-color: var(--notion-pastel-blue-1);
+}
+.border-notion-green {
+  border-color: var(--notion-pastel-green-1);
+}
+.border-notion-purple {
+  border-color: var(--notion-pastel-purple-1);
+}
+.border-notion-yellow {
+  border-color: var(--notion-pastel-yellow-1);
+}
+.border-notion-peach {
+  border-color: var(--notion-pastel-peach-1);
+}
+.border-notion-coral {
+  border-color: var(--notion-pastel-coral-1);
+}

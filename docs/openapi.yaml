@@ -1,0 +1,234 @@
+openapi: 3.1.0
+info:
+    title: Finance App API
+    description: API для приложения учета личных финансов
+    version: 1.0.0
+
+servers:
+    - url: http://localhost:3000/api
+      description: Локальный сервер разработки
+    - url: https://finance-app-api.example.com/api
+      description: Продакшн сервер
+
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+
+    schemas:
+        User:
+            type: object
+            properties:
+                id:
+                    type: string
+                email:
+                    type: string
+                name:
+                    type: string
+                roles:
+                    type: array
+                    items:
+                        type: string
+                settings:
+                    type: object
+                    properties:
+                        primaryIncomeAccount:
+                            type: string
+                        primaryExpenseAccount:
+                            type: string
+
+        Account:
+            type: object
+            properties:
+                id:
+                    type: string
+                userId:
+                    type: string
+                type:
+                    type: string
+                    enum: [bank, deposit, goal, credit, subscription]
+                name:
+                    type: string
+                cardInfo:
+                    type: string
+                balance:
+                    type: number
+                currency:
+                    type: string
+                status:
+                    type: string
+                    enum: [active, archived]
+                history:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AccountHistoryItem'
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
+
+        AccountHistoryItem:
+            type: object
+            properties:
+                operationType:
+                    type: string
+                    enum: [income, expense, transfer]
+                amount:
+                    type: number
+                date:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                linkedAccountId:
+                    type: string
+
+        Category:
+            type: object
+            properties:
+                id:
+                    type: string
+                userId:
+                    type: string
+                name:
+                    type: string
+                type:
+                    type: string
+                    enum: [income, expense]
+                icon:
+                    type: string
+                status:
+                    type: string
+                    enum: [active, archived]
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
+
+        Transaction:
+            type: object
+            properties:
+                id:
+                    type: string
+                userId:
+                    type: string
+                type:
+                    type: string
+                    enum: [income, expense, transfer]
+                amount:
+                    type: number
+                categoryId:
+                    type: string
+                accountId:
+                    type: string
+                toAccountId:
+                    type: string
+                date:
+                    type: string
+                    format: date-time
+                description:
+                    type: string
+                status:
+                    type: string
+                    enum: [active, archived]
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
+
+# Пути API будут добавляться по мере разработки
+paths:
+    /users/register:
+        post:
+            summary: Регистрация нового пользователя
+            tags:
+                - Users
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - email
+                                - password
+                                - name
+                            properties:
+                                email:
+                                    type: string
+                                password:
+                                    type: string
+                                name:
+                                    type: string
+            responses:
+                '201':
+                    description: Пользователь успешно зарегистрирован
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    user:
+                                        $ref: '#/components/schemas/User'
+                                    token:
+                                        type: string
+                '400':
+                    description: Некорректные данные
+
+    /users/login:
+        post:
+            summary: Авторизация пользователя
+            tags:
+                - Users
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - email
+                                - password
+                            properties:
+                                email:
+                                    type: string
+                                password:
+                                    type: string
+            responses:
+                '200':
+                    description: Успешная авторизация
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    user:
+                                        $ref: '#/components/schemas/User'
+                                    token:
+                                        type: string
+                '401':
+                    description: Неверные учетные данные
+
+    /health:
+        get:
+            summary: Проверка работоспособности API
+            responses:
+                '200':
+                    description: API сервер работает
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                    message:
+                                        type: string

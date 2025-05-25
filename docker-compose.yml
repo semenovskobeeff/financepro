@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+    server:
+        build:
+            context: ./server
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        ports:
+            - '3002:3000'
+        volumes:
+            - ./server:/app
+            - /app/node_modules
+        environment:
+            - NODE_ENV=development
+            - PORT=3000
+            - MONGODB_URI=mongodb://mongo:27017/finance-app
+            - JWT_SECRET=your_jwt_secret_replace_in_production
+        depends_on:
+            - mongo
+        networks:
+            - finance-network
+
+    client:
+        build:
+            context: ./client
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        ports:
+            - '8000:8000'
+        volumes:
+            - ./client:/app
+            - /app/node_modules
+        environment:
+            - NODE_ENV=development
+        networks:
+            - finance-network
+
+    mongo:
+        image: mongo:latest
+        restart: unless-stopped
+        ports:
+            - '27017:27017'
+        volumes:
+            - mongodb-data:/data/db
+        networks:
+            - finance-network
+
+networks:
+    finance-network:
+        driver: bridge
+
+volumes:
+    mongodb-data:
+        driver: local
