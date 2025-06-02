@@ -34,14 +34,24 @@ const PORT = process.env.PORT || 3001;
 // MIDDLEWARE
 // ================================
 app.use(express.json());
+// Формируем список разрешенных origins
+const allowedOrigins = [
+  'http://localhost:8000', // Локальная разработка (Docker)
+  'http://localhost:5173', // Локальная разработка (Vite)
+  'http://localhost:3000', // Альтернативный локальный порт
+  'https://*.vercel.app', // Любой поддомен Vercel
+  'https://vercel.app', // Основной домен Vercel
+  /https:\/\/.*\.vercel\.app$/, // Regex для поддоменов Vercel
+];
+
+// Добавляем CLIENT_URL если он указан
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:8000', // Локальная разработка
-      'https://*.vercel.app', // Любой поддомен Vercel
-      'https://vercel.app', // Основной домен Vercel
-      /https:\/\/.*\.vercel\.app$/, // Regex для поддоменов Vercel
-    ],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
