@@ -26,6 +26,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
     "noImplicitReturns": true,
+    "useUnknownInCatchVariables": false,
 
     /* Path mapping */
     "baseUrl": "./src",

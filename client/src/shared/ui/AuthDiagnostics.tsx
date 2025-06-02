@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import {
-  Button,
-  Box,
-  Typography,
-  Alert,
   Card,
   CardContent,
-  Chip,
+  Typography,
+  Button,
+  Box,
+  Alert,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
+  ListItemText,
+  Chip,
   Divider,
 } from '@mui/material';
 import {
@@ -19,9 +19,6 @@ import {
   Warning,
   Info,
   Refresh,
-  VpnKey,
-  Cloud,
-  Storage,
 } from '@mui/icons-material';
 import { config } from '../../config/environment';
 
@@ -94,13 +91,12 @@ const AuthDiagnostics: React.FC = () => {
                   : `Неожиданный статус: ${loginResponse.status}`,
               details: 'Тестовый запрос с неверными данными',
             });
-          } catch (error: unknown) {
+          } catch {
             results.push({
               name: 'Endpoint авторизации',
               status: 'error',
               message: 'Ошибка при проверке endpoint',
-              details:
-                error instanceof Error ? error.message : 'Неизвестная ошибка',
+              details: 'Неизвестная ошибка',
             });
           }
         } else {
@@ -111,12 +107,12 @@ const AuthDiagnostics: React.FC = () => {
             details: `URL: ${config.apiUrl}`,
           });
         }
-      } catch (error: unknown) {
+      } catch {
         results.push({
           name: 'Доступность API',
           status: 'error',
           message: 'Не удалось подключиться к серверу',
-          details: error instanceof Error ? error.message : 'Сетевая ошибка',
+          details: 'Сетевая ошибка',
         });
       }
     }
