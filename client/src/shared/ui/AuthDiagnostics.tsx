@@ -94,7 +94,7 @@ const AuthDiagnostics: React.FC = () => {
                   : `Неожиданный статус: ${loginResponse.status}`,
               details: 'Тестовый запрос с неверными данными',
             });
-          } catch (error) {
+          } catch (error: unknown) {
             results.push({
               name: 'Endpoint авторизации',
               status: 'error',
@@ -111,7 +111,7 @@ const AuthDiagnostics: React.FC = () => {
             details: `URL: ${config.apiUrl}`,
           });
         }
-      } catch (error) {
+      } catch (error: unknown) {
         results.push({
           name: 'Доступность API',
           status: 'error',

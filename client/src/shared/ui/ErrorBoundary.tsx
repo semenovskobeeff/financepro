@@ -143,7 +143,7 @@ class ErrorBoundary extends Component<Props, State> {
             попробуйте обновить страницу или сообщите об ошибке.
           </ErrorMessage>
 
-          {process.env.NODE_ENV !== 'production' && this.state.error && (
+          {import.meta.env.DEV && this.state.error && (
             <ErrorDetails>
               <strong>{this.state.error.toString()}</strong>
               {this.state.errorInfo && (
