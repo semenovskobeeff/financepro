@@ -40,6 +40,7 @@ app.use(
       'http://localhost:8000', // Локальная разработка
       'https://*.vercel.app', // Любой поддомен Vercel
       'https://vercel.app', // Основной домен Vercel
+      /https:\/\/.*\.vercel\.app$/, // Regex для поддоменов Vercel
     ],
     credentials: true,
   })
