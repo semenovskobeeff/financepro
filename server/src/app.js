@@ -34,7 +34,16 @@ const PORT = process.env.PORT || 3001;
 // MIDDLEWARE
 // ================================
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:8000', // Локальная разработка
+      'https://*.vercel.app', // Любой поддомен Vercel
+      'https://vercel.app', // Основной домен Vercel
+    ],
+    credentials: true,
+  })
+);
 app.use(helmet());
 app.use(morgan('dev'));
 
@@ -186,9 +195,11 @@ app.get('/api/health/database', async (req, res) => {
 if (process.env.NODE_ENV !== 'test') {
   initializeApp()
     .then(dbConnected => {
-      app.listen(PORT, () => {
+      // Слушаем на всех интерфейсах (0.0.0.0) для внешнего доступа
+      app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 Сервер запущен на порту ${PORT}`);
         console.log(`📚 API доступно по адресу: http://localhost:${PORT}/api`);
+        console.log(`🌐 Внешний доступ: http://0.0.0.0:${PORT}/api`);
         console.log(`🏠 Главная страница: http://localhost:${PORT}/`);
         console.log(
           `🔍 Проверка БД: http://localhost:${PORT}/api/health/database`
