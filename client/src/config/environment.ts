@@ -8,8 +8,17 @@ const getUseMocks = (): boolean => {
     }
   }
 
-  // По умолчанию false (будет использовать реальный API)
-  return false;
+  // В production по умолчанию не используем моки
+  return !isProduction();
+};
+
+// Функция для определения среды
+const isProduction = (): boolean => {
+  return import.meta.env.PROD || import.meta.env.MODE === 'production';
+};
+
+const isDevelopment = (): boolean => {
+  return import.meta.env.DEV || import.meta.env.MODE === 'development';
 };
 
 // Создаем реактивную конфигурацию окружения
@@ -33,21 +42,27 @@ class AppConfig {
 
   // URL API сервера
   get apiUrl(): string {
-    return 'http://localhost:3001/api';
+    // В production используем переменную окружения или fallback URL
+    if (isProduction()) {
+      return import.meta.env.VITE_API_URL || 'https://your-api-domain.com/api';
+    }
+
+    // В development используем локальный сервер
+    return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   }
 
   // Режим отладки (включен в режиме разработки)
   get debug(): boolean {
-    return true;
+    return isDevelopment() || import.meta.env.VITE_DEBUG === 'true';
   }
 
   // Среда выполнения
   get isDevelopment(): boolean {
-    return true;
+    return isDevelopment();
   }
 
   get isProduction(): boolean {
-    return false;
+    return isProduction();
   }
 
   // Метод для обновления конфигурации
@@ -64,6 +79,7 @@ class AppConfig {
       debug: this.debug,
       isDevelopment: this.isDevelopment,
       isProduction: this.isProduction,
+      environment: import.meta.env.MODE,
     };
   }
 }
