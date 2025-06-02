@@ -17,7 +17,30 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
-    proxy: { '/api': { target: 'http://localhost:3001', changeOrigin: true } },
+    port: parseInt(process.env.CLIENT_PORT) || 5175,
+    host: true,
+    proxy: {
+      '/api': {
+        target: `http://localhost:${process.env.SERVER_PORT || 3001}`,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+    hmr: {
+      port: parseInt(process.env.HMR_PORT) || 5176,
+    },
+    open: false,
+  },
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          mui: ['@mui/material', '@mui/icons-material'],
+          router: ['react-router-dom'],
+        },
+      },
+    },
   },
 });

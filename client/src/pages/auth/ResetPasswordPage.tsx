@@ -6,97 +6,112 @@ import {
   Container,
   Box,
   Alert,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import {
+  Visibility,
+  VisibilityOff,
+  CheckCircle,
+  Error,
+} from '@mui/icons-material';
+import {
+  Link as RouterLink,
   useNavigate,
   useSearchParams,
-  Link as RouterLink,
 } from 'react-router-dom';
-import { useResetPasswordMutation } from '../../features/auth/api/authApi'; // Исправленный относительный путь
+import { useResetPasswordMutation } from '../../features/auth/api/authApi';
 import PasswordStrengthIndicator from '../../shared/ui/PasswordStrengthIndicator';
 
 const ResetPasswordPage: React.FC = () => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [token, setToken] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const token = searchParams.get('token');
 
-  const [resetPassword, { isLoading, isSuccess, error, data }] =
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  const [resetPassword, { isLoading, isSuccess, error }] =
     useResetPasswordMutation();
 
+  // Проверяем наличие токена при загрузке
   useEffect(() => {
-    const queryToken = searchParams.get('token');
-    if (queryToken) {
-      setToken(queryToken);
-    } else {
-      // Можно показать ошибку или редиректить, если токена нет
-      console.error('Токен для сброса пароля отсутствует в URL');
-      // navigate('/login'); // Например, редирект на страницу входа
+    if (!token) {
+      console.error('Токен восстановления не найден в URL');
+      navigate('/forgot-password', { replace: true });
     }
-  }, [searchParams, navigate]);
+  }, [token, navigate]);
 
-  const [passwordError, setPasswordError] = React.useState<string>('');
-
+  // Валидация пароля
   const validatePassword = (pwd: string): boolean => {
-    const minLength = pwd.length >= 8;
-    const hasUpperCase = /[A-Z]/.test(pwd);
-    const hasLowerCase = /[a-z]/.test(pwd);
-    const hasNumbers = /\d/.test(pwd);
-    const hasSpecialChar = /[@$!%*?&]/.test(pwd);
+    const errors: string[] = [];
 
-    if (!minLength) {
-      setPasswordError('Пароль должен содержать минимум 8 символов');
-      return false;
+    if (pwd.length < 8) {
+      errors.push('Минимум 8 символов');
     }
-    if (!hasUpperCase) {
-      setPasswordError('Пароль должен содержать заглавную букву');
-      return false;
+    if (!/[a-z]/.test(pwd)) {
+      errors.push('Строчная буква');
     }
-    if (!hasLowerCase) {
-      setPasswordError('Пароль должен содержать строчную букву');
-      return false;
+    if (!/[A-Z]/.test(pwd)) {
+      errors.push('Заглавная буква');
     }
-    if (!hasNumbers) {
-      setPasswordError('Пароль должен содержать цифру');
-      return false;
+    if (!/\d/.test(pwd)) {
+      errors.push('Цифра');
     }
-    if (!hasSpecialChar) {
-      setPasswordError('Пароль должен содержать специальный символ (@$!%*?&)');
-      return false;
+    if (!/[@$!%*?&]/.test(pwd)) {
+      errors.push('Специальный символ (@$!%*?&)');
     }
 
-    setPasswordError('');
-    return true;
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    if (newPassword) {
+      validatePassword(newPassword);
+    } else {
+      setValidationErrors([]);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (!token) {
+      return;
+    }
+
+    // Валидация перед отправкой
     if (!validatePassword(password)) {
       return;
     }
 
     if (password !== confirmPassword) {
-      setPasswordError('Пароли не совпадают');
       return;
     }
 
-    if (token) {
-      await resetPassword({ token, password });
+    try {
+      await resetPassword({ token, password }).unwrap();
+      // Успех обрабатывается через isSuccess
+    } catch (err) {
+      console.error('Ошибка сброса пароля:', err);
     }
   };
 
-  useEffect(() => {
-    if (isSuccess && data) {
-      // Показываем сообщение об успехе и редиректим через несколько секунд
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000); // 3 секунды задержки
-    }
-  }, [isSuccess, data, navigate]);
+  const passwordsMatch = password === confirmPassword;
+  const canSubmit =
+    password &&
+    confirmPassword &&
+    passwordsMatch &&
+    validationErrors.length === 0 &&
+    !isLoading;
 
-  if (!token && !searchParams.get('token')) {
+  if (isSuccess) {
     return (
       <Container component="main" maxWidth="xs">
         <Box
@@ -105,23 +120,25 @@ const ResetPasswordPage: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            textAlign: 'center',
           }}
         >
-          <Typography component="h1" variant="h5" color="error">
-            Ошибка
+          <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
+          <Typography component="h1" variant="h5" gutterBottom>
+            Пароль успешно сброшен!
           </Typography>
-          <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
-            Токен для сброса пароля не найден в URL. Пожалуйста, запросите
-            ссылку для сброса пароля снова.
-          </Alert>
-          <Button
-            component={RouterLink}
-            to="/forgot-password"
-            variant="contained"
-            sx={{ mt: 2 }}
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Ваш пароль был успешно изменен. Теперь вы можете войти в систему с
+            новым паролем.
+          </Typography>
+          <RouterLink
+            to="/login"
+            style={{ textDecoration: 'none', width: '100%' }}
           >
-            Запросить новую ссылку
-          </Button>
+            <Button fullWidth variant="contained" size="large">
+              Войти в систему
+            </Button>
+          </RouterLink>
         </Box>
       </Container>
     );
@@ -137,67 +154,114 @@ const ResetPasswordPage: React.FC = () => {
           alignItems: 'center',
         }}
       >
-        <Typography component="h1" variant="h5">
-          Сброс пароля
+        <Typography component="h1" variant="h5" gutterBottom>
+          Установка нового пароля
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mb: 3, textAlign: 'center' }}
+        >
+          Введите новый пароль для вашего аккаунта
+        </Typography>
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          noValidate
+          sx={{ mt: 1, width: '100%' }}
+        >
           <TextField
             margin="normal"
             required
             fullWidth
             name="password"
             label="Новый пароль"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             id="password"
             autoComplete="new-password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
-            disabled={isLoading || isSuccess}
+            onChange={handlePasswordChange}
+            disabled={isLoading}
+            error={password.length > 0 && validationErrors.length > 0}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
+
+          {password && (
+            <Box sx={{ mt: 1, mb: 2 }}>
+              <PasswordStrengthIndicator password={password} />
+            </Box>
+          )}
+
           <TextField
             margin="normal"
             required
             fullWidth
             name="confirmPassword"
-            label="Подтвердите новый пароль"
-            type="password"
+            label="Подтвердите пароль"
+            type={showConfirmPassword ? 'text' : 'password'}
             id="confirmPassword"
             autoComplete="new-password"
             value={confirmPassword}
             onChange={e => setConfirmPassword(e.target.value)}
-            disabled={isLoading || isSuccess}
+            disabled={isLoading}
+            error={confirmPassword.length > 0 && !passwordsMatch}
+            helperText={
+              confirmPassword.length > 0 && !passwordsMatch
+                ? 'Пароли не совпадают'
+                : ''
+            }
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle confirm password visibility"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    edge="end"
+                  >
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
 
-          {password && (
-            <PasswordStrengthIndicator password={password} />
-          )}
-
-          {passwordError && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {passwordError}
-            </Alert>
-          )}
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {(error as any)?.data?.message ||
                 'Произошла ошибка при сбросе пароля'}
             </Alert>
           )}
-          {isSuccess && data && (
-            <Alert severity="success" sx={{ mt: 2 }}>
-              {data.message ||
-                'Пароль успешно сброшен! Вы будете перенаправлены на страницу входа.'}
-            </Alert>
-          )}
+
           <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
-            disabled={isLoading || isSuccess || !token}
+            disabled={!canSubmit}
+            size="large"
           >
-            {isLoading ? 'Сброс...' : 'Сбросить пароль'}
+            {isLoading ? 'Сохранение...' : 'Сохранить новый пароль'}
           </Button>
+
+          <Box sx={{ textAlign: 'center' }}>
+            <RouterLink to="/login" style={{ textDecoration: 'none' }}>
+              <Button variant="text">Вернуться ко входу</Button>
+            </RouterLink>
+          </Box>
         </Box>
       </Box>
     </Container>

@@ -10,7 +10,7 @@ export type ArchiveItemType =
   | 'debts'
   | 'subscriptions';
 
-// Базовый интерфейс для архивного объекта
+// Интерфейс для архивного элемента
 export interface ArchiveItem {
   id: string;
   userId: string;
@@ -19,10 +19,10 @@ export interface ArchiveItem {
   createdAt: string;
   updatedAt: string;
   itemType?: string;
-  [key: string]: any;
+  [key: string]: any; // Для дополнительных полей
 }
 
-// Интерфейс для ответа с пагинацией
+// Интерфейс для ответа архива с пагинацией
 export interface ArchiveResponse {
   items: ArchiveItem[];
   pagination: {
@@ -47,6 +47,10 @@ export interface ArchiveStats {
   oldestDate: string | null;
 }
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 export const archiveApi = createApi({
   reducerPath: 'archiveApi',
   baseQuery,
@@ -68,12 +72,36 @@ export const archiveApi = createApi({
         url: `/archive/${type}`,
         params: { page, limit, startDate, endDate, search },
       }),
+      transformResponse: (response: ApiResponse<ArchiveResponse>) => {
+        return (
+          response.data || {
+            items: [],
+            pagination: { total: 0, page: 1, totalPages: 0, limit: 10 },
+          }
+        );
+      },
       providesTags: ['Archive'],
     }),
 
     // Получение статистики архива
     getArchiveStats: builder.query<ArchiveStats, void>({
       query: () => '/archive/stats',
+      transformResponse: (response: ApiResponse<ArchiveStats>) => {
+        return (
+          response.data || {
+            total: 0,
+            byType: {
+              accounts: 0,
+              transactions: 0,
+              categories: 0,
+              goals: 0,
+              debts: 0,
+              subscriptions: 0,
+            },
+            oldestDate: null,
+          }
+        );
+      },
       providesTags: ['Archive'],
     }),
 
@@ -86,6 +114,9 @@ export const archiveApi = createApi({
         url: `/archive/${type}/${id}/restore`,
         method: 'PATCH',
       }),
+      transformResponse: (
+        response: ApiResponse<{ message: string; item: ArchiveItem }>
+      ) => response.data,
       invalidatesTags: ['Archive'],
     }),
 
@@ -98,6 +129,8 @@ export const archiveApi = createApi({
         url: `/archive/${type}/${id}`,
         method: 'DELETE',
       }),
+      transformResponse: (response: ApiResponse<{ message: string }>) =>
+        response.data,
       invalidatesTags: ['Archive'],
     }),
   }),

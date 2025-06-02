@@ -31,8 +31,8 @@ coverage/
 # Среда и конфигурация
 .env
 .env.*
-!.env.example
-!.env.template
+.env.example
+.env.template
 .env.local
 .env.development.local
 .env.test.local
@@ -112,7 +112,6 @@ docker-volumes/
 /storage/
 
 # Специфичные для проекта
-memory-bank/
 .cursor/temp/
 nul
 
@@ -122,9 +121,17 @@ create-task
 git-sync
 dev
 fix-tasks
-task-master-guide.md
 PROJECT_MASTER.task
-progress-report.md
-ЛОКАЛЬНЫЙ_ЗАПУСК.md
 start-dev.bat
-start-local.bat
+start-dev.sh
+
+# Временные файлы документации
+*_REPORT.md
+*_TEMP.md
+*_LOCAL.md
+*_FIX.md
+*_SETUP.md
+*_CHECKLIST.md
+PORTS_MANAGEMENT.md
+QUICK_START.md
+SETUP_EXPLANATION.md

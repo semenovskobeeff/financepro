@@ -7,6 +7,10 @@ import {
   User,
 } from '../model/types';
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery,
@@ -18,6 +22,7 @@ export const authApi = createApi({
         method: 'POST',
         body: credentials,
       }),
+      transformResponse: (response: ApiResponse<AuthResponse>) => response.data,
     }),
 
     register: builder.mutation<AuthResponse, RegisterRequest>({
@@ -26,6 +31,7 @@ export const authApi = createApi({
         method: 'POST',
         body: userData,
       }),
+      transformResponse: (response: ApiResponse<AuthResponse>) => response.data,
     }),
 
     logout: builder.mutation<void, void>({
@@ -37,6 +43,7 @@ export const authApi = createApi({
 
     getProfile: builder.query<User, void>({
       query: () => '/users/profile',
+      transformResponse: (response: ApiResponse<User>) => response.data,
       providesTags: ['Auth'],
     }),
 
@@ -46,6 +53,7 @@ export const authApi = createApi({
         method: 'PUT',
         body: data,
       }),
+      transformResponse: (response: ApiResponse<User>) => response.data,
       invalidatesTags: ['Auth'],
     }),
 
@@ -55,6 +63,8 @@ export const authApi = createApi({
         method: 'POST',
         body: { email },
       }),
+      transformResponse: (response: ApiResponse<{ message: string }>) =>
+        response.data,
     }),
 
     resetPassword: builder.mutation<
@@ -66,6 +76,8 @@ export const authApi = createApi({
         method: 'POST',
         body: { token, password },
       }),
+      transformResponse: (response: ApiResponse<{ message: string }>) =>
+        response.data,
     }),
   }),
 });

@@ -17,12 +17,12 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import { useGetAccountHistoryQuery } from '../api/accountApi';
+import { useGetTransactionsQuery } from '../../transaction/api/transactionApi';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { red, green, blue } from '@mui/material/colors';
-import { AccountHistoryItem } from '../model/types';
+import { Transaction } from '../../transaction/model/types';
 import {
   format,
   subDays,
@@ -43,17 +43,30 @@ interface AccountStatisticsProps {
 const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
   const [period, setPeriod] = React.useState('month');
   const {
-    data: history,
+    data: transactionsData,
     isLoading,
     error,
-  } = useGetAccountHistoryQuery({ accountId });
+  } = useGetTransactionsQuery({
+    accountId: accountId,
+    limit: 1000, // Получаем больше данных для статистики
+    sort: 'date',
+    order: 'desc',
+  });
+
+  // Извлекаем массив транзакций из ответа
+  const history = transactionsData?.transactions || [];
 
   // Отладочное логгирование
   useEffect(() => {
-    if (history && history.history) {
-      console.log('История получена:', history.history.length, 'операций');
+    if (history && history.length > 0) {
+      console.log('Транзакции получены:', history.length, 'операций');
+      console.log('Первые 3 транзакции:', history.slice(0, 3));
+      console.log(
+        'Транзакции для account1:',
+        history.filter(t => t.accountId === accountId)
+      );
     }
-  }, [history]);
+  }, [history, accountId]);
 
   const handlePeriodChange = (
     _: React.MouseEvent<HTMLElement>,
@@ -67,7 +80,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
 
   // Фильтруем операции в зависимости от выбранного периода
   const filteredHistory = useMemo(() => {
-    if (!history || !history.history || history.history.length === 0) {
+    if (!history || history.length === 0) {
       return [];
     }
 
@@ -97,10 +110,11 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
     }
 
     // Фильтруем операции по дате
-    const filtered = history.history.filter(item => {
+    const filtered = history.filter(item => {
       try {
         const itemDate = new Date(item.date);
-        return isAfter(itemDate, startDate);
+        // Используем >= вместо isAfter для включения операций на границе периода
+        return itemDate >= startDate;
       } catch (e) {
         console.error('Ошибка при обработке даты:', e);
         return false;
@@ -108,8 +122,10 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
     });
 
     console.log(
-      `Отфильтровано ${filtered.length} операций из ${history.history.length} за период ${period}`
+      `Отфильтровано ${filtered.length} операций из ${history.length} за период ${period}`
     );
+    console.log('Начальная дата фильтра:', startDate);
+    console.log('Отфильтрованные операции:', filtered);
     return filtered;
   }, [history, period]);
 
@@ -121,8 +137,8 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
         totalExpense: 0,
         balance: 0,
         operationsCount: 0,
-        largestIncome: null as AccountHistoryItem | null,
-        largestExpense: null as AccountHistoryItem | null,
+        largestIncome: null as Transaction | null,
+        largestExpense: null as Transaction | null,
         incomeOperations: 0,
         expenseOperations: 0,
         transferOperations: 0,
@@ -131,8 +147,8 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
 
     let totalIncome = 0;
     let totalExpense = 0;
-    let largestIncome: AccountHistoryItem | null = null;
-    let largestExpense: AccountHistoryItem | null = null;
+    let largestIncome: Transaction | null = null;
+    let largestExpense: Transaction | null = null;
     let incomeOperations = 0;
     let expenseOperations = 0;
     let transferOperations = 0;
@@ -294,7 +310,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
     );
   }
 
-  if (!history || !history.history || history.history.length === 0) {
+  if (!history || history.length === 0) {
     return (
       <Alert severity="info" sx={{ mb: 2 }}>
         <AlertTitle>Нет данных для статистики</AlertTitle>
@@ -341,7 +357,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 {' '}
                 <TrendingUpIcon sx={{ color: green[500], mr: 1 }} />{' '}
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography variant="subtitle2" color="text.primary">
                   {' '}
                   Доходы {getPeriodTitle()}{' '}
                 </Typography>{' '}
@@ -353,7 +369,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
                 {' '}
                 +{formatNumber(stats.totalIncome)}{' '}
               </Typography>{' '}
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.primary">
                 {' '}
                 {stats.incomeOperations} операций{' '}
               </Typography>{' '}
@@ -369,7 +385,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 {' '}
                 <TrendingDownIcon sx={{ color: red[500], mr: 1 }} />{' '}
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography variant="subtitle2" color="text.primary">
                   {' '}
                   Расходы {getPeriodTitle()}{' '}
                 </Typography>{' '}
@@ -381,7 +397,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
                 {' '}
                 -{formatNumber(stats.totalExpense)}{' '}
               </Typography>{' '}
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.primary">
                 {' '}
                 {stats.expenseOperations} операций{' '}
               </Typography>{' '}
@@ -397,7 +413,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 {' '}
                 <CompareArrowsIcon sx={{ color: blue[500], mr: 1 }} />{' '}
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography variant="subtitle2" color="text.primary">
                   {' '}
                   Переводы {getPeriodTitle()}{' '}
                 </Typography>{' '}
@@ -410,7 +426,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
                 {chartData.amounts.transfer > 0 ? '+' : ''}{' '}
                 {formatNumber(chartData.amounts.transfer)}{' '}
               </Typography>{' '}
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.primary">
                 {' '}
                 {stats.transferOperations} операций{' '}
               </Typography>{' '}
@@ -425,7 +441,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
               {' '}
               <Typography
                 variant="subtitle2"
-                color="text.secondary"
+                color="text.primary"
                 sx={{ mb: 1 }}
               >
                 {' '}
@@ -441,7 +457,7 @@ const AccountStatistics: React.FC<AccountStatisticsProps> = ({ accountId }) => {
                 {' '}
                 {stats.balance >= 0 ? '+' : ''} {formatNumber(stats.balance)}{' '}
               </Typography>{' '}
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.primary">
                 {' '}
                 Всего {stats.operationsCount} операций{' '}
               </Typography>{' '}

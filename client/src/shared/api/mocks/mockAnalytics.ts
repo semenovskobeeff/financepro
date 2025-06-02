@@ -81,6 +81,78 @@ export const mockAnalytics = {
 
   // Данные для аналитики транзакций
   transactions: {
+    week: {
+      summary: {
+        income: 0,
+        expense: 7500,
+        transfer: 5000,
+        balance: -2500,
+      },
+      categoryStats: {
+        income: [],
+        expense: [
+          {
+            type: 'expense',
+            categoryId: 'category1',
+            categoryName: 'Продукты',
+            categoryIcon: 'shopping_cart',
+            total: 3500,
+            count: 3,
+          },
+          {
+            type: 'expense',
+            categoryId: 'category4',
+            categoryName: 'Рестораны',
+            categoryIcon: 'restaurant',
+            total: 2500,
+            count: 2,
+          },
+          {
+            type: 'expense',
+            categoryId: 'category3',
+            categoryName: 'Развлечения',
+            categoryIcon: 'movie',
+            total: 1500,
+            count: 1,
+          },
+        ],
+      },
+      timeStats: {
+        income: [],
+        expense: [
+          { date: '2023-12-18', amount: 1500 },
+          { date: '2023-12-19', amount: 2000 },
+          { date: '2023-12-20', amount: 1500 },
+          { date: '2023-12-21', amount: 2500 },
+        ],
+      },
+      accounts: [
+        {
+          _id: 'account1',
+          name: 'Основной счёт',
+          type: 'bank',
+          balance: 158500,
+        },
+        {
+          _id: 'account2',
+          name: 'Сберегательный счёт',
+          type: 'bank',
+          balance: 350000,
+        },
+        {
+          _id: 'account3',
+          name: 'Кредитная карта',
+          type: 'credit',
+          balance: -25000,
+        },
+        {
+          _id: 'account4',
+          name: 'Отпускной счёт',
+          type: 'bank',
+          balance: 75000,
+        },
+      ],
+    },
     month: {
       summary: {
         income: 435000,

@@ -5,46 +5,51 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const mongoose = require('mongoose');
 
-// Импорт маршрутов
-const userRoutes = require('./modules/users/routes/userRoutes');
-const accountRoutes = require('./modules/operations/routes/accountRoutes');
-const transactionRoutes = require('./modules/operations/routes/transactionRoutes');
-const categoryRoutes = require('./modules/operations/routes/categoryRoutes');
-const goalRoutes = require('./modules/goals/routes/goalRoutes');
-const debtRoutes = require('./modules/debts/routes/debtRoutes');
-const subscriptionRoutes = require('./modules/operations/routes/subscriptionRoutes');
-const analyticsRoutes = require('./modules/operations/routes/analyticsRoutes');
-const archiveRoutes = require('./modules/operations/routes/archiveRoutes');
+// ================================
+// ИМПОРТ ПОДКЛЮЧЕНИЯ К БД И МОДЕЛЕЙ
+// ================================
+const dbConnection = require('./core/infrastructure/database/connection');
+const DatabaseSeeder = require('./core/infrastructure/database/seedDatabase');
+
+// Импортируем все модели для их регистрации в Mongoose
+require('./core/domain/entities/User');
+require('./core/domain/entities/Account');
+require('./core/domain/entities/Category');
+require('./core/domain/entities/Transaction');
+require('./core/domain/entities/Goal');
+require('./core/domain/entities/Debt');
+require('./core/domain/entities/Subscription');
+
+// ================================
+// ИМПОРТ МАРШРУТОВ
+// ================================
+const apiRoutes = require('./routes');
 
 // Инициализация приложения
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// ================================
+// MIDDLEWARE
+// ================================
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 
-// Маршруты API
-app.use('/api/users', userRoutes);
-app.use('/api/accounts', accountRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/goals', goalRoutes);
-app.use('/api/debts', debtRoutes);
-app.use('/api/subscriptions', subscriptionRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/archive', archiveRoutes);
+// ================================
+// МАРШРУТЫ
+// ================================
 
 // Корневой маршрут
 app.get('/', (req, res) => {
   res.json({
     message: 'Finance App API Server',
     version: '1.0.0',
+    docs: 'Документация API доступна по адресу /api',
     endpoints: [
+      'GET /api - информация об API',
       'GET /api/health - проверка работоспособности',
       'POST /api/users/register - регистрация пользователя',
       'POST /api/users/login - авторизация',
@@ -60,66 +65,146 @@ app.get('/', (req, res) => {
   });
 });
 
-// API информация
-app.get('/api', (req, res) => {
-  res.json({
-    message: 'Finance App API',
-    version: '1.0.0',
-    status: 'active',
-    endpoints: {
-      users: '/api/users',
-      accounts: '/api/accounts',
-      transactions: '/api/transactions',
-      categories: '/api/categories',
-      goals: '/api/goals',
-      debts: '/api/debts',
-      subscriptions: '/api/subscriptions',
-      analytics: '/api/analytics',
-      archive: '/api/archive',
-      health: '/api/health',
-    },
+// Подключение всех API маршрутов
+app.use('/api', apiRoutes);
+
+// ================================
+// ОБРАБОТКА ОШИБОК
+// ================================
+
+// Обработчик для неизвестных маршрутов
+app.use('*', (req, res) => {
+  res.status(404).json({
+    status: 'error',
+    message: `Маршрут ${req.originalUrl} не найден`,
+    availableEndpoints: '/api',
   });
 });
 
-// Простой маршрут для проверки работоспособности
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'API сервер работает' });
-});
-
-// Обработчик ошибок
+// Глобальный обработчик ошибок
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
+  console.error('Ошибка сервера:', err.stack);
+  res.status(err.status || 500).json({
     status: 'error',
     message: err.message || 'Внутренняя ошибка сервера',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 });
 
-// Подключение к MongoDB
-const connectDB = async () => {
+// ================================
+// ПОДКЛЮЧЕНИЕ К БД И ЗАПУСК СЕРВЕРА
+// ================================
+
+// Функция инициализации приложения
+const initializeApp = async () => {
+  let dbConnected = false;
+
   try {
-    await mongoose.connect(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/finance-app'
-    );
-    console.log('MongoDB подключена');
+    console.log('🔄 Инициализация приложения...');
+
+    // Пытаемся подключиться к MongoDB
+    const connection = await dbConnection.connect();
+
+    if (connection) {
+      dbConnected = true;
+      console.log('🗂️  Создание индексов базы данных...');
+
+      // Создаем индексы для всех моделей
+      await dbConnection.createIndexes();
+
+      // Заполняем БД тестовыми данными если настроено
+      if (process.env.SEED_DATABASE === 'true') {
+        console.log('🌱 Заполнение базы данных тестовыми данными...');
+        try {
+          const seeder = new DatabaseSeeder();
+          await seeder.seedDatabase();
+          console.log('✅ Тестовые данные успешно загружены');
+        } catch (seedError) {
+          console.log(
+            '⚠️  Ошибка при заполнении БД тестовыми данными:',
+            seedError.message
+          );
+          console.log('📝 База данных может уже содержать данные');
+        }
+      }
+
+      // Возвращаем информацию о подключении
+      const dbStatus = dbConnection.getConnectionStatus();
+      console.log('📊 Статус БД:', {
+        connected: dbStatus.isConnected,
+        database: dbStatus.name,
+        host: dbStatus.host,
+      });
+    }
+
+    return dbConnected;
   } catch (error) {
-    console.error('Ошибка подключения к MongoDB:', error.message);
-    console.log('Запуск в режиме без базы данных для демонстрации...');
-    // Не завершаем процесс, продолжаем работу без БД
+    console.error('❌ Ошибка инициализации:', error.message);
+
+    // Выводим подсказки для пользователя
+    console.log('\n💡 Возможные решения:');
+    console.log('   1. Создайте файл server/.env с настройками MONGODB_URI');
+    console.log(
+      '   2. Установите локальную MongoDB: https://www.mongodb.com/try/download/community'
+    );
+    console.log(
+      '   3. Или настройте MongoDB Atlas: https://www.mongodb.com/atlas'
+    );
+    console.log('   4. Проверьте, что MongoDB запущена: mongod --version');
+    console.log(
+      '\n🔄 Сервер будет работать без базы данных (ограниченный функционал)\n'
+    );
+
+    return false;
   }
 };
 
+// Добавляем endpoint для проверки здоровья БД
+app.get('/api/health/database', async (req, res) => {
+  try {
+    const health = await dbConnection.healthCheck();
+    const stats = await dbConnection.getStats();
+
+    res.json({
+      status: 'success',
+      data: {
+        health,
+        stats,
+        connection: dbConnection.getConnectionStatus(),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка проверки состояния БД',
+      error: error.message,
+    });
+  }
+});
+
 // Запуск сервера
 if (process.env.NODE_ENV !== 'test') {
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      console.log(`Сервер запущен на порту ${PORT}`);
-      console.log(`API доступно по адресу: http://localhost:${PORT}/api`);
-      console.log(
-        'ВНИМАНИЕ: Для полной функциональности требуется подключение к MongoDB'
-      );
+  initializeApp()
+    .then(dbConnected => {
+      app.listen(PORT, () => {
+        console.log(`🚀 Сервер запущен на порту ${PORT}`);
+        console.log(`📚 API доступно по адресу: http://localhost:${PORT}/api`);
+        console.log(`🏠 Главная страница: http://localhost:${PORT}/`);
+        console.log(
+          `🔍 Проверка БД: http://localhost:${PORT}/api/health/database`
+        );
+
+        if (dbConnected) {
+          console.log('✅ Приложение готово к работе с MongoDB Atlas');
+        } else {
+          console.log('⚠️  Приложение работает без подключения к БД');
+        }
+      });
+    })
+    .catch(error => {
+      console.error('💥 Критическая ошибка запуска:', error);
+      process.exit(1);
     });
-  });
 }
 
 module.exports = app; // Для тестирования

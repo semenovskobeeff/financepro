@@ -9,6 +9,7 @@ import {
   Paper,
   Alert,
   CircularProgress,
+  Chip,
 } from '@mui/material';
 import { useLoginMutation } from '../api/authApi';
 import { RootState } from '../../../app/store';
@@ -18,6 +19,7 @@ import {
   isServerError,
 } from '../../../shared/utils/errorUtils';
 import ErrorAlert from '../../../shared/ui/ErrorAlert';
+import { config } from '../../../config/environment';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -93,6 +95,30 @@ const LoginForm: React.FC = () => {
         Вход в приложение
       </Typography>
 
+      {!config.useMocks && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Typography variant="body2" gutterBottom>
+            <strong>Данные для тестового входа:</strong>
+          </Typography>
+          <Box display="flex" gap={1} mt={1} flexWrap="wrap">
+            <Chip
+              label="test@example.com"
+              size="small"
+              onClick={() => setEmail('test@example.com')}
+              clickable
+              variant="outlined"
+            />
+            <Chip
+              label="password"
+              size="small"
+              onClick={() => setPassword('password')}
+              clickable
+              variant="outlined"
+            />
+          </Box>
+        </Alert>
+      )}
+
       {formError && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {formError}
@@ -115,7 +141,7 @@ const LoginForm: React.FC = () => {
           required
           fullWidth
           id="email"
-          label="Email"
+          placeholder="Email"
           name="email"
           autoComplete="email"
           autoFocus
@@ -136,7 +162,7 @@ const LoginForm: React.FC = () => {
           required
           fullWidth
           name="password"
-          label="Пароль"
+          placeholder="Пароль"
           type="password"
           id="password"
           autoComplete="current-password"

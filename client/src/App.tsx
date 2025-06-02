@@ -5,7 +5,7 @@ import {
   Route,
   useLocation,
 } from 'react-router-dom';
-import { CssBaseline, Box } from '@mui/material';
+import { CssBaseline, Box, Snackbar } from '@mui/material';
 import {
   ThemeProvider as MuiThemeProvider,
   createTheme,
@@ -19,6 +19,8 @@ import AppHeader from './shared/ui/AppHeader';
 import Navbar from './shared/ui/Navbar';
 import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import ToastNotification from './shared/ui/ToastNotification';
+import ErrorAlert from './shared/ui/ErrorAlert';
+import DebugAuthStatus from './shared/ui/DebugAuthStatus';
 
 // Страницы
 import Dashboard from './pages/Dashboard';
@@ -45,10 +47,13 @@ import Settings from './pages/Settings';
 // Стили и утилиты
 import { useTheme } from './shared/config/ThemeContext';
 import { applyNotionChartDefaults } from './shared/utils/chartUtils';
+import { config } from './config/environment';
 
 // Модули для работы с API и данными
 import PaymentForm from './features/subscriptions/components/PaymentForm';
 import { Subscription } from './entities/subscription/model/types';
+import ApiModeToggle from './shared/ui/ApiModeToggle';
+
 import {
   useGetSubscriptionByIdQuery,
   useMakePaymentMutation,
@@ -56,6 +61,85 @@ import {
 
 // Константы
 const drawerWidth = 240;
+
+// Глобальный обработчик ошибок API
+const GlobalErrorHandler: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const [apiError, setApiError] = useState<{
+    message: string;
+    originalError?: any;
+  } | null>(null);
+
+  useEffect(() => {
+    // Слушаем глобальные ошибки сети
+    const handleGlobalError = (event: any) => {
+      // Проверяем, это ли ошибка связанная с API
+      if (event.reason && typeof event.reason === 'object') {
+        const error = event.reason;
+        if (error.status === 'FETCH_ERROR' && !config.useMocks) {
+          setApiError({
+            message:
+              'Потеряно соединение с сервером. Проверьте подключение или переключитесь на тестовые данные.',
+            originalError: error,
+          });
+        }
+      }
+    };
+
+    // Слушаем необработанные отклонения промисов
+    window.addEventListener('unhandledrejection', handleGlobalError);
+
+    // Слушаем изменения в localStorage для useMocks
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'useMocks') {
+        setApiError(null); // Очищаем ошибки при смене режима
+        console.log(
+          '[GlobalErrorHandler] Режим данных изменен, очищаем ошибки'
+        );
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleGlobalError);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const handleCloseError = () => {
+    setApiError(null);
+  };
+
+  const handleSwitchToMocks = () => {
+    setApiError(null);
+    // Переинициализируем авторизацию при переключении
+    dispatch({ type: 'auth/reinitializeAuth' });
+    console.log('[GlobalErrorHandler] Переключились на тестовые данные');
+  };
+
+  if (!apiError) return null;
+
+  return (
+    <Snackbar
+      open={Boolean(apiError)}
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      sx={{ mt: 8, maxWidth: '500px' }}
+      autoHideDuration={10000}
+      onClose={handleCloseError}
+    >
+      <ErrorAlert
+        error={apiError.message}
+        originalError={apiError.originalError}
+        showTitle={true}
+        showDetails={true}
+        showMockSwitch={true}
+        onSwitchToMocks={handleSwitchToMocks}
+        sx={{ width: '100%' }}
+      />
+    </Snackbar>
+  );
+};
 
 // Компонент для условного рендеринга макета
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -91,6 +175,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <AppHeader />
         <main className="main-content">{children}</main>
       </div>
+      <GlobalErrorHandler />
     </div>
   );
 };
@@ -297,6 +382,12 @@ function App() {
 
           {/* Уведомления о платежах */}
           <ToastNotification onPaymentClick={handlePaymentClick} />
+
+          {/* Переключатель режима API */}
+          <ApiModeToggle />
+
+          {/* Компонент отладки авторизации */}
+          <DebugAuthStatus />
 
           {/* Модальное окно для оплаты подписки */}
           {subscription && (

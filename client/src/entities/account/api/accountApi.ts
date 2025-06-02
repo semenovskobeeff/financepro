@@ -10,6 +10,10 @@ import {
 } from '../model/types';
 import { RootState } from 'app/store';
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 export const accountApi = createApi({
   reducerPath: 'accountApi',
   baseQuery,
@@ -23,6 +27,8 @@ export const accountApi = createApi({
         }
         return { url };
       },
+      transformResponse: (response: ApiResponse<Account[]>) =>
+        response.data || [],
       providesTags: result =>
         result
           ? [
@@ -37,6 +43,7 @@ export const accountApi = createApi({
 
     getAccountById: builder.query<Account, string>({
       query: id => ({ url: `/accounts/${id}` }),
+      transformResponse: (response: ApiResponse<Account>) => response.data,
       providesTags: (_, __, id) => [{ type: 'Account', id }],
     }),
 
@@ -46,6 +53,7 @@ export const accountApi = createApi({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: ApiResponse<Account>) => response.data,
       invalidatesTags: [{ type: 'Account', id: 'LIST' }],
     }),
 
@@ -58,6 +66,7 @@ export const accountApi = createApi({
         method: 'PUT',
         body: data,
       }),
+      transformResponse: (response: ApiResponse<Account>) => response.data,
       invalidatesTags: (_, __, { id }) => [
         { type: 'Account', id },
         { type: 'Account', id: 'LIST' },
@@ -95,6 +104,9 @@ export const accountApi = createApi({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (
+        response: ApiResponse<{ fromAccount: Account; toAccount: Account }>
+      ) => response.data,
       invalidatesTags: [{ type: 'Account', id: 'LIST' }],
     }),
 
@@ -114,6 +126,17 @@ export const accountApi = createApi({
         url: `/accounts/${accountId}/history`,
         params: { page, limit },
       }),
+      transformResponse: (
+        response: ApiResponse<{
+          history: AccountHistoryItem[];
+          pagination?: {
+            total: number;
+            totalPages: number;
+            currentPage: number;
+            limit: number;
+          };
+        }>
+      ) => response.data || { history: [] },
       providesTags: (_, __, { accountId }) => [
         { type: 'Account', id: `${accountId}-history` },
       ],

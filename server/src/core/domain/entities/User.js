@@ -1,84 +1,146 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const UserSchema = new mongoose.Schema(
-	{
-		email: {
-			type: String,
-			required: true,
-			unique: true,
-			trim: true,
-			lowercase: true,
-		},
-		password: {
-			type: String,
-			required: true,
-		},
-			resetPasswordToken: {
-		type: String,
-		default: undefined,
-	},
-	resetPasswordExpires: {
-		type: Date,
-		default: undefined,
-	},
-	resetPasswordUsed: {
-		type: Boolean,
-		default: undefined,
-	},
-		name: {
-			type: String,
-			required: true,
-			trim: true,
-		},
-		roles: {
-			type: [String],
-			default: ['user'],
-			enum: ['user', 'admin'],
-		},
-		settings: {
-			primaryIncomeAccount: {
-				type: mongoose.Schema.Types.ObjectId,
-				ref: 'Account',
-			},
-			primaryExpenseAccount: {
-				type: mongoose.Schema.Types.ObjectId,
-				ref: 'Account',
-			},
-		},
-		createdAt: {
-			type: Date,
-			default: Date.now,
-		},
-		isActive: {
-			type: Boolean,
-			default: true,
-		},
-	},
-	{ timestamps: true },
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: [true, 'Email обязателен'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        'Пожалуйста, введите корректный email',
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, 'Пароль обязателен'],
+      minlength: [6, 'Пароль должен содержать минимум 6 символов'],
+      select: false,
+    },
+    resetPasswordToken: {
+      type: String,
+      default: undefined,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: undefined,
+    },
+    resetPasswordUsed: {
+      type: Boolean,
+      default: undefined,
+    },
+    name: {
+      type: String,
+      required: [true, 'Имя обязательно'],
+      trim: true,
+      maxlength: [50, 'Имя не может превышать 50 символов'],
+    },
+    roles: {
+      type: [String],
+      enum: ['user', 'admin'],
+      default: ['user'],
+    },
+    settings: {
+      primaryIncomeAccount: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Account',
+      },
+      primaryExpenseAccount: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Account',
+      },
+      currency: {
+        type: String,
+        default: 'RUB',
+        enum: ['RUB', 'USD', 'EUR'],
+      },
+      theme: {
+        type: String,
+        default: 'light',
+        enum: ['light', 'dark'],
+      },
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    lastLogin: {
+      type: Date,
+    },
+    passwordResetToken: {
+      type: String,
+    },
+    passwordResetExpires: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        delete ret.password;
+        delete ret.passwordResetToken;
+        delete ret.passwordResetExpires;
+        delete ret.__v;
+        return ret;
+      },
+    },
+  }
 );
 
-// Хук pre-save для хеширования пароля
-UserSchema.pre('save', async function (next) {
-	// Хешируем пароль только если он был изменен или это новый пользователь
-	if (!this.isModified('password')) {
-		return next();
-	}
+// Индексы
+// email индекс создается автоматически из-за unique: true в схеме
+userSchema.index({ createdAt: -1 });
 
-	try {
-		const salt = await bcrypt.genSalt(10);
-		this.password = await bcrypt.hash(this.password, salt);
-		next();
-	} catch (error) {
-		next(error);
-	}
+// Хеширование пароля перед сохранением
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Метод для проверки пароля
-UserSchema.methods.comparePassword = async function (candidatePassword) {
-	return bcrypt.compare(candidatePassword, this.password);
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model('User', UserSchema);
+// Метод для создания токена сброса пароля
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = require('crypto').randomBytes(32).toString('hex');
 
-module.exports = User;
+  this.passwordResetToken = require('crypto')
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 минут
+
+  return resetToken;
+};
+
+// Виртуальное поле для получения всех счетов пользователя
+userSchema.virtual('accounts', {
+  ref: 'Account',
+  localField: '_id',
+  foreignField: 'userId',
+});
+
+module.exports = mongoose.model('User', userSchema);

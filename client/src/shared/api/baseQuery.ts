@@ -4,10 +4,12 @@ import {
   FetchArgs,
   FetchBaseQueryError,
 } from '@reduxjs/toolkit/query';
+import { config } from '../../config/environment';
 
 // Базовый запрос с общими настройками для всех API
 const baseQueryWithAuth = fetchBaseQuery({
-  baseUrl: '/api',
+  baseUrl: config.useMocks ? '/api' : config.apiUrl,
+  timeout: 15000, // Увеличен таймаут до 15 секунд
   prepareHeaders: (headers, { getState }) => {
     // Получение токена из локального хранилища
     const token = localStorage.getItem('token');
@@ -32,37 +34,83 @@ export const baseQuery: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
+  // Логирование запросов в режиме отладки
+  if (config.debug) {
+    const url = typeof args === 'string' ? args : args.url;
+    console.log('[API] Запрос:', {
+      url: `${config.useMocks ? '/api' : config.apiUrl}${url}`,
+      useMocks: config.useMocks,
+      method: typeof args === 'object' ? args.method || 'GET' : 'GET',
+    });
+  }
+
   const result = await baseQueryWithAuth(args, api, extraOptions);
 
   // Обработка ошибок
   if (result.error) {
-    console.error('API Error:', result.error);
+    const endpoint = typeof args === 'string' ? args : args.url;
+    const isNetworkError = result.error.status === 'FETCH_ERROR';
 
-    // Обработка 401 ошибки (истекшая сессия)
-    if (result.error.status === 401) {
-      // Очищаем локальное хранилище при истекшей сессии
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    // Более мягкое логирование ошибок
+    if (isNetworkError && !config.useMocks) {
+      console.warn('[API] Сервер недоступен:', {
+        endpoint,
+        recommendation:
+          'Переключитесь на тестовые данные для работы без сервера',
+      });
 
-      // Перенаправляем на страницу входа, если не на ней
-      if (
-        window.location.pathname !== '/login' &&
-        window.location.pathname !== '/register' &&
-        !window.location.pathname.startsWith('/reset-password')
-      ) {
-        window.location.href = '/login';
+      // Не спамим в консоль если сервер недоступен
+      const shouldShowTip = !localStorage.getItem('networkErrorTipShown');
+      if (shouldShowTip) {
+        console.info(
+          '💡 Совет: Используйте переключатель "Режим данных" в правом верхнем углу'
+        );
+        localStorage.setItem('networkErrorTipShown', 'true');
       }
+    } else if (config.debug) {
+      console.warn('[API] Ошибка:', {
+        status: result.error.status,
+        endpoint,
+        useMocks: config.useMocks,
+      });
     }
 
-    // Обработка 403 ошибки (недостаточно прав)
-    if (result.error.status === 403) {
-      console.warn('Access denied:', result.error);
+    // Обработка различных типов ошибок без агрессивных действий
+    if (result.error.status === 'TIMEOUT_ERROR') {
+      if (config.debug) {
+        console.warn('[API] Таймаут запроса:', {
+          endpoint,
+          recommendation: 'Проверьте соединение с сервером',
+        });
+      }
+    } else if (result.error.status === 401) {
+      // Минимальное логирование для 401
+      if (config.debug) {
+        console.info('[API] Требуется авторизация для:', endpoint);
+      }
+    } else if (result.error.status === 403) {
+      if (config.debug) {
+        console.warn('[API] Доступ запрещен:', endpoint);
+      }
+    } else if (result.error.status === 404) {
+      if (config.debug) {
+        console.info('[API] Ресурс не найден:', endpoint);
+      }
+    } else if (result.error.status === 500) {
+      console.warn('[API] Ошибка сервера:', {
+        endpoint,
+        recommendation: 'Попробуйте позже или переключитесь на тестовые данные',
+      });
     }
-
-    // Обработка 500 ошибки (ошибка сервера)
-    if (result.error.status === 500) {
-      console.error('Server error:', result.error);
-    }
+  } else if (config.debug && result.data) {
+    // Логирование успешных ответов в режиме отладки
+    const endpoint = typeof args === 'string' ? args : args.url;
+    console.log('[API] Успех:', {
+      endpoint,
+      dataType: Array.isArray(result.data)
+        ? `array[${result.data.length}]`
+        : typeof result.data,
+    });
   }
 
   return result;

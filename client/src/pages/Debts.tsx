@@ -19,8 +19,7 @@ import DebtForm from 'features/debts/components/DebtForm';
 import PaymentForm from 'features/debts/components/PaymentForm';
 import { Debt } from 'entities/debt/model/types';
 import {
-  useGetActiveDebtsQuery,
-  useGetArchivedDebtsQuery,
+  useGetDebtsQuery,
   useCreateDebtMutation,
   useArchiveDebtMutation,
   useRestoreDebtMutation,
@@ -34,23 +33,15 @@ const Debts: React.FC = () => {
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
   const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
 
-  // Используем соответствующий хук в зависимости от выбранного фильтра
+  // Получаем долги в зависимости от выбранного фильтра
   const {
-    data: activeDebts,
-    isLoading: isActiveLoading,
-    error: activeError,
-  } = useGetActiveDebtsQuery();
+    data: debts,
+    isLoading,
+    error,
+  } = useGetDebtsQuery({ status: filter });
 
-  const {
-    data: archivedDebts,
-    isLoading: isArchivedLoading,
-    error: archivedError,
-  } = useGetArchivedDebtsQuery();
-
-  // Выбираем данные в зависимости от текущего фильтра
-  const debts = filter === 'active' ? activeDebts : archivedDebts;
-  const isLoading = filter === 'active' ? isActiveLoading : isArchivedLoading;
-  const error = filter === 'active' ? activeError : archivedError;
+  // Получаем активные долги для расчета общей суммы
+  const { data: activeDebts } = useGetDebtsQuery({ status: 'active' });
 
   // Расчет общей суммы долга
   const totalDebtAmount = useMemo(() => {

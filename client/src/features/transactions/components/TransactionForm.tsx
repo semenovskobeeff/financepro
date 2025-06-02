@@ -167,13 +167,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         // Обновляем существующую транзакцию
         await updateTransaction({
           id: transaction.id,
-          type: formData.type,
-          amount: formData.amount,
-          categoryId: formData.categoryId || undefined,
-          accountId: formData.accountId,
-          toAccountId: formData.toAccountId || undefined,
-          date: formData.date,
-          description: formData.description,
+          data: {
+            type: formData.type,
+            amount: formData.amount,
+            categoryId: formData.categoryId || undefined,
+            accountId: formData.accountId,
+            toAccountId: formData.toAccountId || undefined,
+            date: formData.date,
+            description: formData.description,
+          },
         }).unwrap();
       } else {
         // Создаем новую транзакцию
@@ -190,7 +192,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           Ошибка при сохранении транзакции:{' '}
-          {(error as any)?.data?.message || (error as any)?.message || 'Попробуйте снова'}
+          {(error as any)?.data?.message ||
+            (error as any)?.message ||
+            'Попробуйте снова'}
         </Alert>
       )}
 

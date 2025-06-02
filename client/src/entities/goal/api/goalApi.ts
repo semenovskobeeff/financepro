@@ -7,20 +7,31 @@ import {
   TransferToGoalRequest,
 } from '../model/types';
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 export const goalApi = createApi({
   reducerPath: 'goalApi',
   baseQuery,
-  tagTypes: ['Goal', 'Account'],
+  tagTypes: ['Goal'],
   endpoints: builder => ({
-    getGoals: builder.query<Goal[], { status?: string }>({
-      query: params => ({
-        url: '/goals',
-        params,
-      }),
+    getGoals: builder.query<Goal[], { status?: string } | void>({
+      query: params => {
+        let url = '/goals';
+        if (params && params.status) {
+          url += `?status=${params.status}`;
+        }
+        return { url };
+      },
+      transformResponse: (response: ApiResponse<Goal[]>) => response.data || [],
       providesTags: result =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: 'Goal' as const, id })),
+              ...result.map(({ id }) => ({
+                type: 'Goal' as const,
+                id,
+              })),
               { type: 'Goal', id: 'LIST' },
             ]
           : [{ type: 'Goal', id: 'LIST' }],
@@ -28,6 +39,7 @@ export const goalApi = createApi({
 
     getGoalById: builder.query<Goal, string>({
       query: id => ({ url: `/goals/${id}` }),
+      transformResponse: (response: ApiResponse<Goal>) => response.data,
       providesTags: (_, __, id) => [{ type: 'Goal', id }],
     }),
 
@@ -37,6 +49,7 @@ export const goalApi = createApi({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: ApiResponse<Goal>) => response.data,
       invalidatesTags: [{ type: 'Goal', id: 'LIST' }],
     }),
 
@@ -47,7 +60,11 @@ export const goalApi = createApi({
           method: 'PUT',
           body: data,
         }),
-        invalidatesTags: (_, __, { id }) => [{ type: 'Goal', id }],
+        transformResponse: (response: ApiResponse<Goal>) => response.data,
+        invalidatesTags: (_, __, { id }) => [
+          { type: 'Goal', id },
+          { type: 'Goal', id: 'LIST' },
+        ],
       }
     ),
 
@@ -74,7 +91,7 @@ export const goalApi = createApi({
     }),
 
     transferToGoal: builder.mutation<
-      void,
+      Goal,
       { id: string; data: TransferToGoalRequest }
     >({
       query: ({ id, data }) => ({
@@ -82,10 +99,10 @@ export const goalApi = createApi({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: ApiResponse<Goal>) => response.data,
       invalidatesTags: (_, __, { id }) => [
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
-        { type: 'Account', id: 'LIST' },
       ],
     }),
   }),

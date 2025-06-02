@@ -1,8 +1,12 @@
-import React from 'react';
-import { Container, Box, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Container, Box, Typography, Button, Collapse } from '@mui/material';
+import { BugReport } from '@mui/icons-material';
 import LoginForm from '../../features/auth/components/LoginForm';
+import AuthDiagnostics from '../../shared/ui/AuthDiagnostics';
 
 const LoginPage: React.FC = () => {
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+
   return (
     <Box
       sx={{
@@ -10,6 +14,8 @@ const LoginPage: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'column',
+        gap: 2,
       }}
     >
       <Container maxWidth="sm">
@@ -22,7 +28,23 @@ const LoginPage: React.FC = () => {
           </Typography>
         </Box>
         <LoginForm />
+
+        <Box sx={{ textAlign: 'center', mt: 3 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<BugReport />}
+            onClick={() => setShowDiagnostics(!showDiagnostics)}
+            sx={{ fontSize: '0.8rem' }}
+          >
+            {showDiagnostics ? 'Скрыть диагностику' : 'Проблемы с входом?'}
+          </Button>
+        </Box>
       </Container>
+
+      <Collapse in={showDiagnostics} sx={{ width: '100%', maxWidth: 800 }}>
+        <AuthDiagnostics />
+      </Collapse>
     </Box>
   );
 };

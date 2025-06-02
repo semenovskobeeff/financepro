@@ -3,9 +3,6 @@ import {
   Box,
   Tabs,
   Tab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   IconButton,
   CircularProgress,
   Typography,
@@ -29,11 +26,11 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
+import RestoreIcon from '@mui/icons-material/Restore';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
@@ -41,7 +38,6 @@ import {
   Transaction,
   TransactionType,
 } from '../entities/transaction/model/types';
-import TransactionForm from '../features/transactions/components/TransactionForm';
 import PageContainer from '../shared/ui/PageContainer';
 import {
   useGetTransactionsQuery,
@@ -55,12 +51,8 @@ import { ru } from 'date-fns/locale';
 import { formatNumber } from '../shared/utils/formatUtils';
 
 const Transactions: React.FC = () => {
-  // Состояние табов и формы
+  // Состояние табов
   const [status, setStatus] = useState<'active' | 'archived'>('active');
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] =
-    useState<Transaction | null>(null);
-  const [formType, setFormType] = useState<TransactionType>('expense');
 
   // Состояние фильтров
   const [filters, setFilters] = useState({
@@ -70,6 +62,9 @@ const Transactions: React.FC = () => {
     startDate: null as Date | null,
     endDate: null as Date | null,
   });
+
+  // Состояние активного фильтра по типу (для кнопок)
+  const [activeTypeFilter, setActiveTypeFilter] = useState<string>('');
 
   // Состояние пагинации
   const [page, setPage] = useState(0);
@@ -87,7 +82,10 @@ const Transactions: React.FC = () => {
     status,
     page: page + 1,
     limit: rowsPerPage,
-    type: (filters.type as TransactionType) || undefined,
+    type:
+      (activeTypeFilter as TransactionType) ||
+      (filters.type as TransactionType) ||
+      undefined,
     accountId: filters.accountId || undefined,
     categoryId: filters.categoryId || undefined,
     startDate: filters.startDate
@@ -104,37 +102,16 @@ const Transactions: React.FC = () => {
   const [archiveTransaction] = useArchiveTransactionMutation();
   const [restoreTransaction] = useRestoreTransactionMutation();
 
-  // Обработчики для формы
-  const handleOpenForm = (type?: TransactionType) => {
-    setSelectedTransaction(null);
-    if (type) setFormType(type);
-    setIsFormOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-  };
-
-  const handleEditTransaction = (transaction: Transaction) => {
-    setSelectedTransaction(transaction);
-    setFormType(transaction.type);
-    setIsFormOpen(true);
-  };
-
-  const handleArchiveTransaction = async (transaction: Transaction) => {
-    try {
-      await archiveTransaction(transaction.id).unwrap();
-    } catch (error) {
-      console.error('Failed to archive transaction:', error);
+  // Обработчики для фильтрации по типу операции
+  const handleTypeFilter = (type: TransactionType) => {
+    if (activeTypeFilter === type) {
+      // Если кликнули на уже активную кнопку - сбрасываем фильтр
+      setActiveTypeFilter('');
+    } else {
+      setActiveTypeFilter(type);
     }
-  };
-
-  const handleRestoreTransaction = async (transaction: Transaction) => {
-    try {
-      await restoreTransaction(transaction.id).unwrap();
-    } catch (error) {
-      console.error('Failed to restore transaction:', error);
-    }
+    setFilters(prev => ({ ...prev, type: '' })); // Сбрасываем фильтр в панели
+    setPage(0);
   };
 
   // Обработчики для табов и пагинации
@@ -166,11 +143,13 @@ const Transactions: React.FC = () => {
       startDate: null,
       endDate: null,
     });
+    setActiveTypeFilter(''); // Сбрасываем фильтр кнопок
     setPage(0);
   };
 
   const handleFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setActiveTypeFilter(''); // Сбрасываем фильтр кнопок при использовании панели
     setPage(0);
   };
 
@@ -179,6 +158,10 @@ const Transactions: React.FC = () => {
       ...prev,
       [name]: value,
     }));
+    // Если изменяется тип в панели фильтров, сбрасываем фильтр кнопок
+    if (name === 'type') {
+      setActiveTypeFilter('');
+    }
   };
 
   // Вспомогательные функции для отображения данных
@@ -209,32 +192,64 @@ const Transactions: React.FC = () => {
 
   const getFormattedDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd MMM yyyy', { locale: ru });
-    } catch (error) {
+      return format(new Date(dateString), 'dd.MM.yyyy HH:mm', { locale: ru });
+    } catch {
       return dateString;
     }
   };
+
+  // Обработчики для операций
+  const handleEditTransaction = (transaction: Transaction) => {
+    // Логика редактирования будет обрабатываться через глобальную форму
+    console.log('Edit transaction:', transaction);
+  };
+
+  const handleArchiveTransaction = async (transaction: Transaction) => {
+    try {
+      await archiveTransaction(transaction.id).unwrap();
+    } catch (error) {
+      console.error('Failed to archive transaction:', error);
+    }
+  };
+
+  const handleRestoreTransaction = async (transaction: Transaction) => {
+    try {
+      await restoreTransaction(transaction.id).unwrap();
+    } catch (error) {
+      console.error('Failed to restore transaction:', error);
+    }
+  };
+
+  if (error) {
+    return (
+      <PageContainer title="Операции">
+        <Typography color="error">
+          Ошибка при загрузке операций. Пожалуйста, попробуйте позже.
+        </Typography>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer
       title="Операции"
       actions={[
         {
-          label: 'Доход',
+          label: 'Доходы',
           icon: <ArrowUpwardIcon />,
-          onClick: () => handleOpenForm('income'),
+          onClick: () => handleTypeFilter('income'),
           color: 'success',
         },
         {
-          label: 'Расход',
+          label: 'Расходы',
           icon: <ArrowDownwardIcon />,
-          onClick: () => handleOpenForm('expense'),
+          onClick: () => handleTypeFilter('expense'),
           color: 'error',
         },
         {
-          label: 'Перевод',
+          label: 'Переводы',
           icon: <CompareArrowsIcon />,
-          onClick: () => handleOpenForm('transfer'),
+          onClick: () => handleTypeFilter('transfer'),
           color: 'info',
         },
       ]}
@@ -254,19 +269,20 @@ const Transactions: React.FC = () => {
             </Tabs>
           </Paper>
         </Box>
-        <Tooltip
-          title={isFilterPanelOpen ? 'Скрыть фильтры' : 'Показать фильтры'}
-        >
-          <Button
-            variant={isFilterPanelOpen ? 'contained' : 'outlined'}
-            color="primary"
-            startIcon={<FilterListIcon />}
-            onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-            sx={{ ml: 2 }}
+        <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+          <Tooltip
+            title={isFilterPanelOpen ? 'Скрыть фильтры' : 'Показать фильтры'}
           >
-            Фильтры
-          </Button>
-        </Tooltip>
+            <Button
+              variant={isFilterPanelOpen ? 'contained' : 'outlined'}
+              color="primary"
+              startIcon={<FilterListIcon />}
+              onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+            >
+              Фильтры
+            </Button>
+          </Tooltip>
+        </Box>
       </Box>
 
       {isFilterPanelOpen && (
@@ -421,33 +437,6 @@ const Transactions: React.FC = () => {
                 ? 'У вас пока нет операций или они не соответствуют выбранным фильтрам.'
                 : 'В архиве нет операций, соответствующих выбранным фильтрам.'}
             </Typography>
-            {status === 'active' && (
-              <Box
-                sx={{
-                  mt: 2,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: 2,
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenForm('income')}
-                >
-                  Добавить доход
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenForm('expense')}
-                >
-                  Добавить расход
-                </Button>
-              </Box>
-            )}
           </Paper>
         ) : (
           <Paper>
@@ -556,7 +545,7 @@ const Transactions: React.FC = () => {
                                 handleRestoreTransaction(transaction)
                               }
                             >
-                              <AddIcon fontSize="small" />
+                              <RestoreIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         )}
@@ -582,38 +571,6 @@ const Transactions: React.FC = () => {
           </Paper>
         )}
       </Box>
-
-      <Dialog
-        open={isFormOpen}
-        onClose={handleCloseForm}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          {selectedTransaction
-            ? 'Редактирование операции'
-            : `Новая операция: ${
-                formType === 'income'
-                  ? 'Доход'
-                  : formType === 'expense'
-                  ? 'Расход'
-                  : 'Перевод'
-              }`}
-          <IconButton
-            onClick={handleCloseForm}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <TransactionForm
-            transaction={selectedTransaction}
-            onClose={handleCloseForm}
-            initialType={formType}
-          />
-        </DialogContent>
-      </Dialog>
     </PageContainer>
   );
 };

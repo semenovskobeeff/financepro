@@ -20,6 +20,7 @@ import { Account } from '../entities/account/model/types';
 import AccountCard from '../entities/account/ui/AccountCard';
 import AccountForm from '../features/accounts/components/AccountForm';
 import TransferFundsForm from '../features/accounts/components/TransferFundsForm';
+import { useAuthRedirect } from '../shared/utils/authUtils';
 import PageContainer from '../shared/ui/PageContainer';
 import {
   useGetAccountsQuery,
@@ -40,6 +41,9 @@ const Accounts: React.FC = () => {
   const [restoreAccount] = useRestoreAccountMutation();
 
   const navigate = useNavigate();
+
+  // Автоматическое перенаправление при ошибке авторизации
+  useAuthRedirect(error, 'Accounts');
 
   const handleOpenForm = () => {
     setSelectedAccount(null);

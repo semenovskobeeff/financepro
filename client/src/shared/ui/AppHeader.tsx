@@ -11,22 +11,14 @@ import {
   useTheme as useMuiTheme,
   Box,
   styled,
-  InputBase,
   Tooltip,
   Avatar,
-  Chip,
 } from '@mui/material';
 import {
   AccountCircle as AccountCircleIcon,
   Logout as LogoutIcon,
   Menu as MenuIcon,
-  Search as SearchIcon,
   Add as AddIcon,
-  Update as UpdateIcon,
-  Settings as SettingsIcon,
-  Help as HelpIcon,
-  FormatListBulleted as FormatListBulletedIcon,
-  GridView as GridViewIcon,
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from 'app/store';
@@ -70,94 +62,6 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
   color: 'var(--icon-primary)',
   padding: 8,
   borderRadius: '4px',
-  '&:hover': {
-    backgroundColor: 'var(--bg-accent)',
-  },
-  transition: 'var(--transition-default)',
-}));
-
-const SearchBox = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: 'var(--border-radius-md)',
-  backgroundColor: 'var(--bg-accent)',
-  border: '1px solid var(--border)',
-  margin: '0 auto',
-  width: '100%',
-  maxWidth: 400,
-  display: 'flex',
-  alignItems: 'center',
-  transition: 'var(--transition-default)',
-  '&:hover': {
-    borderColor: 'var(--border-dark)',
-  },
-  '&:focus-within': {
-    borderColor: 'var(--text-accent)',
-    boxShadow: '0 0 0 2px rgba(0, 122, 255, 0.2)',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: '0 12px',
-  height: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: 'var(--icon-inactive)',
-  '& .MuiSvgIcon-root': {
-    fontSize: 18,
-  },
-  transition: 'var(--transition-default)',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'var(--text-primary)',
-  width: '100%',
-  '& .MuiInputBase-input': {
-    padding: '8px 8px 8px 0',
-    fontSize: 14,
-    width: '100%',
-    '&::placeholder': {
-      color: 'var(--text-secondary)',
-      opacity: 0.7,
-    },
-    transition: 'var(--transition-default)',
-  },
-}));
-
-const StyledChip = styled(Chip)(({ theme }) => ({
-  backgroundColor: 'var(--bg-accent)',
-  color: 'var(--text-secondary)',
-  fontSize: 12,
-  height: '28px',
-  border: '1px solid var(--border)',
-  '& .MuiChip-label': {
-    padding: '0 10px',
-    fontWeight: 500,
-  },
-  '&:hover': {
-    backgroundColor: 'var(--bg-secondary)',
-  },
-  transition: 'var(--transition-default)',
-}));
-
-const ViewToggle = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  backgroundColor: 'var(--bg-secondary)',
-  borderRadius: '4px',
-  border: '1px solid var(--border)',
-  overflow: 'hidden',
-  transition: 'var(--transition-default)',
-}));
-
-const ViewToggleButton = styled(IconButton, {
-  shouldForwardProp: prop => prop !== 'active',
-})<{ active?: boolean }>(({ active }) => ({
-  color: active ? 'var(--text-accent)' : 'var(--icon-inactive)',
-  backgroundColor: active ? 'var(--bg-accent)' : 'transparent',
-  borderRadius: 0,
-  padding: 6,
-  margin: 0,
   '&:hover': {
     backgroundColor: 'var(--bg-accent)',
   },
@@ -221,7 +125,6 @@ const AppHeader: React.FC = () => {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   // Состояние для формы платежа по подписке
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -313,34 +216,6 @@ const AppHeader: React.FC = () => {
 
   // Определение контента в зависимости от страницы
   const renderPageSpecificHeader = () => {
-    if (location.pathname === '/transactions') {
-      return (
-        <>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
-            <StyledChip label="Доходы за месяц" />
-            <StyledChip label="Расходы за месяц" />
-          </Box>
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', ml: 'auto', mr: 2 }}
-          >
-            <ViewToggle>
-              <ViewToggleButton
-                active={viewMode === 'list'}
-                onClick={() => setViewMode('list')}
-              >
-                <FormatListBulletedIcon fontSize="small" />
-              </ViewToggleButton>
-              <ViewToggleButton
-                active={viewMode === 'grid'}
-                onClick={() => setViewMode('grid')}
-              >
-                <GridViewIcon fontSize="small" />
-              </ViewToggleButton>
-            </ViewToggle>
-          </Box>
-        </>
-      );
-    }
     return null;
   };
 
@@ -370,25 +245,6 @@ const AppHeader: React.FC = () => {
             <PageTitle variant="h6" noWrap>
               {getPageTitle(location.pathname)}
             </PageTitle>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'flex',
-              flexGrow: 1,
-              justifyContent: 'center',
-              maxWidth: '500px',
-            }}
-          >
-            <SearchBox>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Поиск..."
-                inputProps={{ 'aria-label': 'search' }}
-              />
-            </SearchBox>
           </Box>
 
           {renderPageSpecificHeader()}

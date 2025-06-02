@@ -8,10 +8,18 @@ export const formatNumber = (
   value: number | string | undefined | null,
   decimals = 2
 ): string => {
-  const num = Number(value || 0);
-  if (isNaN(num)) {
-    return '0.00';
+  // Проверяем на undefined или null
+  if (value === undefined || value === null) {
+    return (0).toFixed(decimals);
   }
+
+  const num = Number(value);
+
+  // Проверяем на NaN или бесконечность
+  if (isNaN(num) || !isFinite(num)) {
+    return (0).toFixed(decimals);
+  }
+
   return num.toFixed(decimals);
 };
 

@@ -15,6 +15,10 @@ interface GetTransactionsResponse {
   total: number;
 }
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 export const transactionApi = createApi({
   reducerPath: 'transactionApi',
   baseQuery: baseQuery,
@@ -28,6 +32,16 @@ export const transactionApi = createApi({
         url: '/transactions',
         params,
       }),
+      transformResponse: (response: ApiResponse<GetTransactionsResponse>) => {
+        return (
+          response.data || {
+            transactions: [],
+            totalPages: 0,
+            currentPage: 1,
+            total: 0,
+          }
+        );
+      },
       providesTags: result =>
         result
           ? [
@@ -42,6 +56,7 @@ export const transactionApi = createApi({
 
     getTransactionById: builder.query<Transaction, string>({
       query: id => ({ url: `/transactions/${id}` }),
+      transformResponse: (response: ApiResponse<Transaction>) => response.data,
       providesTags: (_, __, id) => [{ type: 'Transaction', id }],
     }),
 
@@ -51,40 +66,25 @@ export const transactionApi = createApi({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: ApiResponse<Transaction>) => response.data,
       invalidatesTags: [{ type: 'Transaction', id: 'LIST' }, 'Account'],
     }),
 
     updateTransaction: builder.mutation<
       Transaction,
-      { id: string } & UpdateTransactionRequest
+      { id: string; data: UpdateTransactionRequest }
     >({
-      query: ({ id, ...patch }) => ({
+      query: ({ id, data }) => ({
         url: `/transactions/${id}`,
-        method: 'PATCH',
-        body: patch,
+        method: 'PUT',
+        body: data,
       }),
-      invalidatesTags: (result, error, { id, accountId }) => {
-        const tags = [
-          { type: 'Transaction' as const, id },
-          { type: 'Transaction' as const, id: 'LIST' },
-          { type: 'Account' as const, id: 'LIST' },
-        ];
-
-        // Если есть accountId в результате или в запросе, инвалидируем историю конкретного счета
-        if (result?.accountId) {
-          tags.push({ type: 'Account' as const, id: result.accountId });
-          tags.push({
-            type: 'Account' as const,
-            id: `${result.accountId}-history`,
-          });
-        }
-        if (accountId) {
-          tags.push({ type: 'Account' as const, id: accountId });
-          tags.push({ type: 'Account' as const, id: `${accountId}-history` });
-        }
-
-        return tags;
-      },
+      transformResponse: (response: ApiResponse<Transaction>) => response.data,
+      invalidatesTags: (_, __, { id }) => [
+        { type: 'Transaction', id },
+        { type: 'Transaction', id: 'LIST' },
+        'Account',
+      ],
     }),
 
     archiveTransaction: builder.mutation<void, string>({
@@ -111,14 +111,16 @@ export const transactionApi = createApi({
       ],
     }),
 
-    deleteTransaction: builder.mutation<
-      { success: boolean; id: string },
-      string
-    >({
+    deleteTransaction: builder.mutation<void, string>({
       query: id => ({
-        url: `transactions/${id}`,
+        url: `/transactions/${id}`,
         method: 'DELETE',
       }),
+      invalidatesTags: (_, __, id) => [
+        { type: 'Transaction', id },
+        { type: 'Transaction', id: 'LIST' },
+        'Account',
+      ],
     }),
   }),
 });

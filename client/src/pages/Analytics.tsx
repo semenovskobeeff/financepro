@@ -37,6 +37,9 @@ import {
   CreditCard as CreditCardIcon,
   Refresh as RefreshIcon,
   FileDownload as FileDownloadIcon,
+  Analytics as AnalyticsIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
 } from '@mui/icons-material';
 import {
   useGetTransactionsAnalyticsQuery,
@@ -44,6 +47,12 @@ import {
   useGetDebtsAnalyticsQuery,
 } from 'entities/analytics/api/analyticsApi';
 import PageContainer from 'shared/ui/PageContainer';
+import ExpenseStructureChart from 'shared/ui/ExpenseStructureChart';
+import ExpenseInsights from 'shared/ui/ExpenseInsights';
+import IncomeStructureChart from 'shared/ui/IncomeStructureChart';
+import IncomeInsights from 'shared/ui/IncomeInsights';
+import DetailedIncomeAnalysis from 'shared/ui/DetailedIncomeAnalysis';
+import DetailedExpenseAnalysis from 'shared/ui/DetailedExpenseAnalysis';
 
 const COLORS = [
   '#BAE1FF', // голубой (ледяной акцент)
@@ -58,12 +67,22 @@ const Analytics: React.FC = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   const [period, setPeriod] = useState<string>('month');
 
+  // Состояния для модальных окон детального анализа
+  const [showDetailedIncome, setShowDetailedIncome] = useState(false);
+  const [showDetailedExpense, setShowDetailedExpense] = useState(false);
+
   // Запросы с использованием RTK Query
   const {
     data: transactionsData,
     isLoading: isTransactionsLoading,
     refetch: refetchTransactions,
   } = useGetTransactionsAnalyticsQuery({ period });
+
+  // Данные предыдущего периода для сравнения (можно добавить отдельный запрос)
+  const { data: previousPeriodData } = useGetTransactionsAnalyticsQuery({
+    period: 'month', // временно используем тот же период
+    // В будущем можно добавить логику для предыдущего периода
+  });
 
   const {
     data: goalsData,
@@ -91,6 +110,28 @@ const Analytics: React.FC = () => {
     else if (activeTab === 2) refetchDebts();
   };
 
+  // Получение строкового представления периода
+  const getPeriodLabel = (period: string) => {
+    switch (period) {
+      case 'week':
+        return 'неделю';
+      case 'month':
+        return 'месяц';
+      case 'quarter':
+        return 'квартал';
+      case 'year':
+        return 'год';
+      default:
+        return 'период';
+    }
+  };
+
+  // Обработчики для модальных окон
+  const handleOpenDetailedIncome = () => setShowDetailedIncome(true);
+  const handleCloseDetailedIncome = () => setShowDetailedIncome(false);
+  const handleOpenDetailedExpense = () => setShowDetailedExpense(true);
+  const handleCloseDetailedExpense = () => setShowDetailedExpense(false);
+
   // Рендер аналитики транзакций
   const renderTransactionsAnalytics = () => {
     if (isTransactionsLoading) {
@@ -109,23 +150,6 @@ const Analytics: React.FC = () => {
         </Alert>
       );
     }
-
-    // Формируем данные для графиков
-    const categoryIncomeData = transactionsData.categoryStats.income.map(
-      item => ({
-        name: item.categoryName,
-        value: item.total,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      })
-    );
-
-    const categoryExpenseData = transactionsData.categoryStats.expense.map(
-      item => ({
-        name: item.categoryName,
-        value: item.total,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      })
-    );
 
     return (
       <Box>
@@ -186,78 +210,66 @@ const Analytics: React.FC = () => {
           </Grid>
         </Grid>
 
-        {/* Графики по категориям */}
+        {/* Компактные диаграммы с кнопками детального анализа */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
+          {/* Структура доходов */}
           <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Доходы по категориям
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryIncomeData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      label={entry =>
-                        `${entry.name}: ${entry.value.toFixed(2)} ₽`
-                      }
-                    >
-                      {categoryIncomeData.map((entry, index) => (
-                        <Cell key={`cell-income-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip
-                      formatter={(value: number) => [
-                        `${value.toFixed(2)} ₽`,
-                        'Сумма',
-                      ]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+            <Box>
+              <IncomeStructureChart
+                data={transactionsData.categoryStats.income}
+                title="Структура доходов"
+                period={getPeriodLabel(period)}
+                showPercentages={true}
+                showLegend={false}
+                interactive={true}
+                minSlicePercentage={1}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<TrendingUpIcon />}
+                  onClick={handleOpenDetailedIncome}
+                  color="success"
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 500,
+                  }}
+                >
+                  Детальный анализ доходов
+                </Button>
               </Box>
-            </Paper>
+            </Box>
           </Grid>
+
+          {/* Структура расходов */}
           <Grid item xs={12} md={6}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Расходы по категориям
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryExpenseData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      label={entry =>
-                        `${entry.name}: ${entry.value.toFixed(2)} ₽`
-                      }
-                    >
-                      {categoryExpenseData.map((entry, index) => (
-                        <Cell
-                          key={`cell-expense-${index}`}
-                          fill={entry.color}
-                        />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip
-                      formatter={(value: number) => [
-                        `${value.toFixed(2)} ₽`,
-                        'Сумма',
-                      ]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+            <Box>
+              <ExpenseStructureChart
+                data={transactionsData.categoryStats.expense}
+                title="Структура расходов"
+                period={getPeriodLabel(period)}
+                showPercentages={true}
+                showLegend={false}
+                interactive={true}
+                minSlicePercentage={1}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<TrendingDownIcon />}
+                  onClick={handleOpenDetailedExpense}
+                  color="error"
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 500,
+                  }}
+                >
+                  Детальный анализ расходов
+                </Button>
               </Box>
-            </Paper>
+            </Box>
           </Grid>
         </Grid>
 
@@ -273,6 +285,23 @@ const Analytics: React.FC = () => {
             Экспортировать данные
           </Button>
         </Box>
+
+        {/* Модальные окна с детальным анализом */}
+        <DetailedIncomeAnalysis
+          open={showDetailedIncome}
+          onClose={handleCloseDetailedIncome}
+          data={transactionsData.categoryStats.income}
+          previousPeriodData={previousPeriodData?.categoryStats.income}
+          period={getPeriodLabel(period)}
+        />
+
+        <DetailedExpenseAnalysis
+          open={showDetailedExpense}
+          onClose={handleCloseDetailedExpense}
+          data={transactionsData.categoryStats.expense}
+          previousPeriodData={previousPeriodData?.categoryStats.expense}
+          period={getPeriodLabel(period)}
+        />
       </Box>
     );
   };

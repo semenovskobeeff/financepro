@@ -2,57 +2,58 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from 'shared/api/baseQuery';
 import {
   Debt,
+  DebtStatsResponse,
   CreateDebtRequest,
   UpdateDebtRequest,
   MakePaymentRequest,
-  DebtStatsResponse,
 } from '../model/types';
+
+interface ApiResponse<T> {
+  data: T;
+}
 
 export const debtApi = createApi({
   reducerPath: 'debtApi',
   baseQuery,
-  tagTypes: ['Debt', 'DebtStats'],
+  tagTypes: ['Debt'],
   endpoints: builder => ({
-    // Получение списка долгов
-    getDebts: builder.query<Debt[], { status?: string }>({
-      query: ({ status }) => ({
-        url: '/debts',
-        params: status ? { status } : undefined,
-      }),
-      providesTags: [{ type: 'Debt', id: 'LIST' }],
+    getDebts: builder.query<Debt[], { status?: string } | void>({
+      query: params => {
+        let url = '/debts';
+        if (params && params.status) {
+          url += `?status=${params.status}`;
+        }
+        return { url };
+      },
+      transformResponse: (response: ApiResponse<Debt[]>) => response.data || [],
+      providesTags: result =>
+        result
+          ? [
+              ...result.map(({ id }) => ({
+                type: 'Debt' as const,
+                id,
+              })),
+              { type: 'Debt', id: 'LIST' },
+            ]
+          : [{ type: 'Debt', id: 'LIST' }],
     }),
 
-    // Получение активных долгов
-    getActiveDebts: builder.query<Debt[], void>({
-      query: () => '/debts?status=active',
-      providesTags: [{ type: 'Debt', id: 'ACTIVE' }],
-    }),
-
-    // Получение архивных долгов
-    getArchivedDebts: builder.query<Debt[], void>({
-      query: () => '/debts?status=archived',
-      providesTags: [{ type: 'Debt', id: 'ARCHIVED' }],
-    }),
-
-    // Получение долга по ID
     getDebtById: builder.query<Debt, string>({
-      query: id => `/debts/${id}`,
-      transformResponse: (response: { data: Debt }) => response.data,
-      providesTags: (result, error, id) => [{ type: 'Debt', id }],
+      query: id => ({ url: `/debts/${id}` }),
+      transformResponse: (response: ApiResponse<Debt>) => response.data,
+      providesTags: (_, __, id) => [{ type: 'Debt', id }],
     }),
 
-    // Создание нового долга
     createDebt: builder.mutation<Debt, CreateDebtRequest>({
-      query: debt => ({
+      query: data => ({
         url: '/debts',
         method: 'POST',
-        body: debt,
+        body: data,
       }),
-      transformResponse: (response: { data: Debt }) => response.data,
-      invalidatesTags: [{ type: 'Debt', id: 'LIST' }, { type: 'DebtStats' }],
+      transformResponse: (response: ApiResponse<Debt>) => response.data,
+      invalidatesTags: [{ type: 'Debt', id: 'LIST' }],
     }),
 
-    // Обновление долга
     updateDebt: builder.mutation<Debt, { id: string; data: UpdateDebtRequest }>(
       {
         query: ({ id, data }) => ({
@@ -60,43 +61,36 @@ export const debtApi = createApi({
           method: 'PUT',
           body: data,
         }),
-        transformResponse: (response: { data: Debt }) => response.data,
-        invalidatesTags: (result, error, { id }) => [
+        transformResponse: (response: ApiResponse<Debt>) => response.data,
+        invalidatesTags: (_, __, { id }) => [
           { type: 'Debt', id },
-          { type: 'DebtStats' },
+          { type: 'Debt', id: 'LIST' },
         ],
       }
     ),
 
-    // Архивация долга
-    archiveDebt: builder.mutation<Debt, string>({
+    archiveDebt: builder.mutation<void, string>({
       query: id => ({
         url: `/debts/${id}/archive`,
-        method: 'POST',
+        method: 'PUT',
       }),
-      transformResponse: (response: { data: Debt }) => response.data,
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_, __, id) => [
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
-        { type: 'DebtStats' },
       ],
     }),
 
-    // Восстановление долга из архива
-    restoreDebt: builder.mutation<Debt, string>({
+    restoreDebt: builder.mutation<void, string>({
       query: id => ({
         url: `/debts/${id}/restore`,
-        method: 'POST',
+        method: 'PUT',
       }),
-      transformResponse: (response: { data: Debt }) => response.data,
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_, __, id) => [
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
-        { type: 'DebtStats' },
       ],
     }),
 
-    // Совершение платежа по долгу
     makePayment: builder.mutation<
       Debt,
       { id: string; data: MakePaymentRequest }
@@ -106,37 +100,36 @@ export const debtApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: { data: Debt }) => response.data,
-      invalidatesTags: (result, error, { id }) => [
+      transformResponse: (response: ApiResponse<Debt>) => response.data,
+      invalidatesTags: (_, __, { id }) => [
         { type: 'Debt', id },
-        { type: 'DebtStats' },
+        { type: 'Debt', id: 'LIST' },
       ],
     }),
 
-    // Получение предстоящих платежей
-    getUpcomingPayments: builder.query<Debt[], number | void>({
-      query: (days = 7) => ({
-        url: '/debts/upcoming',
-        params: { days },
-      }),
-      transformResponse: (response: { data: Debt[] }) => response.data,
+    getUpcomingPayments: builder.query<Debt[], { days?: number } | void>({
+      query: params => {
+        let url = '/debts/upcoming';
+        if (params && params.days) {
+          url += `?days=${params.days}`;
+        }
+        return { url };
+      },
+      transformResponse: (response: ApiResponse<Debt[]>) => response.data || [],
       providesTags: [{ type: 'Debt', id: 'UPCOMING' }],
     }),
 
-    // Получение статистики по долгам
-    getDebtStats: builder.query<DebtStatsResponse, void>({
-      query: () => '/debts/stats',
-      transformResponse: (response: { data: DebtStatsResponse }) =>
+    getDebtsStats: builder.query<DebtStatsResponse, void>({
+      query: () => ({ url: '/debts/stats' }),
+      transformResponse: (response: ApiResponse<DebtStatsResponse>) =>
         response.data,
-      providesTags: [{ type: 'DebtStats' }],
+      providesTags: [{ type: 'Debt', id: 'STATS' }],
     }),
   }),
 });
 
 export const {
   useGetDebtsQuery,
-  useGetActiveDebtsQuery,
-  useGetArchivedDebtsQuery,
   useGetDebtByIdQuery,
   useCreateDebtMutation,
   useUpdateDebtMutation,
@@ -144,5 +137,5 @@ export const {
   useRestoreDebtMutation,
   useMakePaymentMutation,
   useGetUpcomingPaymentsQuery,
-  useGetDebtStatsQuery,
+  useGetDebtsStatsQuery,
 } = debtApi;

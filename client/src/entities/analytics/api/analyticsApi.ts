@@ -113,6 +113,10 @@ export interface DashboardAnalytics {
   };
 }
 
+interface ApiResponse<T> {
+  data: T;
+}
+
 export const analyticsApi = createApi({
   reducerPath: 'analyticsApi',
   baseQuery,
@@ -127,24 +131,76 @@ export const analyticsApi = createApi({
         url: '/analytics/transactions',
         params,
       }),
+      transformResponse: (response: ApiResponse<TransactionAnalytics>) => {
+        return (
+          response.data || {
+            summary: { income: 0, expense: 0, transfer: 0, balance: 0 },
+            categoryStats: { income: [], expense: [] },
+            timeStats: { income: [], expense: [] },
+            accounts: [],
+          }
+        );
+      },
       providesTags: ['Analytics'],
     }),
 
     // Аналитика целей
     getGoalsAnalytics: builder.query<GoalsAnalytics, void>({
       query: () => '/analytics/goals',
+      transformResponse: (response: ApiResponse<GoalsAnalytics>) => {
+        return (
+          response.data || {
+            summary: {
+              activeCount: 0,
+              completedCount: 0,
+              totalTargetAmount: 0,
+              totalProgress: 0,
+              averageProgress: 0,
+              averageCompletion: 0,
+            },
+            goals: [],
+          }
+        );
+      },
       providesTags: ['Analytics'],
     }),
 
     // Аналитика долгов
     getDebtsAnalytics: builder.query<DebtsAnalytics, void>({
       query: () => '/analytics/debts',
+      transformResponse: (response: ApiResponse<DebtsAnalytics>) => {
+        return (
+          response.data || {
+            summary: {
+              totalCount: 0,
+              activeCount: 0,
+              paidCount: 0,
+              totalInitialAmount: 0,
+              totalCurrentAmount: 0,
+              totalPayments: 0,
+            },
+            typeStats: [],
+            upcomingPayments: [],
+          }
+        );
+      },
       providesTags: ['Analytics'],
     }),
 
     // Сводная аналитика для дашборда
     getDashboardAnalytics: builder.query<DashboardAnalytics, void>({
       query: () => '/analytics/dashboard',
+      transformResponse: (response: ApiResponse<DashboardAnalytics>) => {
+        return (
+          response.data || {
+            accounts: { count: 0, totalBalance: 0 },
+            monthStats: { income: 0, expense: 0, balance: 0 },
+            subscriptions: { count: 0, monthlyAmount: 0 },
+            debts: { count: 0, totalAmount: 0 },
+            goals: { count: 0, totalTarget: 0, totalProgress: 0 },
+          }
+        );
+      },
       providesTags: ['Analytics'],
     }),
 
@@ -157,6 +213,9 @@ export const analyticsApi = createApi({
         url: '/analytics/export',
         params,
       }),
+      transformResponse: (response: ApiResponse<{ data: Array<any> }>) => {
+        return response.data || { data: [] };
+      },
     }),
   }),
 });

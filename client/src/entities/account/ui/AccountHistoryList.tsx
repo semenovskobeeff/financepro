@@ -196,7 +196,7 @@ const AccountHistoryList: React.FC<AccountHistoryListProps> = ({
       const updatedData = {
         /* данные для обновления */
       };
-      await updateTransaction({ id, ...updatedData }).unwrap();
+      await updateTransaction({ id, data: updatedData }).unwrap();
       console.log('Операция обновлена');
     } catch (error) {
       console.error('Ошибка при обновлении операции', error);

@@ -2,11 +2,13 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from 'shared/api/baseQuery';
 import {
   Category,
-  CategoryType,
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from '../model/types';
-import { RootState } from 'app/store';
+
+interface ApiResponse<T> {
+  data: T;
+}
 
 export const categoryApi = createApi({
   reducerPath: 'categoryApi',
@@ -15,12 +17,22 @@ export const categoryApi = createApi({
   endpoints: builder => ({
     getCategories: builder.query<
       Category[],
-      { type?: CategoryType; status?: 'active' | 'archived' }
+      { type?: string; status?: string } | void
     >({
-      query: params => ({
-        url: '/categories',
-        params,
-      }),
+      query: params => {
+        let url = '/categories';
+        if (params) {
+          const searchParams = new URLSearchParams();
+          if (params.type) searchParams.append('type', params.type);
+          if (params.status) searchParams.append('status', params.status);
+          if (searchParams.toString()) {
+            url += `?${searchParams.toString()}`;
+          }
+        }
+        return { url };
+      },
+      transformResponse: (response: ApiResponse<Category[]>) =>
+        response.data || [],
       providesTags: result =>
         result
           ? [
@@ -35,6 +47,7 @@ export const categoryApi = createApi({
 
     getCategoryById: builder.query<Category, string>({
       query: id => ({ url: `/categories/${id}` }),
+      transformResponse: (response: ApiResponse<Category>) => response.data,
       providesTags: (_, __, id) => [{ type: 'Category', id }],
     }),
 
@@ -44,6 +57,7 @@ export const categoryApi = createApi({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: ApiResponse<Category>) => response.data,
       invalidatesTags: [{ type: 'Category', id: 'LIST' }],
     }),
 
@@ -56,7 +70,11 @@ export const categoryApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: (_, __, { id }) => [{ type: 'Category', id }],
+      transformResponse: (response: ApiResponse<Category>) => response.data,
+      invalidatesTags: (_, __, { id }) => [
+        { type: 'Category', id },
+        { type: 'Category', id: 'LIST' },
+      ],
     }),
 
     archiveCategory: builder.mutation<void, string>({

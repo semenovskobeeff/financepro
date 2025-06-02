@@ -95,6 +95,105 @@ export const handlers = [
     return HttpResponse.json({ message: 'Успешный выход' });
   }),
 
+  // Восстановление пароля
+  http.post('/api/users/forgot-password', async ({ request }) => {
+    await delay(800);
+
+    try {
+      const { email } = (await request.json()) as any;
+
+      // Проверяем валидность email
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return new HttpResponse(
+          JSON.stringify({
+            message: 'Введите корректный email адрес',
+            errors: [
+              { field: 'email', message: 'Введите корректный email адрес' },
+            ],
+          }),
+          { status: 400 }
+        );
+      }
+
+      console.log('[MSW] Запрос на восстановление пароля для:', email);
+
+      // Имитируем успешный запрос восстановления
+      // В реальном приложении здесь проверялось бы существование пользователя
+      // и отправлялось письмо, но для моков всегда возвращаем успех
+
+      return HttpResponse.json({
+        message:
+          'Если ваш email зарегистрирован, вы получите письмо для сброса пароля.',
+      });
+    } catch (error) {
+      console.error('[MSW] Ошибка в forgot-password:', error);
+      return new HttpResponse(
+        JSON.stringify({
+          message: 'Ошибка при обработке запроса',
+        }),
+        { status: 500 }
+      );
+    }
+  }),
+
+  // Сброс пароля
+  http.post('/api/users/reset-password', async ({ request }) => {
+    await delay(800);
+
+    try {
+      const { token, password } = (await request.json()) as any;
+
+      // Валидация токена
+      if (!token || token.length !== 40) {
+        return new HttpResponse(
+          JSON.stringify({
+            message:
+              'Токен для сброса пароля недействителен, истек или уже был использован.',
+            errors: [{ field: 'token', message: 'Неверный формат токена' }],
+          }),
+          { status: 400 }
+        );
+      }
+
+      // Валидация пароля
+      const passwordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+      if (!password || password.length < 8 || !passwordRegex.test(password)) {
+        return new HttpResponse(
+          JSON.stringify({
+            message:
+              'Пароль должен содержать минимум 8 символов, включая: строчную букву, заглавную букву, цифру и специальный символ',
+            errors: [
+              {
+                field: 'password',
+                message:
+                  'Пароль должен содержать: строчную букву, заглавную букву, цифру и специальный символ',
+              },
+            ],
+          }),
+          { status: 400 }
+        );
+      }
+
+      console.log('[MSW] Сброс пароля с токеном:', token);
+
+      // Имитируем успешный сброс пароля
+      // В реальном приложении здесь обновлялся бы пароль пользователя
+
+      return HttpResponse.json({
+        message: 'Пароль успешно сброшен.',
+      });
+    } catch (error) {
+      console.error('[MSW] Ошибка в reset-password:', error);
+      return new HttpResponse(
+        JSON.stringify({
+          message: 'Ошибка при сбросе пароля',
+        }),
+        { status: 500 }
+      );
+    }
+  }),
+
   // ===================== АККАУНТЫ =====================
 
   // Получение счетов
@@ -1081,9 +1180,31 @@ export const handlers = [
     await delay(700);
     const url = new URL(request.url);
     const period = url.searchParams.get('period') || 'month';
-    return HttpResponse.json(
-      mockAnalytics.transactions[period] || mockAnalytics.transactions.month
+
+    console.log('Mock: Analytics request for period:', period);
+
+    const analyticsData =
+      mockAnalytics.transactions[
+        period as keyof typeof mockAnalytics.transactions
+      ];
+
+    if (!analyticsData) {
+      console.warn(
+        'Mock: No analytics data for period:',
+        period,
+        'falling back to month'
+      );
+      const fallbackData = mockAnalytics.transactions.month;
+      console.log('Mock: Returning fallback data:', fallbackData);
+      return HttpResponse.json(fallbackData);
+    }
+
+    console.log(
+      'Mock: Returning analytics data for period:',
+      period,
+      analyticsData
     );
+    return HttpResponse.json(analyticsData);
   }),
 
   // Получение аналитики целей
