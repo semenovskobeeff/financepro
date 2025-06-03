@@ -12,15 +12,31 @@ const getInitialState = (): AuthState => {
     config.useMocks ? 'тестовые данные' : 'реальный API'
   );
 
-  // В режиме реального API НЕ восстанавливаем состояние авторизации автоматически
-  // Пользователь должен войти через форму авторизации
+  // В режиме реального API проверяем сохраненный токен
   if (!config.useMocks) {
-    console.log(
-      '[AUTH] Режим реального API - требуется авторизация через форму'
-    );
-    // Очищаем возможные старые данные авторизации из тестового режима
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    console.log('[AUTH] Режим реального API - проверяем сохраненный токен');
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+
+    if (storedToken && storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        console.log('[AUTH] Найден сохраненный токен для:', user.email);
+        return {
+          user,
+          token: storedToken,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        };
+      } catch (error) {
+        console.warn('[AUTH] Ошибка парсинга данных пользователя:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+
+    console.log('[AUTH] Нет сохраненного токена - требуется авторизация');
     return {
       user: null,
       token: null,
