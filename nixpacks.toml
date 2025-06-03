@@ -1,0 +1,20 @@
+[build]
+command = 'cd server && npm ci --production'
+
+[start]
+cmd = 'cd server && npm start'
+
+[variables]
+NODE_ENV = 'production'
+PORT = '${PORT}'
+
+[phases.setup]
+nixPkgs = ['nodejs-18_x', 'npm-8_x']
+
+[phases.build]
+dependsOn = ['setup']
+cmds = [
+  'cd server',
+  'npm ci --production',
+  'echo "Build completed for server"'
+]
