@@ -57,8 +57,8 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Поиск пользователя по email
-    const user = await User.findOne({ email });
+    // Поиск пользователя по email (включаем поле password для проверки)
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ message: 'Неверный email или пароль' });
     }
@@ -196,10 +196,15 @@ exports.forgotPassword = async (req, res) => {
       // Проверяем, не был ли недавно отправлен токен
       const now = Date.now();
       if (user.resetPasswordExpires && user.resetPasswordExpires > now) {
-        const timeLeft = Math.ceil((user.resetPasswordExpires - now) / (1000 * 60)); // минуты
-        if (timeLeft > 50) { // Если токен был создан менее 10 минут назад
+        const timeLeft = Math.ceil(
+          (user.resetPasswordExpires - now) / (1000 * 60)
+        ); // минуты
+        if (timeLeft > 50) {
+          // Если токен был создан менее 10 минут назад
           return res.status(429).json({
-            message: `Токен для сброса пароля уже отправлен. Повторная отправка возможна через ${timeLeft - 50} минут.`,
+            message: `Токен для сброса пароля уже отправлен. Повторная отправка возможна через ${
+              timeLeft - 50
+            } минут.`,
           });
         }
       }
@@ -252,7 +257,8 @@ exports.resetPassword = async (req, res) => {
 
     if (!user) {
       return res.status(400).json({
-        message: 'Токен для сброса пароля недействителен, истек или уже был использован.'
+        message:
+          'Токен для сброса пароля недействителен, истек или уже был использован.',
       });
     }
 
@@ -260,7 +266,7 @@ exports.resetPassword = async (req, res) => {
     const isSamePassword = await user.comparePassword(password);
     if (isSamePassword) {
       return res.status(400).json({
-        message: 'Новый пароль должен отличаться от текущего.'
+        message: 'Новый пароль должен отличаться от текущего.',
       });
     }
 
@@ -277,7 +283,7 @@ exports.resetPassword = async (req, res) => {
     console.error('Reset password error:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({
-        message: 'Ошибка валидации: ' + error.message
+        message: 'Ошибка валидации: ' + error.message,
       });
     }
     res.status(500).json({ message: 'Ошибка при сбросе пароля' });

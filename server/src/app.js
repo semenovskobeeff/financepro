@@ -50,6 +50,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ================================
+// TRUST PROXY ДЛЯ RAILWAY
+// ================================
+// Railway использует прокси, поэтому нужно включить trust proxy
+app.set('trust proxy', true);
+
+// ================================
 // MIDDLEWARE
 // ================================
 app.use(express.json());
