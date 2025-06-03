@@ -104,6 +104,29 @@ app.get('/', (req, res) => {
   });
 });
 
+// Добавляем endpoint для проверки здоровья БД ПЕРЕД общими роутами
+app.get('/api/health/database', async (req, res) => {
+  try {
+    const health = await dbConnection.healthCheck();
+    const stats = await dbConnection.getStats();
+
+    res.json({
+      status: 'success',
+      data: {
+        health,
+        stats,
+        connection: dbConnection.getConnectionStatus(),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка проверки состояния БД',
+      error: error.message,
+    });
+  }
+});
+
 // Подключение всех API маршрутов
 app.use('/api', apiRoutes);
 
@@ -197,29 +220,6 @@ const initializeApp = async () => {
     return false;
   }
 };
-
-// Добавляем endpoint для проверки здоровья БД
-app.get('/api/health/database', async (req, res) => {
-  try {
-    const health = await dbConnection.healthCheck();
-    const stats = await dbConnection.getStats();
-
-    res.json({
-      status: 'success',
-      data: {
-        health,
-        stats,
-        connection: dbConnection.getConnectionStatus(),
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: 'Ошибка проверки состояния БД',
-      error: error.message,
-    });
-  }
-});
 
 // Запуск сервера
 if (process.env.NODE_ENV !== 'test') {
