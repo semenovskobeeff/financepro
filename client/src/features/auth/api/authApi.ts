@@ -22,7 +22,12 @@ export const authApi = createApi({
         method: 'POST',
         body: credentials,
       }),
-      transformResponse: (response: ApiResponse<AuthResponse>) => response.data,
+      transformResponse: (
+        response: AuthResponse | ApiResponse<AuthResponse>
+      ) => {
+        // Сервер может возвращать как обернутый, так и прямой ответ
+        return 'data' in response ? response.data : response;
+      },
     }),
 
     register: builder.mutation<AuthResponse, RegisterRequest>({
@@ -31,7 +36,12 @@ export const authApi = createApi({
         method: 'POST',
         body: userData,
       }),
-      transformResponse: (response: ApiResponse<AuthResponse>) => response.data,
+      transformResponse: (
+        response: AuthResponse | ApiResponse<AuthResponse>
+      ) => {
+        // Сервер может возвращать как обернутый, так и прямой ответ
+        return 'data' in response ? response.data : response;
+      },
     }),
 
     logout: builder.mutation<void, void>({
@@ -43,7 +53,9 @@ export const authApi = createApi({
 
     getProfile: builder.query<User, void>({
       query: () => '/users/profile',
-      transformResponse: (response: ApiResponse<User>) => response.data,
+      transformResponse: (response: User | ApiResponse<User>) => {
+        return 'data' in response ? response.data : response;
+      },
       providesTags: ['Auth'],
     }),
 
@@ -53,7 +65,9 @@ export const authApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<User>) => response.data,
+      transformResponse: (response: User | ApiResponse<User>) => {
+        return 'data' in response ? response.data : response;
+      },
       invalidatesTags: ['Auth'],
     }),
 
@@ -63,8 +77,11 @@ export const authApi = createApi({
         method: 'POST',
         body: { email },
       }),
-      transformResponse: (response: ApiResponse<{ message: string }>) =>
-        response.data,
+      transformResponse: (
+        response: { message: string } | ApiResponse<{ message: string }>
+      ) => {
+        return 'data' in response ? response.data : response;
+      },
     }),
 
     resetPassword: builder.mutation<
@@ -76,8 +93,11 @@ export const authApi = createApi({
         method: 'POST',
         body: { token, password },
       }),
-      transformResponse: (response: ApiResponse<{ message: string }>) =>
-        response.data,
+      transformResponse: (
+        response: { message: string } | ApiResponse<{ message: string }>
+      ) => {
+        return 'data' in response ? response.data : response;
+      },
     }),
   }),
 });
