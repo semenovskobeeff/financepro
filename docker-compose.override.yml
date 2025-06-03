@@ -1,0 +1,10 @@
+services:
+  server:
+    depends_on:
+      - mongo
+    profiles:
+      - development
+
+  mongo:
+    profiles:
+      - development 
