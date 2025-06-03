@@ -7,6 +7,24 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 
 // ================================
+// ОТЛАДКА ПЕРЕМЕННЫХ ОКРУЖЕНИЯ
+// ================================
+console.log('🔍 Отладка переменных окружения:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('MONGODB_URI установлен:', !!process.env.MONGODB_URI);
+console.log(
+  'MONGODB_URI (маскированный):',
+  process.env.MONGODB_URI
+    ? process.env.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')
+    : 'НЕ УСТАНОВЛЕН'
+);
+console.log('JWT_SECRET установлен:', !!process.env.JWT_SECRET);
+console.log('CLIENT_URL:', process.env.CLIENT_URL);
+console.log('SEED_DATABASE:', process.env.SEED_DATABASE);
+console.log('==================================');
+
+// ================================
 // ИМПОРТ ПОДКЛЮЧЕНИЯ К БД И МОДЕЛЕЙ
 // ================================
 const dbConnection = require('./core/infrastructure/database/connection');
