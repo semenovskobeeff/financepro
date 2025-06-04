@@ -1158,185 +1158,165 @@ const Dashboard: React.FC = () => {
       {/* Содержимое вкладок */}
       {selectedTab === 0 && (
         <>
-          {/* Финансовая сводка - перенесено в начало вкладки "Обзор" */}
+          {/* Основной контент с боковыми блоками */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12}>
-              <FinancialSummaryWidget data={financialSummaryData} />
-            </Grid>
-          </Grid>
-
-          {/* Основные графики */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {/* Левая колонка - финансовая сводка и графики */}
             <Grid item xs={12} lg={8}>
-              <FinancialTrendChart data={trendData} height={350} />
+              <Grid container spacing={3}>
+                {/* Финансовая сводка */}
+                <Grid item xs={12}>
+                  <FinancialSummaryWidget data={financialSummaryData} />
+                </Grid>
+
+                {/* График финансовых трендов */}
+                <Grid item xs={12}>
+                  <FinancialTrendChart data={trendData} height={350} />
+                </Grid>
+
+                {/* График анализа бюджета */}
+                <Grid item xs={12}>
+                  <BudgetAnalysisChart data={budgetData} />
+                </Grid>
+              </Grid>
             </Grid>
 
+            {/* Правая колонка - боковые блоки */}
             <Grid item xs={12} lg={4}>
-              <SmartNotificationsWidget
-                data={smartNotificationsData}
-                onDismiss={handleNotificationDismiss}
-                onAction={handleNotificationAction}
-              />
-            </Grid>
-          </Grid>
+              <Grid container spacing={3}>
+                {/* Умные уведомления */}
+                <Grid item xs={12}>
+                  <SmartNotificationsWidget
+                    data={smartNotificationsData}
+                    onDismiss={handleNotificationDismiss}
+                    onAction={handleNotificationAction}
+                  />
+                </Grid>
 
-          {/* Второй ряд графиков */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} lg={8}>
-              <BudgetAnalysisChart data={budgetData} />
-            </Grid>
-
-            {/* Блок "Распределение финансов" скрыт */}
-            {/*
-            <Grid item xs={12} lg={4}>
-              <NotionCard title="Распределение финансов" color="purple">
-                {distributionData ? (
-                  <Box
-                    sx={{
-                      height: 300,
-                      display: 'flex',
-                      justifyContent: 'center',
-                    }}
+                {/* Долги и кредиты */}
+                <Grid item xs={12}>
+                  <NotionCard
+                    title="Долги и кредиты"
+                    icon={<DebtIcon />}
+                    color="red"
+                    badge={upcomingDebtPayments?.length?.toString() || '0'}
                   >
-                    <Pie
-                      data={distributionData}
-                      options={getNotionChartOptions(isDarkMode, {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: {
-                            position: 'bottom',
-                          },
-                        },
-                      })}
-                    />
-                  </Box>
-                ) : (
-                  <Typography color="text.secondary">
-                    Нет данных для отображения
-                  </Typography>
-                )}
-              </NotionCard>
-            </Grid>
-            */}
-          </Grid>
-
-          {/* Предстоящие платежи */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={6}>
-              <NotionCard
-                title="Подписки"
-                icon={<SubscriptionIcon />}
-                color="blue"
-                badge={upcomingPayments?.length?.toString() || '0'}
-              >
-                {upcomingPayments && upcomingPayments.length > 0 ? (
-                  <Box>
-                    {upcomingPayments.slice(0, 5).map(payment => (
-                      <Box
-                        key={payment.id}
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          py: 1,
-                          borderBottom: '1px solid',
-                          borderColor: 'divider',
-                          '&:last-child': { borderBottom: 'none' },
-                        }}
-                      >
-                        <Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {payment.name}
+                    {upcomingDebtPayments && upcomingDebtPayments.length > 0 ? (
+                      <Box>
+                        {upcomingDebtPayments.slice(0, 5).map(payment => (
+                          <Box
+                            key={payment.id}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              py: 1,
+                              borderBottom: '1px solid',
+                              borderColor: 'divider',
+                              '&:last-child': { borderBottom: 'none' },
+                            }}
+                          >
+                            <Box>
+                              <Typography variant="body2" fontWeight="medium">
+                                {payment.name}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {payment.nextPaymentDate
+                                  ? new Date(
+                                      payment.nextPaymentDate
+                                    ).toLocaleDateString()
+                                  : 'Дата не указана'}
+                              </Typography>
+                            </Box>
+                            <NotionTag
+                              label={formatCurrency(
+                                payment.nextPaymentAmount ||
+                                  payment.currentAmount
+                              )}
+                              color="red"
+                            />
+                          </Box>
+                        ))}
+                        {upcomingDebtPayments.length > 5 && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mt: 1, display: 'block' }}
+                          >
+                            И еще {upcomingDebtPayments.length - 5} долгов...
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {new Date(
-                              payment.nextPaymentDate
-                            ).toLocaleDateString()}
-                          </Typography>
-                        </Box>
-                        <NotionTag
-                          label={formatCurrency(payment.amount)}
-                          color="blue"
-                        />
+                        )}
                       </Box>
-                    ))}
-                    {upcomingPayments.length > 5 && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mt: 1, display: 'block' }}
-                      >
-                        И еще {upcomingPayments.length - 5} подписок...
+                    ) : (
+                      <Typography color="text.secondary">
+                        Нет предстоящих платежей по долгам
                       </Typography>
                     )}
-                  </Box>
-                ) : (
-                  <Typography color="text.secondary">
-                    Нет предстоящих платежей по подпискам
-                  </Typography>
-                )}
-              </NotionCard>
-            </Grid>
+                  </NotionCard>
+                </Grid>
 
-            <Grid item xs={12} md={6}>
-              <NotionCard
-                title="Долги и кредиты"
-                icon={<DebtIcon />}
-                color="red"
-                badge={upcomingDebtPayments?.length?.toString() || '0'}
-              >
-                {upcomingDebtPayments && upcomingDebtPayments.length > 0 ? (
-                  <Box>
-                    {upcomingDebtPayments.slice(0, 5).map(payment => (
-                      <Box
-                        key={payment.id}
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          py: 1,
-                          borderBottom: '1px solid',
-                          borderColor: 'divider',
-                          '&:last-child': { borderBottom: 'none' },
-                        }}
-                      >
-                        <Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {payment.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {payment.nextPaymentDate
-                              ? new Date(
+                {/* Подписки */}
+                <Grid item xs={12}>
+                  <NotionCard
+                    title="Подписки"
+                    icon={<SubscriptionIcon />}
+                    color="blue"
+                    badge={upcomingPayments?.length?.toString() || '0'}
+                  >
+                    {upcomingPayments && upcomingPayments.length > 0 ? (
+                      <Box>
+                        {upcomingPayments.slice(0, 5).map(payment => (
+                          <Box
+                            key={payment.id}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              py: 1,
+                              borderBottom: '1px solid',
+                              borderColor: 'divider',
+                              '&:last-child': { borderBottom: 'none' },
+                            }}
+                          >
+                            <Box>
+                              <Typography variant="body2" fontWeight="medium">
+                                {payment.name}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {new Date(
                                   payment.nextPaymentDate
-                                ).toLocaleDateString()
-                              : 'Дата не указана'}
+                                ).toLocaleDateString()}
+                              </Typography>
+                            </Box>
+                            <NotionTag
+                              label={formatCurrency(payment.amount)}
+                              color="blue"
+                            />
+                          </Box>
+                        ))}
+                        {upcomingPayments.length > 5 && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mt: 1, display: 'block' }}
+                          >
+                            И еще {upcomingPayments.length - 5} подписок...
                           </Typography>
-                        </Box>
-                        <NotionTag
-                          label={formatCurrency(
-                            payment.nextPaymentAmount || payment.currentAmount
-                          )}
-                          color="red"
-                        />
+                        )}
                       </Box>
-                    ))}
-                    {upcomingDebtPayments.length > 5 && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mt: 1, display: 'block' }}
-                      >
-                        И еще {upcomingDebtPayments.length - 5} долгов...
+                    ) : (
+                      <Typography color="text.secondary">
+                        Нет предстоящих платежей по подпискам
                       </Typography>
                     )}
-                  </Box>
-                ) : (
-                  <Typography color="text.secondary">
-                    Нет предстоящих платежей по долгам
-                  </Typography>
-                )}
-              </NotionCard>
+                  </NotionCard>
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </>
