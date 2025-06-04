@@ -238,7 +238,7 @@ const Navbar: React.FC = () => {
         {navItems
           .filter(item => !item.requireAuth || isAuthenticated)
           .filter(
-            item => !item.devOnly || process.env.NODE_ENV === 'development'
+            item => !item.devOnly || import.meta.env.MODE === 'development'
           )
           .map((item, index) => (
             <React.Fragment key={item.path}>

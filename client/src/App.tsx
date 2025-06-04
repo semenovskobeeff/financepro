@@ -186,7 +186,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const DevOnlyRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  if (process.env.NODE_ENV !== 'development') {
+  if (import.meta.env.MODE !== 'development') {
     return null; // В production режиме возвращаем null (маршрут недоступен)
   }
   return <>{children}</>;
