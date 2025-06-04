@@ -132,12 +132,12 @@ const transactionSchema = new mongoose.Schema(
       type: {
         type: String,
         enum: ['Point'],
-        default: 'Point',
       },
       coordinates: {
         type: [Number],
         validate: {
           validator: function (value) {
+            if (!value || value.length === 0) return true; // Разрешаем пустые значения
             return (
               value.length === 2 &&
               value[0] >= -180 &&

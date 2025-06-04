@@ -9,6 +9,7 @@ import { debtApi } from 'entities/debt/api/debtApi';
 import { subscriptionApi } from 'entities/subscription/api/subscriptionApi';
 import { analyticsApi } from 'entities/analytics/api/analyticsApi';
 import { archiveApi } from 'entities/archive/api/archiveApi';
+import { shoppingListApi } from 'entities/shopping-list/api/shoppingListApi';
 import authReducer from 'features/auth/model/authSlice';
 
 // В будущем здесь будут импортироваться и использоваться редьюсеры
@@ -26,6 +27,7 @@ export const store = configureStore({
     [subscriptionApi.reducerPath]: subscriptionApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [archiveApi.reducerPath]: archiveApi.reducer,
+    [shoppingListApi.reducerPath]: shoppingListApi.reducer,
 
     // Глобальные редьюсеры
     auth: authReducer,
@@ -41,7 +43,8 @@ export const store = configureStore({
       debtApi.middleware,
       subscriptionApi.middleware,
       analyticsApi.middleware,
-      archiveApi.middleware
+      archiveApi.middleware,
+      shoppingListApi.middleware
     ),
 });
 

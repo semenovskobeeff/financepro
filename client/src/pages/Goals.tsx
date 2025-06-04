@@ -149,7 +149,12 @@ const Goals: React.FC = () => {
             <Typography variant="h6" color="text.secondary" gutterBottom>
               Нет целей
             </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              component="div"
+              sx={{ mb: 2 }}
+            >
               {statusFilter === 'all'
                 ? 'У вас пока нет ни одной цели накопления'
                 : statusFilter === 'active'

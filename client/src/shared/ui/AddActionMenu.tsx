@@ -15,6 +15,7 @@ import {
   TrendingUp as IncomeIcon,
   TrendingDown as ExpenseIcon,
   CompareArrows as TransferIcon,
+  ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import { useLocation } from 'react-router-dom';
 
@@ -122,6 +123,15 @@ const AddActionMenu: React.FC<AddActionMenuProps> = ({
             key: 'subscription',
             label: 'Новая подписка',
             icon: <SubscriptionIcon />,
+          },
+        ];
+
+      case '/shopping-lists':
+        return [
+          {
+            key: 'shopping-list',
+            label: 'Новый список покупок',
+            icon: <ShoppingCartIcon />,
           },
         ];
 

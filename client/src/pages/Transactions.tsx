@@ -432,7 +432,7 @@ const Transactions: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Операции не найдены
             </Typography>
-            <Typography color="textSecondary" paragraph>
+            <Typography color="textSecondary" component="div" sx={{ mb: 2 }}>
               {status === 'active'
                 ? 'У вас пока нет операций или они не соответствуют выбранным фильтрам.'
                 : 'В архиве нет операций, соответствующих выбранным фильтрам.'}

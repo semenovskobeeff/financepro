@@ -36,12 +36,14 @@ interface Goal {
 }
 
 interface GoalsProgressData {
+  hasData?: boolean;
   goals: Goal[];
   totalProgress: number;
   completedGoals: number;
   totalGoals: number;
   totalTargetAmount: number;
   totalCurrentAmount: number;
+  emptyMessage?: string;
 }
 
 interface GoalsProgressWidgetProps {
@@ -53,8 +55,12 @@ const GoalsProgressWidget: React.FC<GoalsProgressWidgetProps> = ({
   data,
   maxGoalsVisible = 4,
 }) => {
+  // Если нет данных, показываем пустой интерфейс
+  const isEmpty = data.hasData === false;
+
   // Сортируем цели по прогрессу и статусу
-  const sortedGoals = [...data.goals]
+  const goals = isEmpty ? [] : data.goals;
+  const sortedGoals = [...goals]
     .sort((a, b) => {
       // Сначала активные цели с наибольшим прогрессом
       if (a.status === 'completed' && b.status !== 'completed') return 1;
@@ -66,11 +72,16 @@ const GoalsProgressWidget: React.FC<GoalsProgressWidgetProps> = ({
     .slice(0, maxGoalsVisible);
 
   // Расчет общих метрик
-  const averageProgress =
-    data.totalGoals > 0 ? data.totalProgress / data.totalGoals : 0;
+  const totalGoals = isEmpty ? 0 : data.totalGoals;
+  const completedGoals = isEmpty ? 0 : data.completedGoals;
+  const totalProgress = isEmpty ? 0 : data.totalProgress;
+  const totalTargetAmount = isEmpty ? 0 : data.totalTargetAmount;
+  const totalCurrentAmount = isEmpty ? 0 : data.totalCurrentAmount;
+
+  const averageProgress = totalGoals > 0 ? totalProgress / totalGoals : 0;
   const completionRate =
-    data.totalGoals > 0 ? (data.completedGoals / data.totalGoals) * 100 : 0;
-  const remainingAmount = data.totalTargetAmount - data.totalCurrentAmount;
+    totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
+  const remainingAmount = totalTargetAmount - totalCurrentAmount;
 
   // Функция для получения цвета прогресса
   const getProgressColor = (progress: number, status: string) => {
@@ -103,7 +114,7 @@ const GoalsProgressWidget: React.FC<GoalsProgressWidgetProps> = ({
 
   // Анализ эффективности
   const getEfficiencyAnalysis = () => {
-    const activeGoals = data.goals.filter(g => g.status === 'active');
+    const activeGoals = goals.filter(g => g.status === 'active');
     const onTrackGoals = activeGoals.filter(goal => {
       const daysLeft = differenceInDays(new Date(goal.deadline), new Date());
       const totalDays = differenceInDays(new Date(goal.deadline), new Date()); // Приблизительно
@@ -127,9 +138,9 @@ const GoalsProgressWidget: React.FC<GoalsProgressWidgetProps> = ({
   return (
     <NotionCard
       title="Прогресс целей"
-      color="green"
+      color={isEmpty ? 'gray' : 'green'}
       subtitle="Отслеживание финансовых целей"
-      badge={data.totalGoals.toString()}
+      badge={totalGoals.toString()}
     >
       {/* Общая статистика */}
       <Box sx={{ mb: 3 }}>
@@ -148,7 +159,7 @@ const GoalsProgressWidget: React.FC<GoalsProgressWidgetProps> = ({
               Завершено
             </Typography>
             <Typography variant="h6" fontWeight="medium">
-              {data.completedGoals}/{data.totalGoals}
+              {completedGoals}/{totalGoals}
             </Typography>
           </Box>
 
@@ -169,14 +180,16 @@ const GoalsProgressWidget: React.FC<GoalsProgressWidgetProps> = ({
               Накоплено всего
             </Typography>
             <Typography variant="body2" fontWeight="medium">
-              {formatNumber(data.totalCurrentAmount)} ₽ из{' '}
-              {formatNumber(data.totalTargetAmount)} ₽
+              {formatNumber(totalCurrentAmount)} ₽ из{' '}
+              {formatNumber(totalTargetAmount)} ₽
             </Typography>
           </Box>
           <LinearProgress
             variant="determinate"
             value={Math.min(
-              (data.totalCurrentAmount / data.totalTargetAmount) * 100,
+              totalTargetAmount > 0
+                ? (totalCurrentAmount / totalTargetAmount) * 100
+                : 0,
               100
             )}
             sx={{
@@ -229,115 +242,138 @@ const GoalsProgressWidget: React.FC<GoalsProgressWidgetProps> = ({
         </Typography>
 
         <List dense sx={{ p: 0 }}>
-          {sortedGoals.map(goal => {
-            const progressColor = getProgressColor(goal.progress, goal.status);
-            const daysLeft = differenceInDays(
-              new Date(goal.deadline),
-              new Date()
-            );
+          {isEmpty ? (
+            <ListItem sx={{ px: 0, py: 1 }}>
+              <ListItemText
+                primary="Нет активных целей"
+                secondary="Создайте финансовые цели для отслеживания прогресса"
+                primaryTypographyProps={{
+                  variant: 'body2',
+                  color: 'text.secondary',
+                }}
+                secondaryTypographyProps={{
+                  variant: 'caption',
+                  color: 'text.secondary',
+                }}
+              />
+            </ListItem>
+          ) : (
+            sortedGoals.map(goal => {
+              const progressColor = getProgressColor(
+                goal.progress,
+                goal.status
+              );
+              const daysLeft = differenceInDays(
+                new Date(goal.deadline),
+                new Date()
+              );
 
-            return (
-              <ListItem key={goal.id} sx={{ px: 0, py: 1 }}>
-                <ListItemAvatar>
-                  <Avatar
-                    sx={{
-                      backgroundColor:
-                        goal.status === 'completed'
-                          ? 'success.main'
-                          : goal.status === 'overdue'
-                          ? 'error.main'
-                          : 'primary.main',
-                      width: 36,
-                      height: 36,
-                    }}
-                  >
-                    {goal.status === 'completed' ? (
-                      <CompletedIcon fontSize="small" />
-                    ) : (
-                      <GoalIcon fontSize="small" />
-                    )}
-                  </Avatar>
-                </ListItemAvatar>
-
-                <ListItemText
-                  primary={
-                    <Box
+              return (
+                <ListItem key={goal.id} sx={{ px: 0, py: 1 }}>
+                  <ListItemAvatar>
+                    <Avatar
                       sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        mb: 1,
+                        backgroundColor:
+                          goal.status === 'completed'
+                            ? 'success.main'
+                            : goal.status === 'overdue'
+                            ? 'error.main'
+                            : 'primary.main',
+                        width: 36,
+                        height: 36,
                       }}
                     >
-                      <Typography variant="body2" fontWeight="medium">
-                        {goal.name}
-                      </Typography>
-                      {getGoalStatusChip(goal)}
-                    </Box>
-                  }
-                  secondary={
-                    <Box>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          mb: 1,
-                        }}
-                      >
-                        <Typography variant="caption" color="text.secondary">
-                          {formatNumber(goal.currentAmount)} ₽ из{' '}
-                          {formatNumber(goal.targetAmount)} ₽
-                        </Typography>
-                        <Typography variant="caption" fontWeight="medium">
-                          {goal.progress.toFixed(1)}%
-                        </Typography>
-                      </Box>
+                      {goal.status === 'completed' ? (
+                        <CompletedIcon fontSize="small" />
+                      ) : (
+                        <GoalIcon fontSize="small" />
+                      )}
+                    </Avatar>
+                  </ListItemAvatar>
 
-                      <LinearProgress
-                        variant="determinate"
-                        value={Math.min(goal.progress, 100)}
-                        color={progressColor as any}
-                        sx={{
-                          height: 6,
-                          borderRadius: 3,
-                          mb: 1,
-                        }}
-                      />
-
+                  <ListItemText
+                    primary={
                       <Box
                         sx={{
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
+                          mb: 1,
                         }}
                       >
-                        <Typography variant="caption" color="text.secondary">
-                          до{' '}
-                          {format(new Date(goal.deadline), 'dd.MM.yyyy', {
-                            locale: ru,
-                          })}
+                        <Typography variant="body2" fontWeight="medium">
+                          {goal.name}
                         </Typography>
-                        {goal.monthlyTarget && (
-                          <Typography variant="caption" color="text.secondary">
-                            {formatNumber(goal.monthlyTarget)} ₽/мес
-                          </Typography>
-                        )}
+                        {getGoalStatusChip(goal)}
                       </Box>
-                    </Box>
-                  }
-                />
-              </ListItem>
-            );
-          })}
+                    }
+                    secondary={
+                      <Box>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            mb: 1,
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary">
+                            {formatNumber(goal.currentAmount)} ₽ из{' '}
+                            {formatNumber(goal.targetAmount)} ₽
+                          </Typography>
+                          <Typography variant="caption" fontWeight="medium">
+                            {goal.progress.toFixed(1)}%
+                          </Typography>
+                        </Box>
+
+                        <LinearProgress
+                          variant="determinate"
+                          value={Math.min(goal.progress, 100)}
+                          color={progressColor as any}
+                          sx={{
+                            height: 6,
+                            borderRadius: 3,
+                            mb: 1,
+                          }}
+                        />
+
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary">
+                            до{' '}
+                            {format(new Date(goal.deadline), 'dd.MM.yyyy', {
+                              locale: ru,
+                            })}
+                          </Typography>
+                          {goal.monthlyTarget && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {formatNumber(goal.monthlyTarget)} ₽/мес
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    }
+                  />
+                </ListItem>
+              );
+            })
+          )}
         </List>
 
-        {data.goals.length > maxGoalsVisible && (
+        {!isEmpty && goals.length > maxGoalsVisible && (
           <Typography
             variant="caption"
             color="text.secondary"
             sx={{ mt: 1, display: 'block' }}
           >
-            И еще {data.goals.length - maxGoalsVisible} целей...
+            И еще {goals.length - maxGoalsVisible} целей...
           </Typography>
         )}
       </Box>

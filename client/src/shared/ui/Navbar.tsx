@@ -13,6 +13,7 @@ import {
   useTheme as useMuiTheme,
   styled,
   Divider,
+  Chip,
 } from '@mui/material';
 import {
   AccountBalance as AccountBalanceIcon,
@@ -25,6 +26,7 @@ import {
   Settings as SettingsIcon,
   CreditCard as CreditCardIcon,
   Subscriptions as SubscriptionsIcon,
+  ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { RootState } from 'app/store';
@@ -129,6 +131,7 @@ interface NavItem {
   label: string;
   icon: React.ReactElement;
   requireAuth: boolean;
+  devOnly?: boolean;
 }
 
 // Настройка пунктов навигации
@@ -176,6 +179,13 @@ const navItems: NavItem[] = [
     requireAuth: true,
   },
   {
+    path: '/shopping-lists',
+    label: 'Списки покупок',
+    icon: <ShoppingCartIcon />,
+    requireAuth: true,
+    devOnly: true,
+  },
+  {
     path: '/analytics',
     label: 'Аналитика',
     icon: <AnalyticsIcon />,
@@ -192,6 +202,7 @@ const navItems: NavItem[] = [
     label: 'Настройки',
     icon: <SettingsIcon />,
     requireAuth: true,
+    devOnly: true,
   },
 ];
 
@@ -226,6 +237,9 @@ const Navbar: React.FC = () => {
       >
         {navItems
           .filter(item => !item.requireAuth || isAuthenticated)
+          .filter(
+            item => !item.devOnly || process.env.NODE_ENV === 'development'
+          )
           .map((item, index) => (
             <React.Fragment key={item.path}>
               <NotionListItem disablePadding>
@@ -245,7 +259,37 @@ const Navbar: React.FC = () => {
                   }
                 >
                   <NotionListItemIcon>{item.icon}</NotionListItemIcon>
-                  <NotionListItemText primary={item.label} />
+                  <NotionListItemText
+                    primary={
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <span>{item.label}</span>
+                        {item.devOnly && (
+                          <Chip
+                            label="DEV"
+                            size="small"
+                            sx={{
+                              height: '16px',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              backgroundColor:
+                                themeMode === 'dark'
+                                  ? 'rgba(144, 202, 249, 0.1)'
+                                  : 'rgba(25, 118, 210, 0.1)',
+                              color:
+                                themeMode === 'dark' ? '#90caf9' : '#1976d2',
+                              border:
+                                themeMode === 'dark'
+                                  ? '1px solid rgba(144, 202, 249, 0.3)'
+                                  : '1px solid rgba(25, 118, 210, 0.3)',
+                              '& .MuiChip-label': {
+                                padding: '0 4px',
+                              },
+                            }}
+                          />
+                        )}
+                      </Box>
+                    }
+                  />
                 </NotionListItemButton>
               </NotionListItem>
             </React.Fragment>

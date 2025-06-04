@@ -10,6 +10,7 @@ import {
   Title,
   Tooltip as ChartTooltip,
   Legend,
+  Filler,
 } from 'chart.js';
 import { Info as InfoIcon } from '@mui/icons-material';
 import { NotionCard } from '../NotionCard';
@@ -23,14 +24,17 @@ ChartJS.register(
   LineElement,
   Title,
   ChartTooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 interface FinancialTrendData {
+  hasData?: boolean;
   labels: string[];
   income: number[];
   expense: number[];
   balance: number[];
+  emptyMessage?: string;
 }
 
 interface FinancialTrendChartProps {
@@ -49,12 +53,25 @@ const FinancialTrendChart: React.FC<FinancialTrendChartProps> = ({
   const { themeMode } = useTheme();
   const isDarkMode = themeMode === 'dark';
 
+  // Если нет данных, используем пустой график
+  const isEmpty = data.hasData === false;
+
+  // Для пустого состояния создаем минимальные данные для отображения структуры
+  const displayData = isEmpty
+    ? {
+        labels: ['Текущий месяц'],
+        income: [0],
+        expense: [0],
+        balance: [0],
+      }
+    : data;
+
   const chartData = {
-    labels: data.labels,
+    labels: displayData.labels,
     datasets: [
       {
         label: 'Доходы',
-        data: data.income,
+        data: displayData.income,
         borderColor: isDarkMode ? '#4ade80' : '#22c55e',
         backgroundColor: isDarkMode ? '#4ade8020' : '#22c55e20',
         fill: false,
@@ -64,7 +81,7 @@ const FinancialTrendChart: React.FC<FinancialTrendChartProps> = ({
       },
       {
         label: 'Расходы',
-        data: data.expense.map(val => Math.abs(val)),
+        data: displayData.expense.map(val => Math.abs(val)),
         borderColor: isDarkMode ? '#f87171' : '#ef4444',
         backgroundColor: isDarkMode ? '#f8717120' : '#ef444420',
         fill: false,
@@ -74,7 +91,7 @@ const FinancialTrendChart: React.FC<FinancialTrendChartProps> = ({
       },
       {
         label: 'Чистый баланс',
-        data: data.balance,
+        data: displayData.balance,
         borderColor: isDarkMode ? '#60a5fa' : '#3b82f6',
         backgroundColor: isDarkMode ? '#60a5fa20' : '#3b82f620',
         fill: true,
@@ -156,15 +173,19 @@ const FinancialTrendChart: React.FC<FinancialTrendChartProps> = ({
   };
 
   // Расчет ключевых метрик
-  const currentMonth = data.income[data.income.length - 1] || 0;
-  const previousMonth = data.income[data.income.length - 2] || 0;
+  const currentMonth = displayData.income[displayData.income.length - 1] || 0;
+  const previousMonth = displayData.income[displayData.income.length - 2] || 0;
   const incomeGrowth =
     previousMonth > 0
       ? ((currentMonth - previousMonth) / previousMonth) * 100
       : 0;
 
-  const currentExpense = Math.abs(data.expense[data.expense.length - 1] || 0);
-  const previousExpense = Math.abs(data.expense[data.expense.length - 2] || 0);
+  const currentExpense = Math.abs(
+    displayData.expense[displayData.expense.length - 1] || 0
+  );
+  const previousExpense = Math.abs(
+    displayData.expense[displayData.expense.length - 2] || 0
+  );
   const expenseGrowth =
     previousExpense > 0
       ? ((currentExpense - previousExpense) / previousExpense) * 100
@@ -173,7 +194,7 @@ const FinancialTrendChart: React.FC<FinancialTrendChartProps> = ({
   return (
     <NotionCard
       title="Финансовые тренды"
-      color="blue"
+      color={isEmpty ? 'gray' : 'blue'}
       subtitle="Динамика доходов и расходов за последние месяцы"
     >
       <Box sx={{ mb: 2 }}>

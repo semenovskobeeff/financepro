@@ -1,6 +1,8 @@
 import { setupWorker } from 'msw/browser';
 import { handlers } from './handlers';
 import { mockUsers } from './mockData';
+import { emptyMockUsers } from './emptyMockData';
+import { config } from '../../../config/environment';
 
 // Настраиваем и экспортируем mock service worker
 export const worker = setupWorker(...handlers);
@@ -10,10 +12,21 @@ let isWorkerStarted = false;
 let startupPromise: Promise<void> | null = null;
 
 // Функция для автоматической авторизации тестового пользователя
-const autoLoginTestUser = () => {
+export const autoLoginTestUser = () => {
   console.log('[MSW] Автоматическая авторизация тестового пользователя');
 
-  const testUser = mockUsers[0]; // Получаем тестового пользователя
+  // Читаем текущие настройки из localStorage
+  let currentMockDataType: 'filled' | 'empty' = 'filled';
+  if (typeof window !== 'undefined') {
+    const storedType = localStorage.getItem('mockDataType');
+    if (storedType === 'empty' || storedType === 'filled') {
+      currentMockDataType = storedType;
+    }
+  }
+
+  // Выбираем тестового пользователя в зависимости от типа данных
+  const users = currentMockDataType === 'empty' ? emptyMockUsers : mockUsers;
+  const testUser = users[0]; // Получаем тестового пользователя
   const token = `fake-jwt-token-${testUser.id}`;
 
   // Сохраняем данные авторизации в localStorage
@@ -24,6 +37,7 @@ const autoLoginTestUser = () => {
   );
 
   console.log('[MSW] Тестовый пользователь авторизован:', testUser.email);
+  console.log('[MSW] Тип данных:', currentMockDataType);
 };
 
 // Функция для безопасного запуска MSW в браузере
@@ -56,9 +70,6 @@ export const startMSW = async (): Promise<void> => {
       isWorkerStarted = true;
       console.log('[MSW] ✅ Mocking enabled successfully');
       console.log('[MSW] Handlers loaded:', handlers.length);
-
-      // Автоматически авторизуем тестового пользователя
-      autoLoginTestUser();
 
       resolve();
     } catch (error) {

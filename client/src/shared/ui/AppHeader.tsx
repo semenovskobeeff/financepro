@@ -98,6 +98,8 @@ const getPageTitle = (pathname: string): string => {
       return 'Аналитика';
     case '/archive':
       return 'Архив';
+    case '/shopping-lists':
+      return 'Списки покупок';
     case '/settings':
       return 'Настройки';
     case '/profile':

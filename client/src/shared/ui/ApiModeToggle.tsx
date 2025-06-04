@@ -10,6 +10,10 @@ import {
   Collapse,
   IconButton,
   Button,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio,
 } from '@mui/material';
 import {
   CloudDone as CloudIcon,
@@ -18,6 +22,8 @@ import {
   ExpandLess as CollapseIcon,
   Refresh as RefreshIcon,
   Warning as WarningIcon,
+  DataObject as DataIcon,
+  Inbox as EmptyIcon,
 } from '@mui/icons-material';
 import { config } from '../../config/environment';
 import { useAppDispatch } from '../../app/store/hooks';
@@ -26,6 +32,9 @@ import { reinitializeAuth } from '../../features/auth/model/authSlice';
 const ApiModeToggle: React.FC = () => {
   const dispatch = useAppDispatch();
   const [useMocks, setUseMocks] = useState(config.useMocks);
+  const [mockDataType, setMockDataType] = useState<'filled' | 'empty'>(
+    config.mockDataType
+  );
   const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>(
     'checking'
   );
@@ -102,6 +111,30 @@ const ApiModeToggle: React.FC = () => {
     );
 
     // Перезагружаем страницу для гарантированного применения изменений
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+  };
+
+  const handleMockDataTypeChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newDataType = event.target.value as 'filled' | 'empty';
+    setMockDataType(newDataType);
+
+    // Обновляем конфигурацию
+    config.updateMockDataType(newDataType);
+
+    console.log(
+      `[ApiModeToggle] Тип данных изменен на: ${
+        newDataType === 'filled' ? 'заполненные' : 'пустые'
+      }`
+    );
+
+    // Переинициализируем авторизацию при смене режима
+    dispatch(reinitializeAuth());
+
+    // Перезагружаем страницу для применения изменений
     setTimeout(() => {
       window.location.reload();
     }, 100);
@@ -214,6 +247,76 @@ const ApiModeToggle: React.FC = () => {
               label={useMocks ? 'Тестовые данные' : 'Реальный API'}
             />
 
+            {/* Переключатель типа моковых данных */}
+            {useMocks && (
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  bgcolor: 'action.hover',
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <FormControl component="fieldset">
+                  <FormLabel
+                    component="legend"
+                    sx={{ fontSize: '0.875rem', mb: 1 }}
+                  >
+                    Тип тестовых данных
+                  </FormLabel>
+                  <RadioGroup
+                    value={mockDataType}
+                    onChange={handleMockDataTypeChange}
+                    row
+                  >
+                    <FormControlLabel
+                      value="filled"
+                      control={<Radio size="small" />}
+                      label={
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                          }}
+                        >
+                          <DataIcon fontSize="small" />
+                          <Typography variant="body2">Заполненные</Typography>
+                        </Box>
+                      }
+                    />
+                    <FormControlLabel
+                      value="empty"
+                      control={<Radio size="small" />}
+                      label={
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                          }}
+                        >
+                          <EmptyIcon fontSize="small" />
+                          <Typography variant="body2">Пустые</Typography>
+                        </Box>
+                      }
+                    />
+                  </RadioGroup>
+                </FormControl>
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{ display: 'block', mt: 1 }}
+                >
+                  {mockDataType === 'filled'
+                    ? 'Приложение с примерами транзакций, счетов и целей'
+                    : 'Приложение без данных для тестирования с чистого листа'}
+                </Typography>
+              </Box>
+            )}
+
             {!useMocks && (
               <Box
                 sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}
@@ -299,7 +402,9 @@ const ApiModeToggle: React.FC = () => {
                 sx={{ mt: 1 }}
               >
                 {useMocks
-                  ? 'Используются тестовые данные (MSW)'
+                  ? `Используются ${
+                      mockDataType === 'filled' ? 'заполненные' : 'пустые'
+                    } тестовые данные (MSW)`
                   : apiStatus === 'online'
                   ? 'Подключен к реальной базе данных'
                   : 'Проверяется доступность сервера...'}

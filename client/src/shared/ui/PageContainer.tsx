@@ -11,11 +11,14 @@ import {
 interface PageContainerProps {
   children: ReactNode;
   title?: string | ReactNode;
-  action?: {
-    label: string;
-    icon?: React.ReactNode;
-    onClick: () => void;
-  };
+  subtitle?: string | ReactNode;
+  action?:
+    | ReactNode
+    | {
+        label: string;
+        icon?: React.ReactNode;
+        onClick: () => void;
+      };
   actions?: Array<{
     label: string;
     icon?: React.ReactNode;
@@ -30,9 +33,35 @@ interface PageContainerProps {
 const PageContainer: React.FC<PageContainerProps> = ({
   children,
   title,
+  subtitle,
   action,
   actions,
 }) => {
+  const renderAction = () => {
+    if (!action) return null;
+
+    // Если action - это ReactNode (JSX), возвращаем как есть
+    if (React.isValidElement(action)) {
+      return action;
+    }
+
+    // Если action - это объект с полями, создаем кнопку
+    if (typeof action === 'object' && 'label' in action) {
+      return (
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={action.icon}
+          onClick={action.onClick}
+        >
+          {action.label}
+        </Button>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <Box
       sx={{
@@ -43,33 +72,32 @@ const PageContainer: React.FC<PageContainerProps> = ({
         flexDirection: 'column',
       }}
     >
-      {(title || action || actions) && (
+      {(title || subtitle || action || actions) && (
         <Box
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             mb: 3,
           }}
         >
-          {title && (
-            <Typography variant="h4" component="h1">
-              {title}
-            </Typography>
-          )}
-          {action && (
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={action.icon}
-              onClick={action.onClick}
-            >
-              {action.label}
-            </Button>
-          )}
-          {actions && (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {actions.map((actionItem, index) => (
+          <Box>
+            {title && (
+              <Typography variant="h4" component="h1" gutterBottom={!!subtitle}>
+                {title}
+              </Typography>
+            )}
+            {subtitle && (
+              <Typography variant="subtitle1" color="text.secondary">
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {renderAction()}
+            {actions &&
+              actions.map((actionItem, index) => (
                 <Button
                   key={index}
                   variant="contained"
@@ -80,8 +108,7 @@ const PageContainer: React.FC<PageContainerProps> = ({
                   {actionItem.label}
                 </Button>
               ))}
-            </Box>
-          )}
+          </Box>
         </Box>
       )}
 

@@ -50,6 +50,7 @@ interface SmartNotification {
 }
 
 interface SmartNotificationsData {
+  hasData?: boolean;
   notifications: SmartNotification[];
   totalUnread: number;
   categories: Array<{
@@ -57,6 +58,7 @@ interface SmartNotificationsData {
     count: number;
     color: string;
   }>;
+  emptyMessage?: string;
 }
 
 interface SmartNotificationsWidgetProps {
@@ -74,6 +76,9 @@ const SmartNotificationsWidget: React.FC<SmartNotificationsWidgetProps> = ({
 }) => {
   const [showAll, setShowAll] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+
+  // Если нет данных, показываем пустой интерфейс
+  const isEmpty = data.hasData === false;
 
   // Фильтрация уведомлений
   const activeNotifications = data.notifications.filter(
@@ -174,31 +179,42 @@ const SmartNotificationsWidget: React.FC<SmartNotificationsWidgetProps> = ({
   return (
     <NotionCard
       title="Умные уведомления"
-      color="yellow"
+      color={isEmpty ? 'gray' : 'yellow'}
       subtitle="Персонализированные рекомендации"
       badge={data.totalUnread.toString()}
     >
       {/* Категории уведомлений */}
-      <Box sx={{ mb: 2 }}>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {data.categories.map((category, index) => (
-            <Chip
-              key={index}
-              label={`${category.name} (${category.count})`}
-              size="small"
-              variant="outlined"
-              sx={{
-                backgroundColor: `${category.color}20`,
-                borderColor: category.color,
-                color: category.color,
-              }}
-            />
-          ))}
+      {!isEmpty && data.categories.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {data.categories.map((category, index) => (
+              <Chip
+                key={index}
+                label={`${category.name} (${category.count})`}
+                size="small"
+                variant="outlined"
+                sx={{
+                  backgroundColor: `${category.color}20`,
+                  borderColor: category.color,
+                  color: category.color,
+                }}
+              />
+            ))}
+          </Box>
         </Box>
-      </Box>
+      )}
 
       {/* Список уведомлений */}
-      {visibleNotifications.length > 0 ? (
+      {isEmpty ? (
+        <Box sx={{ textAlign: 'center', py: 3 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Нет уведомлений
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Добавьте транзакции для получения рекомендаций
+          </Typography>
+        </Box>
+      ) : visibleNotifications.length > 0 ? (
         <List dense sx={{ p: 0 }}>
           {visibleNotifications.map((notification, index) => (
             <ListItem
@@ -209,11 +225,7 @@ const SmartNotificationsWidget: React.FC<SmartNotificationsWidgetProps> = ({
                 borderRadius: 1,
                 mb: 1,
                 backgroundColor: 'rgba(0,0,0,0.02)',
-                border: `1px solid ${
-                  notification.priority === 'high'
-                    ? 'rgba(239, 68, 68, 0.3)'
-                    : 'rgba(0,0,0,0.1)'
-                }`,
+                border: '1px solid rgba(0,0,0,0.1)',
               }}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
@@ -231,74 +243,71 @@ const SmartNotificationsWidget: React.FC<SmartNotificationsWidgetProps> = ({
                 </Avatar>
               </ListItemIcon>
 
-              <ListItemText
-                primary={
+              <Box sx={{ flex: 1, ml: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    mb: 0.5,
+                  }}
+                >
+                  <Typography variant="body2" fontWeight="medium">
+                    {notification.title}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {getPriorityChip(notification.priority)}
+                    {notification.dismissible && (
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDismiss(notification.id)}
+                        sx={{ p: 0.5 }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Box>
+
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    {notification.message}
+                  </Typography>
+
                   <Box
                     sx={{
                       display: 'flex',
                       justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      mb: 0.5,
+                      alignItems: 'center',
+                      mt: 1,
                     }}
                   >
-                    <Typography variant="body2" fontWeight="medium">
-                      {notification.title}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {getPriorityChip(notification.priority)}
-                      {notification.dismissible && (
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDismiss(notification.id)}
-                          sx={{ p: 0.5 }}
-                        >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
+                    <Typography variant="caption" color="text.secondary">
+                      {formatTime(notification.timestamp)}
+                      {notification.amount && (
+                        <span style={{ marginLeft: 8 }}>
+                          • {formatNumber(notification.amount)} ₽
+                        </span>
                       )}
-                    </Box>
-                  </Box>
-                }
-                secondary={
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      {notification.message}
                     </Typography>
 
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        mt: 1,
-                      }}
-                    >
-                      <Typography variant="caption" color="text.secondary">
-                        {formatTime(notification.timestamp)}
-                        {notification.amount && (
-                          <span style={{ marginLeft: 8 }}>
-                            • {formatNumber(notification.amount)} ₽
-                          </span>
-                        )}
-                      </Typography>
-
-                      {notification.action && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => handleAction(notification)}
-                          sx={{ fontSize: '0.75rem', py: 0.5, px: 1 }}
-                        >
-                          {notification.action.label}
-                        </Button>
-                      )}
-                    </Box>
+                    {notification.action && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleAction(notification)}
+                        sx={{ fontSize: '0.75rem', py: 0.5, px: 1 }}
+                      >
+                        {notification.action.label}
+                      </Button>
+                    )}
                   </Box>
-                }
-              />
+                </Box>
+              </Box>
             </ListItem>
           ))}
         </List>

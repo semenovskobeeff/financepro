@@ -23,6 +23,7 @@ import { NotionCard } from '../NotionCard';
 import { formatNumber } from '../../utils/formatUtils';
 
 interface BudgetData {
+  hasData?: boolean;
   income: number;
   expense: number;
   balance: number;
@@ -34,6 +35,7 @@ interface BudgetData {
   }[];
   lastMonthBalance: number;
   averageExpenseLastThreeMonths: number;
+  emptyMessage?: string;
 }
 
 interface BudgetAnalysisChartProps {
@@ -43,22 +45,29 @@ interface BudgetAnalysisChartProps {
 const BudgetAnalysisChart: React.FC<BudgetAnalysisChartProps> = ({ data }) => {
   const [showDetails, setShowDetails] = useState(false);
 
+  // Если нет данных, используем нулевые значения
+  const isEmpty = data.hasData === false;
+
   // Расчет ключевых показателей
-  const savingsRate = data.income > 0 ? (data.balance / data.income) * 100 : 0;
-  const balanceChange = data.balance - data.lastMonthBalance;
+  const income = isEmpty ? 0 : data.income;
+  const balance = isEmpty ? 0 : data.balance;
+  const lastMonthBalance = isEmpty ? 0 : data.lastMonthBalance;
+
+  const savingsRate = income > 0 ? (balance / income) * 100 : 0;
+  const balanceChange = balance - lastMonthBalance;
   const balanceChangePercentage =
-    data.lastMonthBalance !== 0
-      ? (balanceChange / Math.abs(data.lastMonthBalance)) * 100
+    lastMonthBalance !== 0
+      ? (balanceChange / Math.abs(lastMonthBalance)) * 100
       : 0;
 
   // Прогноз на следующий месяц
-  const projectedExpense = data.averageExpenseLastThreeMonths;
-  const projectedBalance = data.income - projectedExpense;
+  const projectedExpense = isEmpty ? 0 : data.averageExpenseLastThreeMonths;
+  const projectedBalance = income - projectedExpense;
 
   // Анализ категорий с превышением бюджета
-  const overBudgetCategories = data.categories.filter(
-    cat => cat.budget && cat.spent > cat.budget
-  );
+  const overBudgetCategories = isEmpty
+    ? []
+    : data.categories.filter(cat => cat.budget && cat.spent > cat.budget);
 
   // Определение статуса бюджета
   const getBudgetStatus = () => {
@@ -125,7 +134,7 @@ const BudgetAnalysisChart: React.FC<BudgetAnalysisChartProps> = ({ data }) => {
   return (
     <NotionCard
       title="Анализ бюджета"
-      color={budgetStatus.color as any}
+      color={isEmpty ? 'gray' : (budgetStatus.color as any)}
       subtitle="Текущее состояние и прогнозы"
     >
       {/* Основные метрики */}
@@ -155,7 +164,7 @@ const BudgetAnalysisChart: React.FC<BudgetAnalysisChartProps> = ({ data }) => {
               {savingsRate.toFixed(1)}% от дохода
             </Typography>
             <Typography variant="body2" fontWeight="medium">
-              {formatNumber(data.balance)} ₽
+              {formatNumber(balance)} ₽
             </Typography>
           </Box>
           <LinearProgress

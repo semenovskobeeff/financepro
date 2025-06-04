@@ -41,11 +41,17 @@ async function initApp() {
     // Инициализируем MSW только если нужно
     if (config.useMocks) {
       console.log('[INDEX] 🎭 Запуск MSW...');
-      const { startMSW } = await import('./shared/api/mocks/browser');
+      const { startMSW, autoLoginTestUser } = await import(
+        './shared/api/mocks/browser'
+      );
       await startMSW();
 
       // Даем MSW время на полную инициализацию
       await new Promise(resolve => setTimeout(resolve, 500));
+
+      // После инициализации MSW запускаем автологин
+      autoLoginTestUser();
+
       console.log('[INDEX] ✅ MSW успешно инициализирован');
     } else {
       console.log('[INDEX] 🌐 Используем реальный API:', config.apiUrl);

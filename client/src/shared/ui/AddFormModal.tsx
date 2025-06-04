@@ -10,6 +10,7 @@ import GoalForm from '../../features/goals/components/GoalForm';
 import DebtFormContent from '../../features/debts/components/DebtFormContent';
 import SubscriptionFormContent from '../../features/subscriptions/components/SubscriptionFormContent';
 import TransferFundsForm from '../../features/accounts/components/TransferFundsForm';
+import ShoppingListForm from '../../entities/shopping-list/ui/ShoppingListForm';
 
 import { TransactionType } from '../../entities/transaction/model/types';
 import { CategoryType } from '../../entities/category/model/types';
@@ -49,6 +50,8 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
         return 'Новый долг';
       case 'subscription':
         return 'Новая подписка';
+      case 'shopping-list':
+        return 'Новый список покупок';
       default:
         return 'Добавить';
     }
@@ -57,20 +60,10 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
   const getModalContent = () => {
     switch (type) {
       case 'income':
-        return (
-          <TransactionForm
-            onClose={onClose}
-            initialType="income"
-          />
-        );
+        return <TransactionForm onClose={onClose} initialType="income" />;
 
       case 'expense':
-        return (
-          <TransactionForm
-            onClose={onClose}
-            initialType="expense"
-          />
-        );
+        return <TransactionForm onClose={onClose} initialType="expense" />;
 
       case 'transfer':
         return <TransferFundsForm onClose={onClose} />;
@@ -79,20 +72,10 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
         return <AccountForm onClose={onClose} />;
 
       case 'category-income':
-        return (
-          <CategoryForm
-            onClose={onClose}
-            initialType="income"
-          />
-        );
+        return <CategoryForm onClose={onClose} initialType="income" />;
 
       case 'category-expense':
-        return (
-          <CategoryForm
-            onClose={onClose}
-            initialType="expense"
-          />
-        );
+        return <CategoryForm onClose={onClose} initialType="expense" />;
 
       case 'goal':
         return <GoalForm onClose={onClose} />;
@@ -103,6 +86,9 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
       case 'subscription':
         return <SubscriptionFormContent onClose={onClose} />;
 
+      case 'shopping-list':
+        return <ShoppingListForm onClose={onClose} />;
+
       default:
         return null;
     }
@@ -112,6 +98,7 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
     switch (type) {
       case 'debt':
       case 'subscription':
+      case 'shopping-list':
         return 'md';
       default:
         return 'sm';

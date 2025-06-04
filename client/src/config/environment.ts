@@ -12,6 +12,19 @@ const getUseMocks = (): boolean => {
   return !isProduction();
 };
 
+// Функция для получения типа моковых данных
+const getMockDataType = (): 'filled' | 'empty' => {
+  if (typeof window !== 'undefined') {
+    const localStorageSetting = localStorage.getItem('mockDataType');
+    if (localStorageSetting === 'filled' || localStorageSetting === 'empty') {
+      return localStorageSetting;
+    }
+  }
+
+  // По умолчанию используем заполненные данные
+  return 'filled';
+};
+
 // Функция для определения среды
 const isProduction = (): boolean => {
   return import.meta.env.PROD || import.meta.env.MODE === 'production';
@@ -24,9 +37,11 @@ const isDevelopment = (): boolean => {
 // Создаем реактивную конфигурацию окружения
 class AppConfig {
   private _useMocks: boolean;
+  private _mockDataType: 'filled' | 'empty';
 
   constructor() {
     this._useMocks = getUseMocks();
+    this._mockDataType = getMockDataType();
   }
 
   get useMocks(): boolean {
@@ -37,6 +52,17 @@ class AppConfig {
     this._useMocks = value;
     if (typeof window !== 'undefined') {
       localStorage.setItem('useMocks', value.toString());
+    }
+  }
+
+  get mockDataType(): 'filled' | 'empty' {
+    return this._mockDataType;
+  }
+
+  set mockDataType(value: 'filled' | 'empty') {
+    this._mockDataType = value;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mockDataType', value);
     }
   }
 
@@ -71,10 +97,17 @@ class AppConfig {
     console.log(`[CONFIG] Обновлена настройка useMocks: ${value}`);
   }
 
+  // Метод для обновления типа моковых данных
+  updateMockDataType(value: 'filled' | 'empty'): void {
+    this.mockDataType = value;
+    console.log(`[CONFIG] Обновлена настройка mockDataType: ${value}`);
+  }
+
   // Метод для получения текущего состояния
   getState() {
     return {
       useMocks: this.useMocks,
+      mockDataType: this.mockDataType,
       apiUrl: this.apiUrl,
       debug: this.debug,
       isDevelopment: this.isDevelopment,

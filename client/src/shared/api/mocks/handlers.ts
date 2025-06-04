@@ -7,8 +7,53 @@ import {
   mockGoals,
   mockDebts,
   mockSubscriptions,
+  mockShoppingLists,
 } from './mockData';
+import {
+  emptyMockUsers,
+  emptyMockAccounts,
+  emptyMockTransactions,
+  emptyMockCategories,
+  emptyMockGoals,
+  emptyMockDebts,
+  emptyMockSubscriptions,
+  emptyMockShoppingLists,
+} from './emptyMockData';
 import { mockAnalytics } from './mockAnalytics';
+import { emptyMockAnalytics } from './emptyMockAnalytics';
+import { config } from '../../../config/environment';
+
+// Функция для получения соответствующих данных в зависимости от настроек
+// Читаем настройки каждый раз заново, чтобы поддерживать динамическое переключение
+const getMockData = () => {
+  // Принудительно перечитываем настройки из localStorage при каждом запросе
+  let currentMockDataType: 'filled' | 'empty' = 'filled';
+
+  if (typeof window !== 'undefined') {
+    const storedType = localStorage.getItem('mockDataType');
+    if (storedType === 'empty' || storedType === 'filled') {
+      currentMockDataType = storedType;
+    }
+  }
+
+  const isEmptyMode = currentMockDataType === 'empty';
+
+  console.log(
+    `[MSW] Используется режим данных: ${currentMockDataType} (empty: ${isEmptyMode})`
+  );
+
+  return {
+    users: isEmptyMode ? emptyMockUsers : mockUsers,
+    accounts: isEmptyMode ? emptyMockAccounts : mockAccounts,
+    transactions: isEmptyMode ? emptyMockTransactions : mockTransactions,
+    categories: isEmptyMode ? emptyMockCategories : mockCategories,
+    goals: isEmptyMode ? emptyMockGoals : mockGoals,
+    debts: isEmptyMode ? emptyMockDebts : mockDebts,
+    subscriptions: isEmptyMode ? emptyMockSubscriptions : mockSubscriptions,
+    shoppingLists: isEmptyMode ? emptyMockShoppingLists : mockShoppingLists,
+    analytics: isEmptyMode ? emptyMockAnalytics : mockAnalytics,
+  };
+};
 
 // Токен для имитации JWT
 const generateToken = (user: any) => `fake-jwt-token-${user.id}`;
@@ -21,9 +66,8 @@ export const handlers = [
   http.post('/api/users/login', async ({ request }) => {
     await delay(500);
     const { email, password } = (await request.json()) as any as any;
-    const user = mockUsers.find(
-      u => u.email === email && u.password === password
-    );
+    const { users } = getMockData();
+    const user = users.find(u => u.email === email && u.password === password);
 
     if (!user) {
       return new HttpResponse(
@@ -45,8 +89,9 @@ export const handlers = [
     await delay(700);
     const data = (await request.json()) as any as any;
     const { email } = data;
+    const { users } = getMockData();
 
-    if (mockUsers.some(u => u.email === email)) {
+    if (users.some(u => u.email === email)) {
       return new HttpResponse(
         JSON.stringify({
           message: 'Пользователь с таким email уже существует',
@@ -56,14 +101,14 @@ export const handlers = [
     }
 
     const newUser = {
-      id: `user${mockUsers.length + 1}`,
+      id: `user${users.length + 1}`,
       ...data,
       roles: ['user'],
       settings: {},
       isActive: true,
     };
 
-    mockUsers.push(newUser);
+    users.push(newUser);
 
     return HttpResponse.json({
       user: { ...newUser, password: undefined },
@@ -201,8 +246,9 @@ export const handlers = [
     await delay(500);
     const url = new URL(request.url);
     const status = url.searchParams.get('status') || 'active';
+    const { accounts } = getMockData();
 
-    let filteredAccounts = [...mockAccounts];
+    let filteredAccounts = [...accounts];
     if (status) {
       filteredAccounts = filteredAccounts.filter(
         account => account.status === status
@@ -216,7 +262,8 @@ export const handlers = [
   http.get('/api/accounts/:id', async ({ params }) => {
     await delay(500);
     const { id } = params;
-    const account = mockAccounts.find(a => a.id === id);
+    const { accounts } = getMockData();
+    const account = accounts.find(a => a.id === id);
 
     if (!account) {
       return new HttpResponse(null, { status: 404 });
@@ -854,7 +901,8 @@ export const handlers = [
     const type = url.searchParams.get('type');
 
     // Все долги
-    const allDebts = [...mockDebts];
+    const { debts } = getMockData();
+    const allDebts = [...debts];
 
     // Отфильтрованные долги
     let result;
@@ -892,7 +940,8 @@ export const handlers = [
     const futureDate = new Date();
     futureDate.setDate(currentDate.getDate() + days);
 
-    const upcomingDebtPayments = mockDebts
+    const { debts } = getMockData();
+    const upcomingDebtPayments = debts
       .filter(debt => debt.status === 'active')
       .filter(debt => debt.nextPaymentDate)
       .filter(debt => {
@@ -926,7 +975,8 @@ export const handlers = [
   http.get('/api/debts/:id', async ({ params }) => {
     await delay(500);
     const { id } = params;
-    const debt = mockDebts.find(d => d.id === id);
+    const { debts } = getMockData();
+    const debt = debts.find(d => d.id === id);
 
     if (!debt) {
       return new HttpResponse(null, { status: 404 });
@@ -940,8 +990,9 @@ export const handlers = [
     await delay(700);
     const data = (await request.json()) as any;
 
+    const { debts } = getMockData();
     const newDebt = {
-      id: `debt${mockDebts.length + 1}`,
+      id: `debt${debts.length + 1}`,
       userId: 'user1',
       ...data,
       currentAmount: data.initialAmount,
@@ -951,7 +1002,7 @@ export const handlers = [
       updatedAt: new Date().toISOString(),
     };
 
-    mockDebts.push(newDebt);
+    debts.push(newDebt);
     return HttpResponse.json(newDebt, { status: 201 });
   }),
 
@@ -959,7 +1010,8 @@ export const handlers = [
   http.post('/api/debts/:id/payment', async ({ params, request }) => {
     await delay(700);
     const { id } = params;
-    const debtIndex = mockDebts.findIndex(d => d.id === id);
+    const { debts } = getMockData();
+    const debtIndex = debts.findIndex(d => d.id === id);
 
     if (debtIndex === -1) {
       return new HttpResponse(null, { status: 404 });
@@ -969,23 +1021,23 @@ export const handlers = [
     const { amount, description } = data;
 
     // Обновляем сумму долга
-    mockDebts[debtIndex].currentAmount -= amount;
+    debts[debtIndex].currentAmount -= amount;
 
     // Добавляем запись в историю платежей
-    mockDebts[debtIndex].paymentHistory.push({
+    debts[debtIndex].paymentHistory.push({
       date: new Date().toISOString(),
       amount,
       description: description || 'Платеж по долгу',
     });
 
     // Обновляем статус долга если полностью погашен
-    if (mockDebts[debtIndex].currentAmount <= 0) {
-      mockDebts[debtIndex].status = 'paid';
+    if (debts[debtIndex].currentAmount <= 0) {
+      debts[debtIndex].status = 'paid';
     }
 
-    mockDebts[debtIndex].updatedAt = new Date().toISOString();
+    debts[debtIndex].updatedAt = new Date().toISOString();
 
-    return HttpResponse.json(mockDebts[debtIndex]);
+    return HttpResponse.json(debts[debtIndex]);
   }),
 
   // ===================== ПОДПИСКИ =====================
@@ -1172,7 +1224,40 @@ export const handlers = [
   // Получение аналитики дашборда
   http.get('/api/analytics/dashboard', async () => {
     await delay(700);
-    return HttpResponse.json(mockAnalytics.dashboard);
+    // Принудительно используем заполненные данные для демонстрации
+    console.log('Mock: config.mockDataType:', config.mockDataType);
+    console.log('Mock: Using filled analytics data for dashboard');
+    console.log('Mock: Dashboard analytics data:', mockAnalytics.dashboard);
+    console.log(
+      'Mock: monthStats specifically:',
+      mockAnalytics.dashboard.monthStats
+    );
+    console.log(
+      'Mock: income value:',
+      mockAnalytics.dashboard.monthStats.income
+    );
+    console.log(
+      'Mock: balance value:',
+      mockAnalytics.dashboard.monthStats.balance
+    );
+
+    // Принудительно устанавливаем значения для гарантированного результата
+    const forcedData = {
+      ...mockAnalytics.dashboard,
+      monthStats: {
+        income: 435000,
+        expense: 400000,
+        balance: 35000,
+      },
+    };
+
+    // Оборачиваем данные в формат ApiResponse
+    const apiResponse = {
+      data: forcedData,
+    };
+
+    console.log('Mock: Sending API response format:', apiResponse);
+    return HttpResponse.json(apiResponse);
   }),
 
   // Получение аналитики транзакций
@@ -1183,10 +1268,9 @@ export const handlers = [
 
     console.log('Mock: Analytics request for period:', period);
 
+    const { analytics } = getMockData();
     const analyticsData =
-      mockAnalytics.transactions[
-        period as keyof typeof mockAnalytics.transactions
-      ];
+      analytics.transactions[period as keyof typeof analytics.transactions];
 
     if (!analyticsData) {
       console.warn(
@@ -1194,7 +1278,7 @@ export const handlers = [
         period,
         'falling back to month'
       );
-      const fallbackData = mockAnalytics.transactions.month;
+      const fallbackData = analytics.transactions.month;
       console.log('Mock: Returning fallback data:', fallbackData);
       return HttpResponse.json(fallbackData);
     }
@@ -1210,13 +1294,15 @@ export const handlers = [
   // Получение аналитики целей
   http.get('/api/analytics/goals', async () => {
     await delay(700);
-    return HttpResponse.json(mockAnalytics.goals);
+    const { analytics } = getMockData();
+    return HttpResponse.json(analytics.goals || []);
   }),
 
   // Получение аналитики долгов
   http.get('/api/analytics/debts', async () => {
     await delay(700);
-    return HttpResponse.json(mockAnalytics.debts);
+    const { analytics } = getMockData();
+    return HttpResponse.json(analytics.debts || []);
   }),
 
   // ===================== АРХИВ =====================
@@ -1589,4 +1675,237 @@ export const handlers = [
       message: 'Элемент успешно удален из архива',
     });
   }),
+
+  // ===================== СПИСКИ ПОКУПОК =====================
+
+  // Получение всех списков покупок
+  http.get('/api/shopping-lists', async ({ request }) => {
+    await delay(500);
+    const { shoppingLists } = getMockData();
+    return HttpResponse.json({ data: shoppingLists });
+  }),
+
+  // Получение статистики списков покупок (ДОЛЖНО БЫТЬ ВЫШЕ /:id)
+  http.get('/api/shopping-lists/statistics', async ({ request }) => {
+    await delay(300);
+    const { shoppingLists } = getMockData();
+
+    const activeLists = shoppingLists.filter(
+      (list: any) => list.status === 'active'
+    );
+    const totalBudget = shoppingLists.reduce(
+      (sum: number, list: any) => sum + list.totalBudget,
+      0
+    );
+    const totalSpent = shoppingLists.reduce(
+      (sum: number, list: any) => sum + list.spentAmount,
+      0
+    );
+
+    const totalItems = shoppingLists.reduce(
+      (sum: number, list: any) => sum + list.items.length,
+      0
+    );
+    const purchasedItems = shoppingLists.reduce(
+      (sum: number, list: any) =>
+        sum + list.items.filter((item: any) => item.isPurchased).length,
+      0
+    );
+    const completionRate =
+      totalItems > 0 ? (purchasedItems / totalItems) * 100 : 0;
+
+    const statistics = {
+      totalLists: shoppingLists.length,
+      activeLists: activeLists.length,
+      totalBudget,
+      totalSpent,
+      completionRate,
+    };
+
+    return HttpResponse.json({ data: statistics });
+  }),
+
+  // Получение конкретного списка покупок
+  http.get('/api/shopping-lists/:id', async ({ params }) => {
+    await delay(300);
+    const { id } = params;
+    const { shoppingLists } = getMockData();
+    const list = shoppingLists.find((l: any) => l.id === id);
+
+    if (!list) {
+      return new HttpResponse(null, { status: 404 });
+    }
+
+    return HttpResponse.json({ data: list });
+  }),
+
+  // Создание нового списка покупок
+  http.post('/api/shopping-lists', async ({ request }) => {
+    await delay(700);
+    const data = (await request.json()) as any;
+    const { shoppingLists } = getMockData();
+
+    const newList = {
+      id: `list${Date.now()}`,
+      userId: 'user1',
+      name: data.name,
+      description: data.description || '',
+      deadline: data.deadline,
+      totalBudget: data.totalBudget,
+      spentAmount: 0,
+      status: 'draft',
+      items: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    shoppingLists.push(newList);
+    return HttpResponse.json({ data: newList }, { status: 201 });
+  }),
+
+  // Обновление списка покупок
+  http.put('/api/shopping-lists/:id', async ({ params, request }) => {
+    await delay(500);
+    const { id } = params;
+    const data = (await request.json()) as any;
+    const { shoppingLists } = getMockData();
+
+    const listIndex = shoppingLists.findIndex((l: any) => l.id === id);
+    if (listIndex === -1) {
+      return new HttpResponse(null, { status: 404 });
+    }
+
+    shoppingLists[listIndex] = {
+      ...shoppingLists[listIndex],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+
+    return HttpResponse.json({ data: shoppingLists[listIndex] });
+  }),
+
+  // Удаление списка покупок
+  http.delete('/api/shopping-lists/:id', async ({ params }) => {
+    await delay(500);
+    const { id } = params;
+    const { shoppingLists } = getMockData();
+
+    const listIndex = shoppingLists.findIndex((l: any) => l.id === id);
+    if (listIndex === -1) {
+      return new HttpResponse(null, { status: 404 });
+    }
+
+    shoppingLists.splice(listIndex, 1);
+    return HttpResponse.json({ message: 'Список покупок удален' });
+  }),
+
+  // Добавление товара в список
+  http.post(
+    '/api/shopping-lists/:listId/items',
+    async ({ params, request }) => {
+      await delay(500);
+      const { listId } = params;
+      const data = (await request.json()) as any;
+      const { shoppingLists } = getMockData();
+
+      const listIndex = shoppingLists.findIndex((l: any) => l.id === listId);
+      if (listIndex === -1) {
+        return new HttpResponse(null, { status: 404 });
+      }
+
+      const newItem = {
+        id: `item${Date.now()}`,
+        name: data.name,
+        price: data.price,
+        quantity: data.quantity,
+        priority: data.priority || 'medium',
+        category: data.category || '',
+        isPurchased: false,
+        notes: data.notes || '',
+      };
+
+      shoppingLists[listIndex].items.push(newItem);
+      shoppingLists[listIndex].updatedAt = new Date().toISOString();
+
+      return HttpResponse.json({ data: shoppingLists[listIndex] });
+    }
+  ),
+
+  // Обновление товара в списке
+  http.put(
+    '/api/shopping-lists/:listId/items/:itemId',
+    async ({ params, request }) => {
+      await delay(500);
+      const { listId, itemId } = params;
+      const data = (await request.json()) as any;
+      const { shoppingLists } = getMockData();
+
+      const listIndex = shoppingLists.findIndex((l: any) => l.id === listId);
+      if (listIndex === -1) {
+        return new HttpResponse(null, { status: 404 });
+      }
+
+      const itemIndex = shoppingLists[listIndex].items.findIndex(
+        (i: any) => i.id === itemId
+      );
+      if (itemIndex === -1) {
+        return new HttpResponse(null, { status: 404 });
+      }
+
+      shoppingLists[listIndex].items[itemIndex] = {
+        ...shoppingLists[listIndex].items[itemIndex],
+        ...data,
+      };
+
+      // Пересчитываем потраченную сумму
+      const spentAmount = shoppingLists[listIndex].items
+        .filter((item: any) => item.isPurchased)
+        .reduce(
+          (sum: number, item: any) => sum + item.price * item.quantity,
+          0
+        );
+
+      shoppingLists[listIndex].spentAmount = spentAmount;
+      shoppingLists[listIndex].updatedAt = new Date().toISOString();
+
+      return HttpResponse.json({ data: shoppingLists[listIndex] });
+    }
+  ),
+
+  // Удаление товара из списка
+  http.delete(
+    '/api/shopping-lists/:listId/items/:itemId',
+    async ({ params }) => {
+      await delay(500);
+      const { listId, itemId } = params;
+      const { shoppingLists } = getMockData();
+
+      const listIndex = shoppingLists.findIndex((l: any) => l.id === listId);
+      if (listIndex === -1) {
+        return new HttpResponse(null, { status: 404 });
+      }
+
+      const itemIndex = shoppingLists[listIndex].items.findIndex(
+        (i: any) => i.id === itemId
+      );
+      if (itemIndex === -1) {
+        return new HttpResponse(null, { status: 404 });
+      }
+
+      shoppingLists[listIndex].items.splice(itemIndex, 1);
+
+      // Пересчитываем потраченную сумму
+      const spentAmount = shoppingLists[listIndex].items
+        .filter((item: any) => item.isPurchased)
+        .reduce(
+          (sum: number, item: any) => sum + item.price * item.quantity,
+          0
+        );
+
+      shoppingLists[listIndex].spentAmount = spentAmount;
+      shoppingLists[listIndex].updatedAt = new Date().toISOString();
+
+      return HttpResponse.json({ data: shoppingLists[listIndex] });
+    }
+  ),
 ];

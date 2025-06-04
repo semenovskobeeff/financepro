@@ -26,7 +26,8 @@ class DatabaseSeeder {
       const existingUsers = await User.countDocuments();
       if (existingUsers > 0) {
         console.log('📊 База данных уже содержит пользователей');
-        return await this.getTestUser();
+        console.log('🔄 Проверяем полноту тестовых данных...');
+        return await this.ensureTestDataCompleteness();
       }
 
       // Создаем тестового пользователя
@@ -56,6 +57,127 @@ class DatabaseSeeder {
       console.error('❌ Ошибка при заполнении БД:', error);
       throw error;
     }
+  }
+
+  async ensureTestDataCompleteness() {
+    try {
+      // Находим тестового пользователя
+      const testUser = await User.findOne({ email: 'test@example.com' });
+      if (!testUser) {
+        console.log('❌ Тестовый пользователь не найден, создаем заново...');
+        return await this.recreateAllTestData();
+      }
+
+      this.testUserId = testUser._id;
+      console.log(`✅ Найден тестовый пользователь: ${testUser.email}`);
+
+      // Проверяем количество данных по каждой сущности
+      const [
+        accountsCount,
+        categoriesCount,
+        transactionsCount,
+        goalsCount,
+        debtsCount,
+        subscriptionsCount,
+      ] = await Promise.all([
+        Account.countDocuments({ userId: this.testUserId }),
+        Category.countDocuments({ userId: this.testUserId }),
+        Transaction.countDocuments({ userId: this.testUserId }),
+        Goal.countDocuments({ userId: this.testUserId }),
+        Debt.countDocuments({ userId: this.testUserId }),
+        Subscription.countDocuments({ userId: this.testUserId }),
+      ]);
+
+      console.log('📊 Текущее состояние данных:');
+      console.log(`   Счета: ${accountsCount}`);
+      console.log(`   Категории: ${categoriesCount}`);
+      console.log(`   Транзакции: ${transactionsCount}`);
+      console.log(`   Цели: ${goalsCount}`);
+      console.log(`   Долги: ${debtsCount}`);
+      console.log(`   Подписки: ${subscriptionsCount}`);
+
+      // Определяем минимальные требования для полноты данных
+      const requirements = {
+        accounts: 4, // Основной, сберегательный, кредитный, отпускной
+        categories: 10, // Минимум категорий
+        transactions: 50, // Транзакции за 3 месяца
+        goals: 3, // 3 цели
+        debts: 3, // 3 долга
+        subscriptions: 4, // 4 подписки
+      };
+
+      // Проверяем, нужно ли дополнять данные
+      const needsUpdate =
+        accountsCount < requirements.accounts ||
+        categoriesCount < requirements.categories ||
+        transactionsCount < requirements.transactions ||
+        goalsCount < requirements.goals ||
+        debtsCount < requirements.debts ||
+        subscriptionsCount < requirements.subscriptions;
+
+      if (needsUpdate) {
+        console.log('⚠️ Данные неполные, обновляем...');
+        return await this.recreateAllTestData();
+      } else {
+        console.log('✅ Все тестовые данные присутствуют в полном объеме');
+        return { userId: this.testUserId };
+      }
+    } catch (error) {
+      console.error('❌ Ошибка при проверке полноты данных:', error);
+      return await this.recreateAllTestData();
+    }
+  }
+
+  async recreateAllTestData() {
+    console.log('🔄 Пересоздание всех тестовых данных...');
+
+    try {
+      // Удаляем все данные тестового пользователя
+      await this.clearTestUserData();
+
+      // Создаем тестового пользователя заново
+      await this.createTestUser();
+
+      // Создаем все данные с нуля
+      await this.createDefaultCategories();
+      await this.createTestAccounts();
+      await this.createTestTransactions();
+      await this.createTestGoals();
+      await this.createTestDebts();
+      await this.createTestSubscriptions();
+
+      console.log('✅ Все тестовые данные успешно пересозданы');
+      return { userId: this.testUserId };
+    } catch (error) {
+      console.error('❌ Ошибка при пересоздании данных:', error);
+      throw error;
+    }
+  }
+
+  async clearTestUserData() {
+    console.log('🧹 Очистка данных тестового пользователя...');
+
+    // Находим тестового пользователя
+    const testUser = await User.findOne({ email: 'test@example.com' });
+    if (!testUser) {
+      console.log('ℹ️ Тестовый пользователь не найден');
+      return;
+    }
+
+    const testUserId = testUser._id;
+
+    // Удаляем все связанные данные
+    await Promise.all([
+      Account.deleteMany({ userId: testUserId }),
+      Category.deleteMany({ userId: testUserId }),
+      Transaction.deleteMany({ userId: testUserId }),
+      Goal.deleteMany({ userId: testUserId }),
+      Debt.deleteMany({ userId: testUserId }),
+      Subscription.deleteMany({ userId: testUserId }),
+      User.deleteOne({ _id: testUserId }),
+    ]);
+
+    console.log('✅ Данные тестового пользователя очищены');
   }
 
   async createTestUser() {
@@ -166,13 +288,15 @@ class DatabaseSeeder {
     const transactions = [];
     const today = new Date();
 
-    // Создаем транзакции за последние 30 дней
-    for (let i = 0; i < 30; i++) {
+    // Создаем транзакции за последние 90 дней для большей полноты
+    for (let i = 1; i <= 90; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
+      // Убеждаемся, что дата не в будущем
+      if (date > today) continue;
 
       // Случайные доходы (реже)
-      if (Math.random() < 0.3) {
+      if (Math.random() < 0.25) {
         const category =
           incomeCategories[Math.floor(Math.random() * incomeCategories.length)];
         transactions.push({
@@ -184,11 +308,12 @@ class DatabaseSeeder {
           date: date,
           description: `Доход - ${category.name}`,
           status: 'active',
+          location: undefined, // Убираем геолокацию
         });
       }
 
       // Случайные расходы (чаще)
-      if (Math.random() < 0.7) {
+      if (Math.random() < 0.8) {
         const category =
           expenseCategories[
             Math.floor(Math.random() * expenseCategories.length)
@@ -202,6 +327,7 @@ class DatabaseSeeder {
           date: date,
           description: `Расход - ${category.name}`,
           status: 'active',
+          location: undefined, // Убираем геолокацию
         });
       }
 
@@ -217,11 +343,18 @@ class DatabaseSeeder {
           date: date,
           description: 'Перевод между счетами',
           status: 'active',
+          location: undefined, // Убираем геолокацию
         });
       }
     }
 
     // Добавляем несколько крупных транзакций
+    const lastMonth = new Date(today);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+
+    const twoMonthsAgo = new Date(today);
+    twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+
     transactions.push(
       {
         userId: this.testUserId,
@@ -231,9 +364,10 @@ class DatabaseSeeder {
           incomeCategories.find(c => c.name === 'Зарплата')?._id ||
           incomeCategories[0]._id,
         accountId: accounts[0]._id,
-        date: new Date(today.getFullYear(), today.getMonth(), 1),
+        date: new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1),
         description: 'Зарплата за месяц',
         status: 'active',
+        location: undefined, // Убираем геолокацию
       },
       {
         userId: this.testUserId,
@@ -243,13 +377,37 @@ class DatabaseSeeder {
           incomeCategories.find(c => c.name === 'Бонусы')?._id ||
           incomeCategories[0]._id,
         accountId: accounts[1]._id,
-        date: new Date(today.getFullYear(), today.getMonth(), 15),
+        date: new Date(twoMonthsAgo.getFullYear(), twoMonthsAgo.getMonth(), 15),
         description: 'Годовой бонус',
         status: 'active',
+        location: undefined, // Убираем геолокацию
       }
     );
 
-    const createdTransactions = await Transaction.insertMany(transactions);
+    // Создаем транзакции по одной, чтобы избежать проблем с геолокацией
+    const createdTransactions = [];
+    for (const transactionData of transactions) {
+      try {
+        // Убираем поле location полностью и все ненужные поля
+        const cleanData = {
+          userId: transactionData.userId,
+          type: transactionData.type,
+          amount: transactionData.amount,
+          categoryId: transactionData.categoryId,
+          accountId: transactionData.accountId,
+          toAccountId: transactionData.toAccountId,
+          date: transactionData.date,
+          description: transactionData.description,
+          status: transactionData.status,
+        };
+
+        const transaction = new Transaction(cleanData);
+        const saved = await transaction.save();
+        createdTransactions.push(saved);
+      } catch (error) {
+        console.log(`⚠️ Ошибка создания транзакции: ${error.message}`);
+      }
+    }
     console.log(`✅ Создано ${createdTransactions.length} тестовых транзакций`);
   }
 

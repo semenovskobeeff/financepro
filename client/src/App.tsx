@@ -21,6 +21,7 @@ import ProtectedRoute from './features/auth/components/ProtectedRoute';
 import ToastNotification from './shared/ui/ToastNotification';
 import ErrorAlert from './shared/ui/ErrorAlert';
 import DebugAuthStatus from './shared/ui/DebugAuthStatus';
+import MockDataIndicator from './shared/ui/MockDataIndicator';
 
 // Страницы
 import Dashboard from './pages/Dashboard';
@@ -34,6 +35,7 @@ import Debts from './pages/Debts';
 import DebtDetails from './pages/DebtDetails';
 import Subscriptions from './pages/Subscriptions';
 import SubscriptionDetails from './pages/SubscriptionDetails';
+import ShoppingLists from './pages/ShoppingLists';
 import Analytics from './pages/Analytics';
 import Archive from './pages/Archive';
 import LoginPage from './pages/auth/LoginPage';
@@ -178,6 +180,16 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <GlobalErrorHandler />
     </div>
   );
+};
+
+// Компонент для защиты маршрутов, доступных только в режиме разработки
+const DevOnlyRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  if (process.env.NODE_ENV !== 'development') {
+    return null; // В production режиме возвращаем null (маршрут недоступен)
+  }
+  return <>{children}</>;
 };
 
 function App() {
@@ -353,6 +365,14 @@ function App() {
                 }
               />
               <Route
+                path="/shopping-lists"
+                element={
+                  <ProtectedRoute>
+                    <ShoppingLists />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/analytics"
                 element={
                   <ProtectedRoute>
@@ -371,9 +391,11 @@ function App() {
               <Route
                 path="/settings"
                 element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
+                  <DevOnlyRoute>
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  </DevOnlyRoute>
                 }
               />
               <Route path="/pastel-colors" element={<PastelColorDemo />} />
@@ -385,6 +407,9 @@ function App() {
 
           {/* Переключатель режима API */}
           <ApiModeToggle />
+
+          {/* Индикатор типа моковых данных */}
+          <MockDataIndicator />
 
           {/* Компонент отладки авторизации */}
           <DebugAuthStatus />

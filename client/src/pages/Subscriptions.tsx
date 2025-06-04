@@ -297,7 +297,7 @@ const Subscriptions: React.FC = () => {
                 <Typography
                   variant="body2"
                   fontWeight="bold"
-                  color="error.main"
+                  color="primary.main"
                 >
                   {formatMonthlyCost(statsData?.totalMonthly || 0)}
                 </Typography>
@@ -307,7 +307,7 @@ const Subscriptions: React.FC = () => {
                 <Typography
                   variant="body2"
                   fontWeight="bold"
-                  color="error.main"
+                  color="primary.main"
                 >
                   {formatMonthlyCost(statsData?.totalYearly || 0)}
                 </Typography>
