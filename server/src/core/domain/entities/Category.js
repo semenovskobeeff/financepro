@@ -120,7 +120,7 @@ const categorySchema = new mongoose.Schema(
 // Составные индексы
 categorySchema.index({ userId: 1, type: 1 });
 categorySchema.index({ userId: 1, status: 1 });
-categorySchema.index({ userId: 1, name: 1 }, { unique: true });
+categorySchema.index({ userId: 1, name: 1, type: 1 }, { unique: true });
 categorySchema.index({ parentId: 1 });
 categorySchema.index({ sortOrder: 1 });
 
@@ -144,9 +144,10 @@ categorySchema.virtual('isParent').get(function () {
 // Middleware для валидации
 categorySchema.pre('save', async function (next) {
   try {
-    // Проверяем уникальность имени в рамках пользователя
+    // Проверяем уникальность имени в рамках пользователя и типа
     const existingCategory = await this.constructor.findOne({
       userId: this.userId,
+      type: this.type,
       name: { $regex: new RegExp(`^${this.name}$`, 'i') },
       _id: { $ne: this._id },
       status: 'active',

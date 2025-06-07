@@ -6,10 +6,6 @@ import {
   UpdateCategoryRequest,
 } from '../model/types';
 
-interface ApiResponse<T> {
-  data: T;
-}
-
 export const categoryApi = createApi({
   reducerPath: 'categoryApi',
   baseQuery,
@@ -31,8 +27,7 @@ export const categoryApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: ApiResponse<Category[]>) =>
-        response.data || [],
+      transformResponse: (response: Category[]) => response,
       providesTags: result =>
         result
           ? [
@@ -47,7 +42,7 @@ export const categoryApi = createApi({
 
     getCategoryById: builder.query<Category, string>({
       query: id => ({ url: `/categories/${id}` }),
-      transformResponse: (response: ApiResponse<Category>) => response.data,
+      transformResponse: (response: Category) => response,
       providesTags: (_, __, id) => [{ type: 'Category', id }],
     }),
 
@@ -57,7 +52,7 @@ export const categoryApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Category>) => response.data,
+      transformResponse: (response: Category) => response,
       invalidatesTags: [{ type: 'Category', id: 'LIST' }],
     }),
 
@@ -70,7 +65,7 @@ export const categoryApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Category>) => response.data,
+      transformResponse: (response: Category) => response,
       invalidatesTags: (_, __, { id }) => [
         { type: 'Category', id },
         { type: 'Category', id: 'LIST' },

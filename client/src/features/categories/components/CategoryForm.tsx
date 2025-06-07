@@ -134,16 +134,28 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         await createCategory(formData).unwrap();
       }
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save category:', err);
+      // Более детальная обработка ошибок
+      if (err?.data?.message) {
+        setErrors({ submit: err.data.message });
+      } else if (err?.message) {
+        setErrors({ submit: err.message });
+      }
     }
+  };
+
+  const handleClose = () => {
+    setErrors({});
+    onClose();
   };
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-      {error && (
+      {(error || errors.submit) && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Ошибка при сохранении категории. Пожалуйста, попробуйте снова.
+          {errors.submit ||
+            'Ошибка при сохранении категории. Пожалуйста, попробуйте снова.'}
         </Alert>
       )}
 
@@ -215,7 +227,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         <Button
           variant="outlined"
           color="secondary"
-          onClick={onClose}
+          onClick={handleClose}
           disabled={isLoading}
         >
           Отмена
