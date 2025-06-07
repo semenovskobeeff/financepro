@@ -12,6 +12,29 @@ import SportsIcon from '@mui/icons-material/Sports';
 import SchoolIcon from '@mui/icons-material/School';
 import WorkIcon from '@mui/icons-material/Work';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
+import FastfoodIcon from '@mui/icons-material/Fastfood';
+import LocalCafeIcon from '@mui/icons-material/LocalCafe';
+import LocalGroceryStoreIcon from '@mui/icons-material/LocalGroceryStore';
+import LocalGasStationIcon from '@mui/icons-material/LocalGasStation';
+import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import TheaterComedyIcon from '@mui/icons-material/TheaterComedy';
+import MovieIcon from '@mui/icons-material/Movie';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import FlightIcon from '@mui/icons-material/Flight';
+import HotelIcon from '@mui/icons-material/Hotel';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import SpaIcon from '@mui/icons-material/Spa';
+import PetsIcon from '@mui/icons-material/Pets';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import SecurityIcon from '@mui/icons-material/Security';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import AppleIcon from '@mui/icons-material/Apple';
 
 interface CategoryChipProps {
   category: Category;
@@ -26,20 +49,66 @@ export const getCategoryIcon = (iconName: string) => {
       return <ShoppingCartIcon fontSize="small" />;
     case 'food':
       return <RestaurantIcon fontSize="small" />;
+    case 'fruits':
+      return <AppleIcon fontSize="small" />;
+    case 'restaurant':
+      return <RestaurantMenuIcon fontSize="small" />;
+    case 'fastfood':
+      return <FastfoodIcon fontSize="small" />;
+    case 'coffee':
+      return <LocalCafeIcon fontSize="small" />;
+    case 'grocery':
+      return <LocalGroceryStoreIcon fontSize="small" />;
     case 'home':
       return <HomeIcon fontSize="small" />;
     case 'transport':
       return <DirectionsCarIcon fontSize="small" />;
+    case 'fuel':
+      return <LocalGasStationIcon fontSize="small" />;
     case 'health':
       return <LocalHospitalIcon fontSize="small" />;
+    case 'pharmacy':
+      return <LocalPharmacyIcon fontSize="small" />;
     case 'sport':
       return <SportsIcon fontSize="small" />;
+    case 'fitness':
+      return <FitnessCenterIcon fontSize="small" />;
     case 'education':
       return <SchoolIcon fontSize="small" />;
+    case 'books':
+      return <MenuBookIcon fontSize="small" />;
     case 'work':
       return <WorkIcon fontSize="small" />;
     case 'income':
       return <AttachMoneyIcon fontSize="small" />;
+    case 'entertainment':
+      return <TheaterComedyIcon fontSize="small" />;
+    case 'movie':
+      return <MovieIcon fontSize="small" />;
+    case 'music':
+      return <MusicNoteIcon fontSize="small" />;
+    case 'gaming':
+      return <SportsEsportsIcon fontSize="small" />;
+    case 'travel':
+      return <FlightIcon fontSize="small" />;
+    case 'hotel':
+      return <HotelIcon fontSize="small" />;
+    case 'clothing':
+      return <CheckroomIcon fontSize="small" />;
+    case 'beauty':
+      return <SpaIcon fontSize="small" />;
+    case 'pets':
+      return <PetsIcon fontSize="small" />;
+    case 'gifts':
+      return <CardGiftcardIcon fontSize="small" />;
+    case 'charity':
+      return <VolunteerActivismIcon fontSize="small" />;
+    case 'bills':
+      return <ReceiptIcon fontSize="small" />;
+    case 'insurance':
+      return <SecurityIcon fontSize="small" />;
+    case 'investment':
+      return <TrendingUpIcon fontSize="small" />;
     case 'tag':
       return <LocalOfferIcon fontSize="small" />;
     default:

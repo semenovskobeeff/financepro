@@ -12,6 +12,8 @@ import {
   Grid,
   ToggleButtonGroup,
   ToggleButton,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   Category,
@@ -24,19 +26,43 @@ import {
 } from '../../../entities/category/api/categoryApi';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { getCategoryIcon } from '../../../entities/category/ui/CategoryChip';
 
 // Доступные иконки для категорий
 const iconOptions = [
   { value: 'category', label: 'Категория' },
   { value: 'shopping', label: 'Покупки' },
   { value: 'food', label: 'Еда' },
+  { value: 'fruits', label: 'Фрукты' },
+  { value: 'restaurant', label: 'Ресторан' },
+  { value: 'fastfood', label: 'Фастфуд' },
+  { value: 'coffee', label: 'Кофе' },
+  { value: 'grocery', label: 'Продукты' },
   { value: 'home', label: 'Дом' },
   { value: 'transport', label: 'Транспорт' },
+  { value: 'fuel', label: 'Топливо' },
   { value: 'health', label: 'Здоровье' },
+  { value: 'pharmacy', label: 'Аптека' },
   { value: 'sport', label: 'Спорт' },
+  { value: 'fitness', label: 'Фитнес' },
   { value: 'education', label: 'Образование' },
+  { value: 'books', label: 'Книги' },
   { value: 'work', label: 'Работа' },
   { value: 'income', label: 'Доход' },
+  { value: 'entertainment', label: 'Развлечения' },
+  { value: 'movie', label: 'Кино' },
+  { value: 'music', label: 'Музыка' },
+  { value: 'gaming', label: 'Игры' },
+  { value: 'travel', label: 'Путешествия' },
+  { value: 'hotel', label: 'Отель' },
+  { value: 'clothing', label: 'Одежда' },
+  { value: 'beauty', label: 'Красота' },
+  { value: 'pets', label: 'Животные' },
+  { value: 'gifts', label: 'Подарки' },
+  { value: 'charity', label: 'Благотворительность' },
+  { value: 'bills', label: 'Счета' },
+  { value: 'insurance', label: 'Страхование' },
+  { value: 'investment', label: 'Инвестиции' },
   { value: 'tag', label: 'Тег' },
 ];
 
@@ -208,7 +234,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             >
               {iconOptions.map(icon => (
                 <MenuItem key={icon.value} value={icon.value}>
-                  {icon.label}
+                  <ListItemIcon>{getCategoryIcon(icon.value)}</ListItemIcon>
+                  <ListItemText primary={icon.label} />
                 </MenuItem>
               ))}
             </Select>
