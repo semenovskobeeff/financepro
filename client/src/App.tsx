@@ -12,6 +12,8 @@ import {
 } from '@mui/material/styles';
 import { ThemeProvider } from './shared/config/ThemeContext';
 import { useAppDispatch, useAppSelector } from './app/store/hooks';
+import { useAppLoading } from './shared/hooks/useAppLoading';
+import Preloader from './shared/ui/Preloader';
 import './App.css';
 
 // Компоненты
@@ -196,6 +198,9 @@ function App() {
   // Инициализируем тему
   const { themeMode } = useTheme();
 
+  // Состояние загрузки приложения
+  const { isLoading, loadingMessage } = useAppLoading({ minLoadingTime: 800 });
+
   // Состояние для формы платежа
   const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
 
@@ -251,6 +256,18 @@ function App() {
       return null;
     }
   };
+
+  // Показываем прелоадер во время загрузки
+  if (isLoading) {
+    return (
+      <ThemeProvider>
+        <MuiThemeProvider theme={theme}>
+          <CssBaseline />
+          <Preloader message={loadingMessage} />
+        </MuiThemeProvider>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider>

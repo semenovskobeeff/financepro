@@ -33,7 +33,7 @@ const DebugAuthStatus: React.FC = () => {
         p: 2,
         minWidth: 300,
         maxWidth: 400,
-        zIndex: 1000,
+        zIndex: 9999,
         opacity: 0.9,
       }}
     >

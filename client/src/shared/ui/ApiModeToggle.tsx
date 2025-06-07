@@ -195,9 +195,9 @@ const ApiModeToggle: React.FC = () => {
       elevation={2}
       sx={{
         position: 'fixed',
-        top: 80,
-        right: 16,
-        zIndex: 1000,
+        bottom: 16,
+        left: 16,
+        zIndex: 9999,
         minWidth: 320,
         maxWidth: 400,
       }}
