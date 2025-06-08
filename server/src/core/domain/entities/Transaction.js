@@ -273,6 +273,12 @@ transactionSchema.pre('save', async function (next) {
 // Middleware для обновления балансов счетов
 transactionSchema.post('save', async function (doc) {
   try {
+    // Пропускаем обновление баланса если установлен флаг
+    if (doc._skipBalanceUpdate) {
+      console.log('⏭️ Пропуск обновления баланса по флагу _skipBalanceUpdate');
+      return;
+    }
+
     const Account = mongoose.model('Account');
 
     // Обновляем счет-источник

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -13,16 +13,67 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Chip,
+  Button,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import { useTheme } from '../shared/config/ThemeContext';
 import PageContainer from '../shared/ui/PageContainer';
 import NotionCard from '../shared/ui/NotionCard';
+import { config } from '../config/environment';
 
 const Settings: React.FC = () => {
   const { themeMode, themeToggleEnabled, setThemeToggleEnabled } = useTheme();
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const [recalculateMessage, setRecalculateMessage] = useState<string | null>(
+    null
+  );
+  const [recalculateError, setRecalculateError] = useState<string | null>(null);
 
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setThemeToggleEnabled(event.target.checked);
+  };
+
+  const handleRecalculateBalances = async () => {
+    try {
+      setIsRecalculating(true);
+      setRecalculateMessage(null);
+      setRecalculateError(null);
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Не авторизован');
+      }
+
+      const response = await fetch('/api/transactions/recalculate-balances', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка при пересчете балансов');
+      }
+
+      const result = await response.json();
+      setRecalculateMessage(
+        `Пересчитано балансов: ${result.data.accountsProcessed}`
+      );
+
+      // Перезагружаем страницу через 3 секунды для обновления данных
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } catch (error) {
+      console.error('Ошибка пересчета балансов:', error);
+      setRecalculateError(
+        error instanceof Error ? error.message : 'Неизвестная ошибка'
+      );
+    } finally {
+      setIsRecalculating(false);
+    }
   };
 
   return (
@@ -59,6 +110,45 @@ const Settings: React.FC = () => {
           <Divider component="li" />
         </List>
       </NotionCard>
+
+      {/* Утилиты для разработки */}
+      {config.debug && (
+        <NotionCard title="Утилиты разработчика">
+          <List>
+            <ListItem>
+              <ListItemText
+                primary="Пересчет балансов счетов"
+                secondary="Исправляет ошибки в балансах, пересчитывая их на основе всех транзакций"
+              />
+              <ListItemSecondaryAction>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  onClick={handleRecalculateBalances}
+                  disabled={isRecalculating}
+                  startIcon={
+                    isRecalculating ? <CircularProgress size={16} /> : undefined
+                  }
+                >
+                  {isRecalculating ? 'Пересчет...' : 'Пересчитать'}
+                </Button>
+              </ListItemSecondaryAction>
+            </ListItem>
+          </List>
+
+          {recalculateMessage && (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              {recalculateMessage}. Страница перезагрузится через 3 секунды...
+            </Alert>
+          )}
+
+          {recalculateError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {recalculateError}
+            </Alert>
+          )}
+        </NotionCard>
+      )}
     </PageContainer>
   );
 };

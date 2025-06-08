@@ -240,4 +240,24 @@ router.put('/:id/archive', transactionController.archiveTransaction);
  */
 router.put('/:id/restore', transactionController.restoreTransaction);
 
+/**
+ * @swagger
+ * /api/transactions/recalculate-balances:
+ *   post:
+ *     tags:
+ *       - Transactions
+ *     summary: Пересчитать балансы всех счетов на основе транзакций
+ *     description: Утилита для исправления ошибок в балансах счетов
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Балансы успешно пересчитаны
+ *       401:
+ *         description: Не авторизован
+ *       500:
+ *         description: Ошибка при пересчете
+ */
+router.post('/recalculate-balances', transactionController.recalculateBalances);
+
 module.exports = router;
