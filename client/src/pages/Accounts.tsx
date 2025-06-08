@@ -38,7 +38,8 @@ import {
   useRestoreAccountMutation,
 } from '../entities/account/api/accountApi';
 import { useNavigate } from 'react-router-dom';
-import DataSyncAlert from '../shared/ui/DataSyncAlert';
+// КОМПОНЕНТ СИНХРОНИЗАЦИИ ОТКЛЮЧЕН
+// import DataSyncAlert from '../shared/ui/DataSyncAlert';
 import { formatCurrencyWithDots } from '../shared/utils/formatUtils';
 
 const Accounts: React.FC = () => {
@@ -116,7 +117,8 @@ const Accounts: React.FC = () => {
       }}
     >
       {/* Уведомление о синхронизации данных */}
-      <DataSyncAlert />
+      {/* КОМПОНЕНТ СИНХРОНИЗАЦИИ ОТКЛЮЧЕН */}
+      {/* <DataSyncAlert /> */}
 
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
         <Paper sx={{ flexGrow: 1 }}>
