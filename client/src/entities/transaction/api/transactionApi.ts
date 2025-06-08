@@ -185,6 +185,87 @@ export const transactionApi = createApi({
       query: () => '/transactions/check-balances',
       providesTags: ['BalanceCheck'],
     }),
+
+    // Синхронизация баланса отдельного счета
+    syncAccountBalance: builder.mutation<
+      {
+        status: string;
+        message: string;
+        data: {
+          synchronized: boolean;
+          oldBalance: number;
+          newBalance: number;
+          difference: number;
+        };
+      },
+      string
+    >({
+      query: accountId => ({
+        url: `/transactions/sync-account/${accountId}`,
+        method: 'POST',
+      }),
+      invalidatesTags: [
+        'Account',
+        'Analytics',
+        'BalanceCheck',
+        { type: 'Transaction', id: 'LIST' },
+      ],
+    }),
+
+    // Валидация и автоисправление балансов
+    validateAndFixBalances: builder.mutation<
+      {
+        status: string;
+        message: string;
+        data: {
+          status: 'ok' | 'fixed' | 'inconsistent';
+          hasInconsistencies: boolean;
+          accountsChecked: number;
+          inconsistencies: Array<any>;
+          fixResult?: {
+            accountsProcessed: number;
+            accountsCorrected: number;
+            results: Array<any>;
+            success: boolean;
+          };
+        };
+      },
+      { autoFix?: boolean }
+    >({
+      query: ({ autoFix = true }) => ({
+        url: `/transactions/validate-balances?autoFix=${autoFix}`,
+        method: 'POST',
+      }),
+      invalidatesTags: [
+        'Account',
+        'Analytics',
+        'BalanceCheck',
+        { type: 'Transaction', id: 'LIST' },
+      ],
+    }),
+
+    // Создание снимка балансов
+    createBalanceSnapshot: builder.mutation<
+      {
+        status: string;
+        message: string;
+        data: {
+          userId: string;
+          timestamp: string;
+          accounts: Array<{
+            accountId: string;
+            accountName: string;
+            balance: number;
+          }>;
+        };
+      },
+      void
+    >({
+      query: () => ({
+        url: '/transactions/balance-snapshot',
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
@@ -196,4 +277,7 @@ export const {
   useDeleteTransactionMutation,
   useRecalculateBalancesMutation,
   useCheckBalancesQuery,
+  useSyncAccountBalanceMutation,
+  useValidateAndFixBalancesMutation,
+  useCreateBalanceSnapshotMutation,
 } = transactionApi;

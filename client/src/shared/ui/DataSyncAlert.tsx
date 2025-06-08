@@ -6,12 +6,15 @@ import {
   Typography,
   Chip,
   CircularProgress,
+  Tooltip,
 } from '@mui/material';
 import {
   Sync as SyncIcon,
   Warning as WarningIcon,
   CheckCircle as CheckIcon,
   Visibility as VisibilityIcon,
+  AccountBalance as AccountIcon,
+  Bolt as BoltIcon,
 } from '@mui/icons-material';
 import { useDataSync } from '../hooks/useDataSync';
 import BalanceInconsistencyDetails from './BalanceInconsistencyDetails';
@@ -26,6 +29,9 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
   compact = false,
 }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [isSyncingAccounts, setIsSyncingAccounts] = useState<Set<string>>(
+    new Set()
+  );
 
   const {
     isChecking,
@@ -35,6 +41,7 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
     syncError,
     inconsistencies,
     syncBalances,
+    syncSingleAccount,
   } = useDataSync();
 
   // Если показывать только при необходимости и нет проблем
@@ -63,7 +70,8 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
         inconsistencies.length === 1 ? 'а' : 'ов'
       } не соответствуют операциям. Рекомендуется пересчитать.`;
     }
-    if (isSyncing) return 'Выполняется пересчет балансов на основе операций...';
+    if (isSyncing)
+      return 'Выполняется интеллектуальный пересчет балансов на основе операций...';
     if (lastSyncTime)
       return `Последняя синхронизация: ${lastSyncTime.toLocaleString()}`;
     return 'Все данные корректны';
@@ -73,6 +81,21 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
     if (isChecking || isSyncing) return <CircularProgress size={20} />;
     if (syncError || hasMismatch) return <WarningIcon />;
     return <CheckIcon />;
+  };
+
+  const handleSyncSingleAccount = async (accountId: string) => {
+    try {
+      setIsSyncingAccounts(prev => new Set(prev).add(accountId));
+      await syncSingleAccount(accountId);
+    } catch (error) {
+      console.error('Ошибка синхронизации отдельного счета:', error);
+    } finally {
+      setIsSyncingAccounts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(accountId);
+        return newSet;
+      });
+    }
   };
 
   const handleSyncAndCloseDetails = async () => {
@@ -97,15 +120,18 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
             >
               Детали
             </Button>
-            <Button
-              size="small"
-              onClick={syncBalances}
-              disabled={isSyncing}
-              variant="outlined"
-              color="warning"
-            >
-              Исправить
-            </Button>
+            <Tooltip title="Быстрая интеллектуальная синхронизация">
+              <Button
+                size="small"
+                onClick={syncBalances}
+                disabled={isSyncing}
+                variant="outlined"
+                color="warning"
+                startIcon={<BoltIcon />}
+              >
+                Синхронизировать
+              </Button>
+            </Tooltip>
           </>
         )}
 
@@ -114,7 +140,9 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
           onClose={() => setShowDetails(false)}
           inconsistencies={inconsistencies}
           onSync={handleSyncAndCloseDetails}
+          onSyncSingle={handleSyncSingleAccount}
           isSyncing={isSyncing}
+          isSyncingAccounts={isSyncingAccounts}
         />
       </Box>
     );
@@ -138,15 +166,17 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
                 >
                   Подробнее
                 </Button>
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={syncBalances}
-                  disabled={isSyncing}
-                  startIcon={<SyncIcon />}
-                >
-                  Синхронизировать
-                </Button>
+                <Tooltip title="Быстрая интеллектуальная синхронизация всех счетов">
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={syncBalances}
+                    disabled={isSyncing}
+                    startIcon={<BoltIcon />}
+                  >
+                    Синхронизировать
+                  </Button>
+                </Tooltip>
               </>
             )}
           </Box>
@@ -166,6 +196,17 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
             />
           </Box>
         )}
+        {isSyncing && (
+          <Box sx={{ mt: 1 }}>
+            <Chip
+              label="Интеллектуальная синхронизация..."
+              size="small"
+              color="info"
+              variant="filled"
+              icon={<BoltIcon />}
+            />
+          </Box>
+        )}
       </Alert>
 
       <BalanceInconsistencyDetails
@@ -173,7 +214,9 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
         onClose={() => setShowDetails(false)}
         inconsistencies={inconsistencies}
         onSync={handleSyncAndCloseDetails}
+        onSyncSingle={handleSyncSingleAccount}
         isSyncing={isSyncing}
+        isSyncingAccounts={isSyncingAccounts}
       />
     </>
   );

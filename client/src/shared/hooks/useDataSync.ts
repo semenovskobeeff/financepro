@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import {
   useRecalculateBalancesMutation,
   useCheckBalancesQuery,
+  useValidateAndFixBalancesMutation,
+  useSyncAccountBalanceMutation,
 } from '../../entities/transaction/api/transactionApi';
 
 interface DataSyncState {
@@ -38,6 +40,8 @@ export const useDataSync = () => {
   } = useCheckBalancesQuery();
 
   const [recalculateBalances] = useRecalculateBalancesMutation();
+  const [validateAndFixBalances] = useValidateAndFixBalancesMutation();
+  const [syncAccountBalance] = useSyncAccountBalanceMutation();
 
   // Обновляем состояние на основе серверной проверки
   useEffect(() => {
@@ -100,8 +104,86 @@ export const useDataSync = () => {
     }
   };
 
-  // Автоматическая синхронизация
+  // Быстрая синхронизация с валидацией и автоисправлением
   const syncBalances = async () => {
+    setSyncState(prev => ({ ...prev, isSyncing: true, syncError: null }));
+
+    try {
+      console.log('🔄 Запуск интеллектуальной синхронизации балансов...');
+
+      const result = await validateAndFixBalances({ autoFix: true }).unwrap();
+
+      setSyncState(prev => ({
+        ...prev,
+        isSyncing: false,
+        hasMismatch: false,
+        inconsistencies: [],
+        lastSyncTime: new Date(),
+        syncError: null,
+      }));
+
+      // Показываем информацию о результатах
+      if (result.data.status === 'fixed' && result.data.fixResult) {
+        console.log(
+          `✅ Синхронизация завершена. Исправлено ${result.data.fixResult.accountsCorrected} из ${result.data.fixResult.accountsProcessed} счетов`
+        );
+      } else {
+        console.log('✅ Все балансы уже были корректными');
+      }
+
+      // Перепроверяем балансы после синхронизации
+      setTimeout(() => {
+        refetchBalanceCheck();
+      }, 1000);
+    } catch (error: any) {
+      console.error('❌ Ошибка при синхронизации балансов:', error);
+
+      let errorMessage = 'Ошибка синхронизации';
+      if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
+      setSyncState(prev => ({
+        ...prev,
+        isSyncing: false,
+        syncError: errorMessage,
+      }));
+    }
+  };
+
+  // Синхронизация отдельного счета
+  const syncSingleAccount = async (accountId: string) => {
+    try {
+      console.log('⚡ Синхронизация отдельного счета:', accountId);
+
+      const result = await syncAccountBalance(accountId).unwrap();
+
+      if (result.data.synchronized) {
+        console.log(
+          `✅ Счет синхронизирован. Разница: ${result.data.difference}`
+        );
+      } else {
+        console.log('✅ Баланс счета уже корректен');
+      }
+
+      // Обновляем общее состояние
+      setTimeout(() => {
+        refetchBalanceCheck();
+      }, 500);
+
+      return result;
+    } catch (error: any) {
+      console.error('❌ Ошибка синхронизации счета:', error);
+      throw error;
+    }
+  };
+
+  // Устаревший метод для совместимости
+  const legacySyncBalances = async () => {
     setSyncState(prev => ({ ...prev, isSyncing: true, syncError: null }));
 
     try {
@@ -118,11 +200,17 @@ export const useDataSync = () => {
       // Перепроверяем балансы после синхронизации
       setTimeout(() => {
         refetchBalanceCheck();
-      }, 2000); // Увеличиваем задержку до 2 секунд
+      }, 2000);
 
-      console.log('✅ Балансы успешно синхронизированы:', result.data);
+      console.log(
+        '✅ Балансы успешно синхронизированы (устаревший метод):',
+        result.data
+      );
     } catch (error: any) {
-      console.error('❌ Ошибка при синхронизации балансов:', error);
+      console.error(
+        '❌ Ошибка при синхронизации балансов (устаревший метод):',
+        error
+      );
 
       let errorMessage = 'Ошибка синхронизации';
       if (error?.data?.message) {
@@ -145,5 +233,7 @@ export const useDataSync = () => {
     ...syncState,
     checkBalances,
     syncBalances,
+    syncSingleAccount,
+    legacySyncBalances,
   };
 };

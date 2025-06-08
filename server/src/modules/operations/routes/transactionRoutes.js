@@ -255,4 +255,85 @@ router.post('/recalculate-balances', transactionController.recalculateBalances);
  */
 router.get('/check-balances', transactionController.checkBalances);
 
+/**
+ * @swagger
+ * /api/transactions/sync-account/{accountId}:
+ *   post:
+ *     tags:
+ *       - Transactions
+ *     summary: Синхронизировать баланс отдельного счета
+ *     description: Пересчет и корректировка баланса конкретного счета
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID счета для синхронизации
+ *     responses:
+ *       200:
+ *         description: Баланс счета синхронизирован
+ *       404:
+ *         description: Счет не найден
+ *       401:
+ *         description: Не авторизован
+ *       500:
+ *         description: Ошибка при синхронизации
+ */
+router.post(
+  '/sync-account/:accountId',
+  transactionController.syncAccountBalance
+);
+
+/**
+ * @swagger
+ * /api/transactions/validate-balances:
+ *   post:
+ *     tags:
+ *       - Transactions
+ *     summary: Валидировать и автоисправить балансы
+ *     description: Проверка и автоматическое исправление некорректных балансов
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: autoFix
+ *         schema:
+ *           type: boolean
+ *           default: true
+ *         description: Автоматически исправлять найденные ошибки
+ *     responses:
+ *       200:
+ *         description: Валидация завершена
+ *       400:
+ *         description: Найдены некорректные балансы
+ *       401:
+ *         description: Не авторизован
+ *       500:
+ *         description: Ошибка при валидации
+ */
+router.post('/validate-balances', transactionController.validateAndFixBalances);
+
+/**
+ * @swagger
+ * /api/transactions/balance-snapshot:
+ *   post:
+ *     tags:
+ *       - Transactions
+ *     summary: Создать снимок балансов для диагностики
+ *     description: Создание снимка текущих балансов для анализа
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Снимок балансов создан
+ *       401:
+ *         description: Не авторизован
+ *       500:
+ *         description: Ошибка при создании снимка
+ */
+router.post('/balance-snapshot', transactionController.createBalanceSnapshot);
+
 module.exports = router;

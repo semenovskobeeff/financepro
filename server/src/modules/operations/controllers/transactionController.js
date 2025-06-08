@@ -586,3 +586,99 @@ exports.checkBalances = async (req, res) => {
     });
   }
 };
+
+/**
+ * Синхронизация баланса отдельного счета
+ */
+exports.syncAccountBalance = async (req, res) => {
+  try {
+    const { accountId } = req.params;
+
+    console.log('🔄 Запрос синхронизации баланса счета:', accountId);
+
+    // Проверяем, что счет принадлежит пользователю
+    const Account = require('../../../core/domain/entities/Account');
+    const account = await Account.findOne({
+      _id: accountId,
+      userId: req.user._id,
+    });
+
+    if (!account) {
+      return res.status(404).json({
+        message: 'Счет не найден или не принадлежит пользователю',
+      });
+    }
+
+    const result = await balanceService.syncAccountBalance(accountId);
+
+    res.json({
+      status: 'success',
+      message: result.synchronized
+        ? 'Баланс счета синхронизирован'
+        : 'Баланс счета корректен',
+      data: result,
+    });
+  } catch (error) {
+    console.error('❌ Ошибка при синхронизации баланса счета:', error);
+    res.status(500).json({
+      message: 'Ошибка при синхронизации баланса счета',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Валидация и автоисправление балансов пользователя
+ */
+exports.validateAndFixBalances = async (req, res) => {
+  try {
+    const { autoFix = true } = req.query;
+
+    console.log('🔍 Запрос валидации балансов для пользователя:', req.user._id);
+
+    const result = await balanceService.validateAndFixBalances(
+      req.user._id,
+      autoFix === 'true'
+    );
+
+    const statusCode = result.status === 'inconsistent' ? 400 : 200;
+
+    res.status(statusCode).json({
+      status: 'success',
+      message: result.message,
+      data: result,
+    });
+  } catch (error) {
+    console.error('❌ Ошибка при валидации балансов:', error);
+    res.status(500).json({
+      message: 'Ошибка при валидации балансов',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Создание снимка балансов для диагностики
+ */
+exports.createBalanceSnapshot = async (req, res) => {
+  try {
+    console.log(
+      '📸 Запрос создания снимка балансов для пользователя:',
+      req.user._id
+    );
+
+    const snapshot = await balanceService.createBalanceSnapshot(req.user._id);
+
+    res.json({
+      status: 'success',
+      message: 'Снимок балансов создан',
+      data: snapshot,
+    });
+  } catch (error) {
+    console.error('❌ Ошибка при создании снимка балансов:', error);
+    res.status(500).json({
+      message: 'Ошибка при создании снимка балансов',
+      error: error.message,
+    });
+  }
+};

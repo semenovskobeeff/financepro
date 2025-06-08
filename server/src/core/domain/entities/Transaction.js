@@ -279,9 +279,12 @@ transactionSchema.post('save', async function (doc) {
       return;
     }
 
-    const Account = mongoose.model('Account');
+    console.log('🔄 Обновление балансов после сохранения транзакции:', doc._id);
 
-    // Обновляем счет-источник
+    const Account = mongoose.model('Account');
+    const balanceService = require('../../modules/operations/services/balanceService');
+
+    // Проверяем и синхронизируем баланс основного счета
     const account = await Account.findById(doc.accountId);
     if (!account) {
       console.error('❌ Счет-источник не найден:', doc.accountId);
@@ -294,14 +297,10 @@ transactionSchema.post('save', async function (doc) {
       return;
     }
 
-    if (doc.type === 'income') {
-      account.balance += doc.amount;
-    } else if (doc.type === 'expense' || doc.type === 'transfer') {
-      account.balance -= doc.amount;
-    }
-    await account.save();
+    // Автосинхронизация баланса основного счета
+    await balanceService.syncAccountBalance(doc.accountId);
 
-    // Обновляем счет назначения для переводов
+    // Для переводов синхронизируем и целевой счет
     if (doc.type === 'transfer' && doc.toAccountId) {
       const toAccount = await Account.findById(doc.toAccountId);
       if (!toAccount) {
@@ -318,14 +317,28 @@ transactionSchema.post('save', async function (doc) {
         return;
       }
 
-      toAccount.balance += doc.amount;
-      await toAccount.save();
+      // Автосинхронизация баланса целевого счета
+      await balanceService.syncAccountBalance(doc.toAccountId);
     }
 
-    console.log('✅ Балансы успешно обновлены для операции:', doc._id);
+    console.log(
+      '✅ Автосинхронизация балансов завершена для операции:',
+      doc._id
+    );
   } catch (error) {
-    console.error('❌ Ошибка при обновлении балансов:', error);
-    // Не прерываем выполнение, чтобы операция сохранилась
+    console.error('❌ Ошибка при автосинхронизации балансов:', error);
+
+    // В случае критической ошибки запускаем полную проверку и исправление
+    try {
+      const balanceService = require('../../modules/operations/services/balanceService');
+      console.log('🚨 Запуск аварийной синхронизации балансов...');
+      await balanceService.validateAndFixBalances(doc.userId, true);
+    } catch (emergencyError) {
+      console.error(
+        '❌ Критическая ошибка аварийной синхронизации:',
+        emergencyError
+      );
+    }
   }
 });
 
