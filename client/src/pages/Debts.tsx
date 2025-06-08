@@ -185,7 +185,7 @@ const Debts: React.FC = () => {
         <Typography color="error">
           Произошла ошибка при загрузке данных
         </Typography>
-      ) : debts && debts.length > 0 ? (
+      ) : debts && Array.isArray(debts) && debts.length > 0 ? (
         <Grid container spacing={3} alignItems="stretch">
           {debts.map(debt => (
             <Grid

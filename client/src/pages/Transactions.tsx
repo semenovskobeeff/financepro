@@ -440,6 +440,7 @@ const Transactions: React.FC = () => {
             Ошибка при загрузке операций. Пожалуйста, попробуйте позже.
           </Typography>
         ) : !transactionsData?.transactions ||
+          !Array.isArray(transactionsData.transactions) ||
           transactionsData.transactions.length === 0 ? (
           <Paper sx={{ p: 3, textAlign: 'center' }}>
             <Typography variant="h6" gutterBottom>

@@ -139,7 +139,9 @@ const Categories: React.FC = () => {
           <Typography color="error">
             Ошибка при загрузке категорий. Пожалуйста, попробуйте позже.
           </Typography>
-        ) : !categories || categories.length === 0 ? (
+        ) : !categories ||
+          !Array.isArray(categories) ||
+          categories.length === 0 ? (
           <Paper sx={{ p: 3, textAlign: 'center' }}>
             <Typography>Нет категорий для отображения</Typography>
             <Box sx={{ mt: 2 }}>

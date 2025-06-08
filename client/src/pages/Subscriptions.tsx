@@ -339,7 +339,9 @@ const Subscriptions: React.FC = () => {
               <Alert severity="error">
                 Произошла ошибка при загрузке подписок
               </Alert>
-            ) : data && data.subscriptions.length > 0 ? (
+            ) : data &&
+              Array.isArray(data.subscriptions) &&
+              data.subscriptions.length > 0 ? (
               <Grid container spacing={2} alignItems="stretch">
                 {data.subscriptions.map(subscription => (
                   <Grid

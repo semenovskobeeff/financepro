@@ -20,7 +20,17 @@ export const goalApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: Goal[]) => response || [],
+      transformResponse: (response: any) => {
+        // Гарантируем возврат массива
+        if (Array.isArray(response)) {
+          return response;
+        }
+        if (response && Array.isArray(response.data)) {
+          return response.data;
+        }
+        console.warn('[goalApi] Unexpected response format:', response);
+        return [];
+      },
       providesTags: result =>
         result && Array.isArray(result)
           ? [

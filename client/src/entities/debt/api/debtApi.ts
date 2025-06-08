@@ -21,7 +21,17 @@ export const debtApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: Debt[]) => response || [],
+      transformResponse: (response: any) => {
+        // Гарантируем возврат массива
+        if (Array.isArray(response)) {
+          return response;
+        }
+        if (response && Array.isArray(response.data)) {
+          return response.data;
+        }
+        console.warn('[debtApi] Unexpected response format:', response);
+        return [];
+      },
       providesTags: result =>
         result && Array.isArray(result)
           ? [
@@ -111,7 +121,17 @@ export const debtApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: Debt[]) => response || [],
+      transformResponse: (response: any) => {
+        // Гарантируем возврат массива
+        if (Array.isArray(response)) {
+          return response;
+        }
+        if (response && Array.isArray(response.data)) {
+          return response.data;
+        }
+        console.warn('[debtApi] Unexpected response format:', response);
+        return [];
+      },
       providesTags: [{ type: 'Debt', id: 'UPCOMING' }],
     }),
 

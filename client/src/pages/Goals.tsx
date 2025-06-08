@@ -148,7 +148,7 @@ const Goals: React.FC = () => {
           <Alert severity="error" sx={{ mb: 3 }}>
             Произошла ошибка при загрузке целей
           </Alert>
-        ) : goals.length === 0 ? (
+        ) : !Array.isArray(goals) || goals.length === 0 ? (
           <Box textAlign="center" my={4}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               Нет целей

@@ -117,17 +117,20 @@ const Accounts: React.FC = () => {
           </Tabs>
         </Paper>
 
-        {status === 'active' && accounts && accounts.length >= 2 && (
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<CompareArrowsIcon />}
-            onClick={handleOpenTransferForm}
-            sx={{ ml: 2 }}
-          >
-            Перевести
-          </Button>
-        )}
+        {status === 'active' &&
+          accounts &&
+          Array.isArray(accounts) &&
+          accounts.length >= 2 && (
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<CompareArrowsIcon />}
+              onClick={handleOpenTransferForm}
+              sx={{ ml: 2 }}
+            >
+              Перевести
+            </Button>
+          )}
       </Box>
 
       <Box sx={{ flexGrow: 1 }}>
@@ -146,7 +149,7 @@ const Accounts: React.FC = () => {
           <Typography color="error">
             Ошибка при загрузке счетов. Пожалуйста, попробуйте позже.
           </Typography>
-        ) : !accounts || accounts.length === 0 ? (
+        ) : !accounts || !Array.isArray(accounts) || accounts.length === 0 ? (
           <Paper sx={{ p: 3, textAlign: 'center' }}>
             <Typography>Нет счетов для отображения</Typography>
             <Box sx={{ mt: 2 }}>

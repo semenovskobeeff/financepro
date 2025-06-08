@@ -195,7 +195,7 @@ const ShoppingLists: React.FC = () => {
         <Box display="flex" justifyContent="center" py={4}>
           <CircularProgress />
         </Box>
-      ) : lists.length === 0 ? (
+      ) : !Array.isArray(lists) || lists.length === 0 ? (
         <NotionCard title="Нет списков покупок" color="gray">
           <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
             Создайте свой первый список покупок для лучшего планирования бюджета

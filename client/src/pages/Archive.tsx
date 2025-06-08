@@ -963,7 +963,9 @@ const Archive: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
             <CircularProgress />
           </Box>
-        ) : !archiveData?.items || archiveData.items.length === 0 ? (
+        ) : !archiveData?.items ||
+          !Array.isArray(archiveData.items) ||
+          archiveData.items.length === 0 ? (
           <Alert severity="info">
             Архив пуст. Архивированные объекты будут отображаться здесь.
           </Alert>

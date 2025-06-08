@@ -498,15 +498,19 @@ const Dashboard: React.FC = () => {
       '#84cc16',
     ];
 
-    const categories = expenseCategories.map((category, index) => ({
-      id: category.categoryId || `category-${index}`,
-      name: category.categoryName,
-      amount: Math.abs(category.total),
-      percentage:
-        totalExpense > 0 ? (Math.abs(category.total) / totalExpense) * 100 : 0,
-      color: colors[index % colors.length],
-      trend: 0, // Пока нет данных для расчета тренда
-    }));
+    const categories = Array.isArray(expenseCategories)
+      ? expenseCategories.map((category, index) => ({
+          id: category.categoryId || `category-${index}`,
+          name: category.categoryName,
+          amount: Math.abs(category.total),
+          percentage:
+            totalExpense > 0
+              ? (Math.abs(category.total) / totalExpense) * 100
+              : 0,
+          color: colors[index % colors.length],
+          trend: 0, // Пока нет данных для расчета тренда
+        }))
+      : [];
 
     return {
       hasData: true,
@@ -531,16 +535,18 @@ const Dashboard: React.FC = () => {
       };
     }
 
-    const goals = goalsData.map((goal: any) => ({
-      id: goal.id,
-      name: goal.name,
-      targetAmount: goal.targetAmount,
-      currentAmount: goal.progress,
-      deadline: goal.deadline,
-      progress: (goal.progress / goal.targetAmount) * 100,
-      status: goal.status,
-      monthlyTarget: Math.round(goal.targetAmount / 12),
-    }));
+    const goals = Array.isArray(goalsData)
+      ? goalsData.map((goal: any) => ({
+          id: goal.id,
+          name: goal.name,
+          targetAmount: goal.targetAmount,
+          currentAmount: goal.progress,
+          deadline: goal.deadline,
+          progress: (goal.progress / goal.targetAmount) * 100,
+          status: goal.status,
+          monthlyTarget: Math.round(goal.targetAmount / 12),
+        }))
+      : [];
 
     return {
       hasData: true,
