@@ -283,25 +283,49 @@ transactionSchema.post('save', async function (doc) {
 
     // Обновляем счет-источник
     const account = await Account.findById(doc.accountId);
-    if (account) {
-      if (doc.type === 'income') {
-        account.balance += doc.amount;
-      } else if (doc.type === 'expense' || doc.type === 'transfer') {
-        account.balance -= doc.amount;
-      }
-      await account.save();
+    if (!account) {
+      console.error('❌ Счет-источник не найден:', doc.accountId);
+      return;
     }
+
+    // Проверяем, что счет принадлежит тому же пользователю
+    if (account.userId.toString() !== doc.userId.toString()) {
+      console.error('❌ Счет не принадлежит пользователю:', doc.accountId);
+      return;
+    }
+
+    if (doc.type === 'income') {
+      account.balance += doc.amount;
+    } else if (doc.type === 'expense' || doc.type === 'transfer') {
+      account.balance -= doc.amount;
+    }
+    await account.save();
 
     // Обновляем счет назначения для переводов
     if (doc.type === 'transfer' && doc.toAccountId) {
       const toAccount = await Account.findById(doc.toAccountId);
-      if (toAccount) {
-        toAccount.balance += doc.amount;
-        await toAccount.save();
+      if (!toAccount) {
+        console.error('❌ Счет назначения не найден:', doc.toAccountId);
+        return;
       }
+
+      // Проверяем, что счет принадлежит тому же пользователю
+      if (toAccount.userId.toString() !== doc.userId.toString()) {
+        console.error(
+          '❌ Счет назначения не принадлежит пользователю:',
+          doc.toAccountId
+        );
+        return;
+      }
+
+      toAccount.balance += doc.amount;
+      await toAccount.save();
     }
+
+    console.log('✅ Балансы успешно обновлены для операции:', doc._id);
   } catch (error) {
-    console.error('Ошибка при обновлении балансов:', error);
+    console.error('❌ Ошибка при обновлении балансов:', error);
+    // Не прерываем выполнение, чтобы операция сохранилась
   }
 });
 

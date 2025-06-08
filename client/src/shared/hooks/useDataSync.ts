@@ -42,15 +42,24 @@ export const useDataSync = () => {
   // Обновляем состояние на основе серверной проверки
   useEffect(() => {
     if (isCheckingBalances) {
-      setSyncState(prev => ({ ...prev, isChecking: true }));
+      setSyncState(prev => ({ ...prev, isChecking: true, syncError: null }));
       return;
     }
 
     if (checkBalancesError) {
+      let errorMessage = 'Ошибка при проверке балансов';
+
+      if ('data' in checkBalancesError && checkBalancesError.data) {
+        errorMessage =
+          (checkBalancesError.data as any)?.message || errorMessage;
+      } else if ('message' in checkBalancesError) {
+        errorMessage = checkBalancesError.message || errorMessage;
+      }
+
       setSyncState(prev => ({
         ...prev,
         isChecking: false,
-        syncError: 'Ошибка при проверке балансов',
+        syncError: errorMessage,
       }));
       return;
     }
@@ -78,12 +87,15 @@ export const useDataSync = () => {
   // Проверка балансов (вызов refetch)
   const checkBalances = async () => {
     try {
+      setSyncState(prev => ({ ...prev, syncError: null }));
       await refetchBalanceCheck();
     } catch (error) {
       console.error('Ошибка при проверке балансов:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Неизвестная ошибка проверки';
       setSyncState(prev => ({
         ...prev,
-        syncError: error instanceof Error ? error.message : 'Ошибка проверки',
+        syncError: errorMessage,
       }));
     }
   };
@@ -93,7 +105,7 @@ export const useDataSync = () => {
     setSyncState(prev => ({ ...prev, isSyncing: true, syncError: null }));
 
     try {
-      await recalculateBalances().unwrap();
+      const result = await recalculateBalances().unwrap();
       setSyncState(prev => ({
         ...prev,
         isSyncing: false,
@@ -106,16 +118,25 @@ export const useDataSync = () => {
       // Перепроверяем балансы после синхронизации
       setTimeout(() => {
         refetchBalanceCheck();
-      }, 1000);
+      }, 2000); // Увеличиваем задержку до 2 секунд
 
-      console.log('✅ Балансы успешно синхронизированы');
+      console.log('✅ Балансы успешно синхронизированы:', result.data);
     } catch (error: any) {
       console.error('❌ Ошибка при синхронизации балансов:', error);
+
+      let errorMessage = 'Ошибка синхронизации';
+      if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
       setSyncState(prev => ({
         ...prev,
         isSyncing: false,
-        syncError:
-          error?.data?.message || error?.message || 'Ошибка синхронизации',
+        syncError: errorMessage,
       }));
     }
   };

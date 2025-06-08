@@ -63,6 +63,11 @@ const QuickActionButtons: React.FC<QuickActionButtonsProps> = ({
                 py: 1.5,
                 borderRadius: 2,
                 textTransform: 'none',
+                justifyContent: 'flex-start',
+                '& .MuiButton-startIcon': {
+                  marginRight: 1,
+                  marginLeft: 0,
+                },
               }}
             >
               {action.label}
