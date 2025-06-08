@@ -13,14 +13,10 @@ import { useGetUpcomingPaymentsQuery } from '../../entities/subscription/api/sub
 import { differenceInDays, format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { formatNumber } from '../utils/formatUtils';
+import { usePaymentModalContext } from '../contexts/PaymentModalContext';
 
-interface ToastNotificationProps {
-  onPaymentClick: (subscriptionId: string) => void;
-}
-
-const ToastNotification: React.FC<ToastNotificationProps> = ({
-  onPaymentClick,
-}) => {
+const ToastNotification: React.FC = () => {
+  const { openPaymentModal } = usePaymentModalContext();
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState<string[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<any>(null);
@@ -98,7 +94,7 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({
               size="small"
               onClick={() => {
                 handleClose();
-                onPaymentClick(currentSubscription.id);
+                openPaymentModal(currentSubscription.id);
               }}
             >
               Оплатить

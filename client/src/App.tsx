@@ -24,6 +24,8 @@ import ToastNotification from './shared/ui/ToastNotification';
 import ErrorAlert from './shared/ui/ErrorAlert';
 import DebugAuthStatus from './shared/ui/DebugAuthStatus';
 import MockDataIndicator from './shared/ui/MockDataIndicator';
+import { PaymentModalProvider } from './shared/contexts/PaymentModalContext';
+import PaymentModalManager from './shared/components/PaymentModalManager';
 
 // Страницы
 import Dashboard from './pages/Dashboard';
@@ -54,14 +56,7 @@ import { applyNotionChartDefaults } from './shared/utils/chartUtils';
 import { config } from './config/environment';
 
 // Модули для работы с API и данными
-import PaymentForm from './features/subscriptions/components/PaymentForm';
-import { Subscription } from './entities/subscription/model/types';
 import ApiModeToggle from './shared/ui/ApiModeToggle';
-
-import {
-  useGetSubscriptionByIdQuery,
-  useMakePaymentMutation,
-} from './entities/subscription/api/subscriptionApi';
 
 // Константы
 const drawerWidth = 240;
@@ -201,18 +196,6 @@ function App() {
   // Состояние загрузки приложения
   const { isLoading, loadingMessage } = useAppLoading({ minLoadingTime: 800 });
 
-  // Состояние для формы платежа
-  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
-
-  // Получаем данные подписки, если указан ID
-  const { data: subscription } = useGetSubscriptionByIdQuery(
-    subscriptionId || '',
-    { skip: !subscriptionId }
-  );
-
-  // Мутация для выполнения платежа
-  const [makePayment] = useMakePaymentMutation();
-
   // Генерация темы Material UI
   const theme = createTheme({
     palette: {
@@ -230,32 +213,6 @@ function App() {
   useEffect(() => {
     applyNotionChartDefaults();
   }, []);
-
-  // Обработчики для окна платежа по подписке
-  const handlePaymentClick = (id: string) => {
-    setSubscriptionId(id);
-  };
-
-  const handleClosePaymentForm = () => {
-    setSubscriptionId(null);
-  };
-
-  const handleSubmitPayment = async (paymentData: any) => {
-    if (!subscriptionId) return;
-
-    try {
-      const response = await makePayment({
-        id: subscriptionId,
-        data: paymentData,
-      }).unwrap();
-
-      handleClosePaymentForm();
-      return response;
-    } catch (error) {
-      console.error('Payment error:', error);
-      return null;
-    }
-  };
 
   // Показываем прелоадер во время загрузки
   if (isLoading) {
@@ -276,170 +233,168 @@ function App() {
         <Router
           future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
         >
-          <AppLayout>
-            <Routes>
-              {/* Публичные маршруты */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <PaymentModalProvider>
+            <AppLayout>
+              <Routes>
+                {/* Публичные маршруты */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route
+                  path="/forgot-password"
+                  element={<ForgotPasswordPage />}
+                />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-              {/* Защищенные маршруты */}
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/accounts"
-                element={
-                  <ProtectedRoute>
-                    <Accounts />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/accounts/:id"
-                element={
-                  <ProtectedRoute>
-                    <AccountDetails />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/transactions"
-                element={
-                  <ProtectedRoute>
-                    <Transactions />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/categories"
-                element={
-                  <ProtectedRoute>
-                    <Categories />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/goals"
-                element={
-                  <ProtectedRoute>
-                    <Goals />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/goals/:id"
-                element={
-                  <ProtectedRoute>
-                    <GoalDetails />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/debts"
-                element={
-                  <ProtectedRoute>
-                    <Debts />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/debts/:id"
-                element={
-                  <ProtectedRoute>
-                    <DebtDetails />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/subscriptions"
-                element={
-                  <ProtectedRoute>
-                    <Subscriptions />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/subscriptions/:id"
-                element={
-                  <ProtectedRoute>
-                    <SubscriptionDetails />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/shopping-lists"
-                element={
-                  <ProtectedRoute>
-                    <ShoppingLists />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/analytics"
-                element={
-                  <ProtectedRoute>
-                    <Analytics />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/archive"
-                element={
-                  <ProtectedRoute>
-                    <Archive />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <DevOnlyRoute>
+                {/* Защищенные маршруты */}
+                <Route
+                  path="/"
+                  element={
                     <ProtectedRoute>
-                      <Settings />
+                      <Dashboard />
                     </ProtectedRoute>
-                  </DevOnlyRoute>
-                }
-              />
-              <Route path="/pastel-colors" element={<PastelColorDemo />} />
-            </Routes>
-          </AppLayout>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/accounts"
+                  element={
+                    <ProtectedRoute>
+                      <Accounts />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/accounts/:id"
+                  element={
+                    <ProtectedRoute>
+                      <AccountDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/transactions"
+                  element={
+                    <ProtectedRoute>
+                      <Transactions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/categories"
+                  element={
+                    <ProtectedRoute>
+                      <Categories />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/goals"
+                  element={
+                    <ProtectedRoute>
+                      <Goals />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/goals/:id"
+                  element={
+                    <ProtectedRoute>
+                      <GoalDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/debts"
+                  element={
+                    <ProtectedRoute>
+                      <Debts />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/debts/:id"
+                  element={
+                    <ProtectedRoute>
+                      <DebtDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/subscriptions"
+                  element={
+                    <ProtectedRoute>
+                      <Subscriptions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/subscriptions/:id"
+                  element={
+                    <ProtectedRoute>
+                      <SubscriptionDetails />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/shopping-lists"
+                  element={
+                    <ProtectedRoute>
+                      <ShoppingLists />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProtectedRoute>
+                      <Analytics />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/archive"
+                  element={
+                    <ProtectedRoute>
+                      <Archive />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <DevOnlyRoute>
+                      <ProtectedRoute>
+                        <Settings />
+                      </ProtectedRoute>
+                    </DevOnlyRoute>
+                  }
+                />
+                <Route path="/pastel-colors" element={<PastelColorDemo />} />
+              </Routes>
+            </AppLayout>
 
-          {/* Уведомления о платежах */}
-          <ToastNotification onPaymentClick={handlePaymentClick} />
+            {/* Уведомления о платежах */}
+            <ToastNotification />
 
-          {/* Переключатель режима API */}
-          <ApiModeToggle />
+            {/* Менеджер модального окна платежей */}
+            <PaymentModalManager />
 
-          {/* Индикатор типа моковых данных */}
-          <MockDataIndicator />
+            {/* Переключатель режима API */}
+            <ApiModeToggle />
 
-          {/* Компонент отладки авторизации */}
-          <DebugAuthStatus />
+            {/* Индикатор типа моковых данных */}
+            <MockDataIndicator />
 
-          {/* Модальное окно для оплаты подписки */}
-          {subscription && (
-            <PaymentForm
-              subscription={subscription}
-              open={Boolean(subscription)}
-              onClose={handleClosePaymentForm}
-              onSubmit={handleSubmitPayment}
-            />
-          )}
+            {/* Компонент отладки авторизации */}
+            <DebugAuthStatus />
+          </PaymentModalProvider>
         </Router>
       </MuiThemeProvider>
     </ThemeProvider>
