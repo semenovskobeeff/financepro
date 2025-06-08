@@ -27,7 +27,7 @@ interface ApiResponse<T> {
 export const subscriptionApi = createApi({
   reducerPath: 'subscriptionApi',
   baseQuery,
-  tagTypes: ['Subscription', 'Analytics'],
+  tagTypes: ['Subscription', 'Analytics', 'Account'],
   endpoints: builder => ({
     getSubscriptions: builder.query<
       GetSubscriptionsResponse,
@@ -154,6 +154,7 @@ export const subscriptionApi = createApi({
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
         'Analytics',
+        'Account',
       ],
     }),
 

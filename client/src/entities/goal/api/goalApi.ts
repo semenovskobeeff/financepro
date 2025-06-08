@@ -10,7 +10,7 @@ import {
 export const goalApi = createApi({
   reducerPath: 'goalApi',
   baseQuery,
-  tagTypes: ['Goal', 'Analytics'],
+  tagTypes: ['Goal', 'Analytics', 'Account'],
   endpoints: builder => ({
     getGoals: builder.query<Goal[], { status?: string } | void>({
       query: params => {
@@ -135,6 +135,7 @@ export const goalApi = createApi({
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
         'Analytics',
+        'Account',
       ],
     }),
   }),

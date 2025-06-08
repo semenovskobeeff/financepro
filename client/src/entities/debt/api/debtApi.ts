@@ -11,7 +11,7 @@ import {
 export const debtApi = createApi({
   reducerPath: 'debtApi',
   baseQuery,
-  tagTypes: ['Debt', 'Analytics'],
+  tagTypes: ['Debt', 'Analytics', 'Account'],
   endpoints: builder => ({
     getDebts: builder.query<Debt[], { status?: string } | void>({
       query: params => {
@@ -136,6 +136,7 @@ export const debtApi = createApi({
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
         'Analytics',
+        'Account',
       ],
     }),
 
