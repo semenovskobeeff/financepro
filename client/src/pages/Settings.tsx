@@ -21,6 +21,7 @@ import { useTheme } from '../shared/config/ThemeContext';
 import PageContainer from '../shared/ui/PageContainer';
 import NotionCard from '../shared/ui/NotionCard';
 import { config } from '../config/environment';
+import { useRecalculateBalancesMutation } from '../entities/transaction/api/transactionApi';
 
 const Settings: React.FC = () => {
   const { themeMode, themeToggleEnabled, setThemeToggleEnabled } = useTheme();
@@ -29,6 +30,8 @@ const Settings: React.FC = () => {
     null
   );
   const [recalculateError, setRecalculateError] = useState<string | null>(null);
+
+  const [recalculateBalancesMutation] = useRecalculateBalancesMutation();
 
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setThemeToggleEnabled(event.target.checked);
@@ -40,36 +43,21 @@ const Settings: React.FC = () => {
       setRecalculateMessage(null);
       setRecalculateError(null);
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Не авторизован');
-      }
-
-      const response = await fetch('/api/transactions/recalculate-balances', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Ошибка при пересчете балансов');
-      }
-
-      const result = await response.json();
+      const result = await recalculateBalancesMutation().unwrap();
       setRecalculateMessage(
-        `Пересчитано балансов: ${result.data.accountsProcessed}`
+        `Пересчитано балансов: ${result.data.accountsProcessed}. Обновление данных...`
       );
 
       // Перезагружаем страницу через 3 секунды для обновления данных
       setTimeout(() => {
         window.location.reload();
       }, 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ошибка пересчета балансов:', error);
       setRecalculateError(
-        error instanceof Error ? error.message : 'Неизвестная ошибка'
+        error?.data?.message ||
+          error?.message ||
+          'Неизвестная ошибка при пересчете балансов'
       );
     } finally {
       setIsRecalculating(false);

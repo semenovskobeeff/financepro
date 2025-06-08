@@ -285,4 +285,24 @@ router.delete('/:id', transactionController.deleteTransaction);
  */
 router.post('/recalculate-balances', transactionController.recalculateBalances);
 
+/**
+ * @swagger
+ * /api/transactions/check-balances:
+ *   get:
+ *     tags:
+ *       - Transactions
+ *     summary: Проверить корректность балансов счетов
+ *     description: Проверяет соответствие балансов счетов суммам транзакций без изменения данных
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Результат проверки балансов
+ *       401:
+ *         description: Не авторизован
+ *       500:
+ *         description: Ошибка при проверке
+ */
+router.get('/check-balances', transactionController.checkBalances);
+
 module.exports = router;

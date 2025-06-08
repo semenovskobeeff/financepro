@@ -12,10 +12,20 @@ import {
   Grid,
   Paper,
   Button,
+  Chip,
+  Alert,
+  Tooltip,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import {
+  Add as AddIcon,
+  AccountBalance as BankIcon,
+  Savings as SavingsIcon,
+  CreditCard as CreditIcon,
+  CompareArrows as TransferIcon,
+  Archive as ArchiveIcon,
+  Unarchive as UnarchiveIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
 import { Account } from '../entities/account/model/types';
 import AccountCard from '../entities/account/ui/AccountCard';
 import AccountForm from '../features/accounts/components/AccountForm';
@@ -28,6 +38,8 @@ import {
   useRestoreAccountMutation,
 } from '../entities/account/api/accountApi';
 import { useNavigate } from 'react-router-dom';
+import DataSyncAlert from '../shared/ui/DataSyncAlert';
+import { formatCurrencyWithDots } from '../shared/utils/formatUtils';
 
 const Accounts: React.FC = () => {
   const [status, setStatus] = useState<'active' | 'archived'>('active');
@@ -103,6 +115,9 @@ const Accounts: React.FC = () => {
         onClick: handleOpenForm,
       }}
     >
+      {/* Уведомление о синхронизации данных */}
+      <DataSyncAlert />
+
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
         <Paper sx={{ flexGrow: 1 }}>
           <Tabs
@@ -124,7 +139,7 @@ const Accounts: React.FC = () => {
             <Button
               variant="outlined"
               color="primary"
-              startIcon={<CompareArrowsIcon />}
+              startIcon={<TransferIcon />}
               onClick={handleOpenTransferForm}
               sx={{ ml: 2 }}
             >

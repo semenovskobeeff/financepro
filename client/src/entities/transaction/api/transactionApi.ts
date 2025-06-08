@@ -158,6 +158,58 @@ export const transactionApi = createApi({
         'Analytics',
       ],
     }),
+
+    // Пересчет балансов всех счетов на основе транзакций
+    recalculateBalances: builder.mutation<
+      {
+        status: string;
+        message: string;
+        data: {
+          accountsProcessed: number;
+          results: Array<{
+            accountId: string;
+            accountName: string;
+            oldBalance: number;
+            newBalance: number;
+            difference: number;
+            transactionsProcessed: number;
+          }>;
+        };
+      },
+      void
+    >({
+      query: () => ({
+        url: '/transactions/recalculate-balances',
+        method: 'POST',
+      }),
+      invalidatesTags: [
+        'Account',
+        'Analytics',
+        { type: 'Transaction', id: 'LIST' },
+      ],
+    }),
+
+    // Проверка корректности балансов
+    checkBalances: builder.query<
+      {
+        status: string;
+        data: {
+          hasInconsistencies: boolean;
+          accountsChecked: number;
+          inconsistencies: Array<{
+            accountId: string;
+            accountName: string;
+            storedBalance: number;
+            calculatedBalance: number;
+            difference: number;
+          }>;
+        };
+      },
+      void
+    >({
+      query: () => '/transactions/check-balances',
+      providesTags: ['BalanceCheck'],
+    }),
   }),
 });
 
@@ -169,4 +221,6 @@ export const {
   useArchiveTransactionMutation,
   useRestoreTransactionMutation,
   useDeleteTransactionMutation,
+  useRecalculateBalancesMutation,
+  useCheckBalancesQuery,
 } = transactionApi;

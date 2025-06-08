@@ -3,6 +3,8 @@ const {
   Account,
   Category,
 } = require('../../../core/domain/entities');
+const mongoose = require('mongoose');
+const balanceService = require('../services/balanceService');
 
 /**
  * Получение всех транзакций пользователя
@@ -670,81 +672,41 @@ exports.recalculateBalances = async (req, res) => {
       req.user._id
     );
 
-    // Получаем все счета пользователя
-    const accounts = await Account.find({
-      userId: req.user._id,
-      status: 'active',
-    });
-
-    const results = [];
-
-    for (const account of accounts) {
-      const oldBalance = account.balance;
-
-      // Сбрасываем баланс на ноль
-      account.balance = 0;
-
-      // Получаем все активные транзакции для этого счета
-      const transactions = await Transaction.find({
-        $or: [{ accountId: account._id }, { toAccountId: account._id }],
-        status: 'active',
-      }).sort({ date: 1 });
-
-      // Пересчитываем баланс на основе транзакций
-      for (const transaction of transactions) {
-        if (transaction.accountId.toString() === account._id.toString()) {
-          // Это исходящий счет
-          if (transaction.type === 'income') {
-            account.balance += transaction.amount;
-          } else if (
-            transaction.type === 'expense' ||
-            transaction.type === 'transfer'
-          ) {
-            account.balance -= transaction.amount;
-          }
-        } else if (
-          transaction.toAccountId &&
-          transaction.toAccountId.toString() === account._id.toString()
-        ) {
-          // Это входящий счет для перевода
-          if (transaction.type === 'transfer') {
-            account.balance += transaction.amount;
-          }
-        }
-      }
-
-      await account.save();
-
-      results.push({
-        accountId: account._id,
-        accountName: account.name,
-        oldBalance,
-        newBalance: account.balance,
-        difference: account.balance - oldBalance,
-        transactionsProcessed: transactions.length,
-      });
-
-      console.log(`✅ Пересчитан баланс для счета ${account.name}:`, {
-        старый: oldBalance,
-        новый: account.balance,
-        разница: account.balance - oldBalance,
-      });
-    }
+    const result = await balanceService.recalculateAllBalances(req.user._id);
 
     console.log('✅ Пересчет балансов завершен');
 
     res.json({
       status: 'success',
       message: 'Балансы успешно пересчитаны',
-      data: {
-        accountsProcessed: results.length,
-        results,
-      },
+      data: result,
     });
   } catch (error) {
     console.error('❌ Ошибка при пересчете балансов:', error);
     res.status(500).json({
       message: 'Ошибка при пересчете балансов',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Проверка корректности балансов
+ */
+exports.checkBalances = async (req, res) => {
+  try {
+    console.log('🔍 Проверка балансов для пользователя:', req.user._id);
+
+    const result = await balanceService.checkBalancesConsistency(req.user._id);
+
+    res.json({
+      status: 'success',
+      data: result,
+    });
+  } catch (error) {
+    console.error('❌ Ошибка при проверке балансов:', error);
+    res.status(500).json({
+      message: 'Ошибка при проверке балансов',
       error: error.message,
     });
   }

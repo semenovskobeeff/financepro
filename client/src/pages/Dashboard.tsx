@@ -98,6 +98,16 @@ import {
   SmartNotificationsWidget,
 } from '../shared/ui/DashboardCharts';
 
+import DataSyncAlert from '../shared/ui/DataSyncAlert';
+import QuickActionButtons from '../shared/ui/QuickActionButtons';
+import SmartFinancialSummary from '../shared/ui/SmartFinancialSummary';
+import SmartNotifications from '../shared/ui/SmartNotifications';
+import ExpenseStructureChart from '../shared/ui/DashboardCharts/ExpenseStructureChart';
+import GoalsProgressChart from '../shared/ui/DashboardCharts/GoalsProgressChart';
+import TransactionForm from '../features/transactions/components/TransactionForm';
+import ShoppingListForm from '../features/shopping-lists/components/ShoppingListForm';
+import DebtPaymentForm from '../features/debts/components/DebtPaymentForm';
+
 const COLORS = [
   '#0088FE',
   '#00C49F',
@@ -1015,65 +1025,70 @@ const Dashboard: React.FC = () => {
 
   return (
     <PageContainer title="Финансовый обзор">
-      {/* Предупреждения о частичных ошибках */}
-      {(analyticsError || paymentsError || debtPaymentsError) && (
-        <Box sx={{ mb: 3 }}>
-          {analyticsError && (
-            <Alert severity="warning" sx={{ mb: 1 }}>
-              Не удалось загрузить основную аналитику
-            </Alert>
-          )}
-          {paymentsError && (
-            <Alert severity="warning" sx={{ mb: 1 }}>
-              Не удалось загрузить данные о подписках
-            </Alert>
-          )}
-          {debtPaymentsError && (
-            <Alert severity="warning" sx={{ mb: 1 }}>
-              Не удалось загрузить данные о долгах
-            </Alert>
-          )}
-        </Box>
-      )}
+      {/* Уведомление о синхронизации данных */}
+      <DataSyncAlert />
 
       {/* Быстрые действия */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12}>
-          <NotionCard
-            title="Быстрые действия"
-            icon={<PaymentIcon />}
-            color="gray"
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                gap: 2,
-              }}
-            >
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => handleQuickAction('income')}
-              >
-                Добавить доход
-              </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => handleQuickAction('expense')}
-              >
-                Добавить расход
-              </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => handleQuickAction('transfer')}
-              >
-                Добавить перевод
-              </Button>
-            </Box>
-          </NotionCard>
+          <Paper elevation={1} sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Быстрые действия
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={4}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => handleQuickAction('income')}
+                  sx={{
+                    p: 2,
+                    height: '80px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1,
+                  }}
+                >
+                  <PaymentIcon color="success" />
+                  <Typography variant="body2">ДОБАВИТЬ ДОХОД</Typography>
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => handleQuickAction('expense')}
+                  sx={{
+                    p: 2,
+                    height: '80px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1,
+                  }}
+                >
+                  <PaymentIcon color="error" />
+                  <Typography variant="body2">ДОБАВИТЬ РАСХОД</Typography>
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => handleQuickAction('transfer')}
+                  sx={{
+                    p: 2,
+                    height: '80px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1,
+                  }}
+                >
+                  <PaymentIcon color="primary" />
+                  <Typography variant="body2">ДОБАВИТЬ ПЕРЕВОД</Typography>
+                </Button>
+              </Grid>
+            </Grid>
+          </Paper>
         </Grid>
       </Grid>
 
