@@ -706,7 +706,13 @@ const Dashboard: React.FC = () => {
   };
 
   // Подготовка данных для умных уведомлений
-  const getSmartNotificationsData = () => {
+  const getSmartNotificationsData = (): {
+    hasData: boolean;
+    notifications: any[];
+    totalUnread: number;
+    categories: Array<{ name: string; count: number; color: string }>;
+    emptyMessage?: string;
+  } => {
     const notifications: any[] = [];
 
     // Отладочная информация о состоянии данных
