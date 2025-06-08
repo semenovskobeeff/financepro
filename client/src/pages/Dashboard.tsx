@@ -58,7 +58,6 @@ import {
   Savings,
   Notifications,
   Refresh as RefreshIcon,
-  GetApp as ExportIcon,
 } from '@mui/icons-material';
 import {
   useGetDashboardAnalyticsQuery,
@@ -863,37 +862,6 @@ const Dashboard: React.FC = () => {
     };
   };
 
-  // Обработчик экспорта данных
-  const handleExportData = () => {
-    // Подготовка данных для экспорта
-    const exportData = {
-      date: new Date().toISOString(),
-      period: 'month',
-      summary: financialData,
-      analytics: {
-        trends: trendData,
-        budget: budgetData,
-        expenses: expenseStructureData,
-        goals: goalsProgressData,
-      },
-    };
-
-    // Создание и скачивание файла
-    const dataStr = JSON.stringify(exportData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `finance-report-${
-      new Date().toISOString().split('T')[0]
-    }.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
   // Обработчики для умных уведомлений
   const handleCreateSavingsPlan = () => {
     setShowShoppingListForm(true);
@@ -1046,14 +1014,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <PageContainer
-      title="Финансовый обзор"
-      action={{
-        label: 'Экспорт',
-        icon: <ExportIcon />,
-        onClick: handleExportData,
-      }}
-    >
+    <PageContainer title="Финансовый обзор">
       {/* Предупреждения о частичных ошибках */}
       {(analyticsError || paymentsError || debtPaymentsError) && (
         <Box sx={{ mb: 3 }}>
