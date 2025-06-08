@@ -64,6 +64,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { formatNumberWithDots } from '../shared/utils/formatUtils';
 import PageContainer from 'shared/ui/PageContainer';
 import {
   useGetArchivedItemsQuery,
@@ -154,7 +155,7 @@ const ArchiveItemCard: React.FC<ArchiveItemCardProps> = ({
               Тип: {item.type}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Баланс: {item.balance?.toFixed(2)} ₽
+              Баланс: {formatNumberWithDots(item.balance, 0)} ₽
             </Typography>
           </>
         );
@@ -277,10 +278,10 @@ const ArchiveItemCard: React.FC<ArchiveItemCardProps> = ({
         return (
           <>
             <Typography variant="body2" color="text.secondary">
-              Цель: {item.targetAmount?.toFixed(2)} ₽
+              Цель: {formatNumberWithDots(item.targetAmount, 0)} ₽
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Прогресс: {item.progress?.toFixed(2)} ₽
+              Прогресс: {formatNumberWithDots(item.progress, 0)} ₽
             </Typography>
           </>
         );
@@ -292,10 +293,10 @@ const ArchiveItemCard: React.FC<ArchiveItemCardProps> = ({
               Тип: {item.type}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Сумма: {item.initialAmount?.toFixed(2)} ₽
+              Сумма: {formatNumberWithDots(item.initialAmount, 0)} ₽
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Остаток: {item.currentAmount?.toFixed(2)} ₽
+              Остаток: {formatNumberWithDots(item.currentAmount, 0)} ₽
             </Typography>
           </>
         );
@@ -304,7 +305,7 @@ const ArchiveItemCard: React.FC<ArchiveItemCardProps> = ({
         return (
           <>
             <Typography variant="body2" color="text.secondary">
-              Сумма: {item.amount?.toFixed(2)} ₽
+              Сумма: {formatNumberWithDots(item.amount, 0)} ₽
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Периодичность: {item.frequency}
@@ -574,7 +575,7 @@ const ArchiveTransactionsList: React.FC<{
                         : actualType === 'expense'
                         ? '-'
                         : ''}
-                      {item.amount?.toFixed(2)} ₽
+                      {formatNumberWithDots(item.amount, 0)} ₽
                     </Typography>
                   </TableCell>
                   <TableCell>

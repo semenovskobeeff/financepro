@@ -48,7 +48,10 @@ import { useGetAccountsQuery } from '../entities/account/api/accountApi';
 import { useGetCategoriesQuery } from '../entities/category/api/categoryApi';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { formatNumber } from '../shared/utils/formatUtils';
+import {
+  formatNumber,
+  formatNumberWithDots,
+} from '../shared/utils/formatUtils';
 import { useModal } from '../shared/contexts/ModalContext';
 
 const Transactions: React.FC = () => {
@@ -486,7 +489,7 @@ const Transactions: React.FC = () => {
                           }
                         >
                           {transaction.type === 'income' ? '+' : '-'}
-                          {formatNumber(transaction.amount)}
+                          {formatNumberWithDots(transaction.amount, 0)}
                         </Typography>
                       </TableCell>
                       <TableCell>

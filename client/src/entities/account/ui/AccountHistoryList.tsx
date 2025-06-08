@@ -22,7 +22,10 @@ import {
 } from '@mui/material';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { formatNumber } from '../../../shared/utils/formatUtils';
+import {
+  formatNumber,
+  formatNumberWithDots,
+} from '../../../shared/utils/formatUtils';
 import { AccountHistoryItem } from '../model/types';
 import {
   useUpdateTransactionMutation,
@@ -467,7 +470,7 @@ const AccountHistoryList: React.FC<AccountHistoryListProps> = ({
                             }}
                           >
                             {item.type === 'income' ? '+' : '-'}
-                            {formatNumber(item.amount)}
+                            {formatNumberWithDots(item.amount, 0)}
                           </Typography>
                           <IconButton
                             size="small"
