@@ -20,6 +20,11 @@ import {
   Grid,
   Button,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -73,6 +78,12 @@ const Transactions: React.FC = () => {
 
   // Состояние панели фильтров
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+
+  // Состояние модального окна подтверждения удаления
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] =
+    useState<Transaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Получение данных - только активные операции
   const {
@@ -213,11 +224,30 @@ const Transactions: React.FC = () => {
     openModal('edit-transaction', transaction);
   };
 
-  const handleDeleteTransaction = async (transaction: Transaction) => {
+  // Открыть модальное окно подтверждения удаления
+  const handleDeleteConfirmation = (transaction: Transaction) => {
+    setTransactionToDelete(transaction);
+    setDeleteDialogOpen(true);
+  };
+
+  // Закрыть модальное окно подтверждения удаления
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setTransactionToDelete(null);
+    setIsDeleting(false);
+  };
+
+  // Подтвержденное удаление операции
+  const handleDeleteTransaction = async () => {
+    if (!transactionToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await deleteTransaction(transaction.id).unwrap();
+      await deleteTransaction(transactionToDelete.id).unwrap();
+      handleDeleteDialogClose();
     } catch (error) {
       console.error('Failed to delete transaction:', error);
+      setIsDeleting(false);
     }
   };
 
@@ -512,7 +542,9 @@ const Transactions: React.FC = () => {
                         <Tooltip title="Удалить">
                           <IconButton
                             size="small"
-                            onClick={() => handleDeleteTransaction(transaction)}
+                            onClick={() =>
+                              handleDeleteConfirmation(transaction)
+                            }
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -539,6 +571,48 @@ const Transactions: React.FC = () => {
           </Paper>
         )}
       </Box>
+
+      {/* Модальное окно подтверждения удаления */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteDialogClose}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Подтверждение удаления
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Вы действительно хотите удалить операцию
+            {transactionToDelete
+              ? ` "${transactionToDelete.description || 'Без описания'}"`
+              : ''}
+            ?
+            <br />
+            Это действие нельзя будет отменить.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleDeleteDialogClose}
+            color="primary"
+            disabled={isDeleting}
+          >
+            Отмена
+          </Button>
+          <Button
+            onClick={handleDeleteTransaction}
+            color="error"
+            disabled={isDeleting}
+            startIcon={
+              isDeleting ? <CircularProgress size={20} /> : <DeleteIcon />
+            }
+          >
+            Удалить
+          </Button>
+        </DialogActions>
+      </Dialog>
     </PageContainer>
   );
 };
