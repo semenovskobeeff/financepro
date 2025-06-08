@@ -773,6 +773,22 @@ export const handlers = [
     return HttpResponse.json({ success: true });
   }),
 
+  // Удаление транзакции
+  http.delete('/api/transactions/:id', async ({ params }) => {
+    await delay(500);
+    const { id } = params;
+    const transactionIndex = mockTransactions.findIndex(t => t.id === id);
+
+    if (transactionIndex === -1) {
+      return new HttpResponse(null, { status: 404 });
+    }
+
+    // Удаляем транзакцию из массива
+    mockTransactions.splice(transactionIndex, 1);
+
+    return HttpResponse.json({ message: 'Транзакция удалена' });
+  }),
+
   // ===================== ЦЕЛИ =====================
 
   // Получение целей

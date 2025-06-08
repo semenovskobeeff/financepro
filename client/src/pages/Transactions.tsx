@@ -34,6 +34,7 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Transaction,
   TransactionType,
@@ -43,6 +44,7 @@ import {
   useGetTransactionsQuery,
   useArchiveTransactionMutation,
   useRestoreTransactionMutation,
+  useDeleteTransactionMutation,
 } from '../entities/transaction/api/transactionApi';
 import { useGetAccountsQuery } from '../entities/account/api/accountApi';
 import { useGetCategoriesQuery } from '../entities/category/api/categoryApi';
@@ -108,6 +110,7 @@ const Transactions: React.FC = () => {
 
   const [archiveTransaction] = useArchiveTransactionMutation();
   const [restoreTransaction] = useRestoreTransactionMutation();
+  const [deleteTransaction] = useDeleteTransactionMutation();
 
   // Обработчики для фильтрации по типу операции
   const handleTypeFilter = (type: TransactionType) => {
@@ -247,6 +250,14 @@ const Transactions: React.FC = () => {
       await restoreTransaction(transaction.id).unwrap();
     } catch (error) {
       console.error('Failed to restore transaction:', error);
+    }
+  };
+
+  const handleDeleteTransaction = async (transaction: Transaction) => {
+    try {
+      await deleteTransaction(transaction.id).unwrap();
+    } catch (error) {
+      console.error('Failed to delete transaction:', error);
     }
   };
 
@@ -543,14 +554,14 @@ const Transactions: React.FC = () => {
                                 <EditIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title="Архивировать">
+                            <Tooltip title="Удалить">
                               <IconButton
                                 size="small"
                                 onClick={() =>
-                                  handleArchiveTransaction(transaction)
+                                  handleDeleteTransaction(transaction)
                                 }
                               >
-                                <CloseIcon fontSize="small" />
+                                <DeleteIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
                           </>

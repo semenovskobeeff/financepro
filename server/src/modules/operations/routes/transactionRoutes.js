@@ -242,6 +242,31 @@ router.put('/:id/restore', transactionController.restoreTransaction);
 
 /**
  * @swagger
+ * /api/transactions/{id}:
+ *   delete:
+ *     tags:
+ *       - Transactions
+ *     summary: Удалить транзакцию
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Транзакция удалена
+ *       404:
+ *         description: Транзакция не найдена
+ *       401:
+ *         description: Не авторизован
+ */
+router.delete('/:id', transactionController.deleteTransaction);
+
+/**
+ * @swagger
  * /api/transactions/recalculate-balances:
  *   post:
  *     tags:

@@ -610,6 +610,56 @@ exports.restoreTransaction = async (req, res) => {
 };
 
 /**
+ * Удаление транзакции
+ */
+exports.deleteTransaction = async (req, res) => {
+  try {
+    const transaction = await Transaction.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ message: 'Транзакция не найдена' });
+    }
+
+    // Для удаления транзакции необходимо обновить баланс счета
+    const account = await Account.findById(transaction.accountId);
+
+    if (!account) {
+      return res.status(404).json({ message: 'Счет не найден' });
+    }
+
+    // Меняем баланс в обратную сторону
+    if (transaction.type === 'income') {
+      account.balance -= transaction.amount;
+    } else if (transaction.type === 'expense') {
+      account.balance += transaction.amount;
+    } else if (transaction.type === 'transfer') {
+      // Для переводов нужно обработать оба счета
+      const toAccount = await Account.findById(transaction.toAccountId);
+
+      if (!toAccount) {
+        return res.status(404).json({ message: 'Целевой счет не найден' });
+      }
+
+      account.balance += transaction.amount;
+      toAccount.balance -= transaction.amount;
+      await toAccount.save();
+    }
+
+    // Сохраняем изменения счета и удаляем транзакцию
+    await account.save();
+    await Transaction.findByIdAndDelete(req.params.id);
+
+    res.json({ message: 'Транзакция удалена' });
+  } catch (error) {
+    console.error('Delete transaction error:', error);
+    res.status(500).json({ message: 'Ошибка при удалении транзакции' });
+  }
+};
+
+/**
  * Пересчет балансов всех счетов на основе транзакций
  * Используется для исправления ошибок в балансах
  */
