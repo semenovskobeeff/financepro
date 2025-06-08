@@ -92,27 +92,35 @@ const ArchiveItemCard: React.FC<ArchiveItemCardProps> = ({
   // Получаем список счетов для отображения имен счетов в транзакциях
   const { data: accounts } = useGetAccountsQuery();
 
-  // Находим имя счета по его ID
-  const getAccountName = (accountId?: string) => {
-    if (!accountId) return 'Неизвестный счет';
+  // Находим имя счета по его ID или populated объекту
+  const getAccountName = (account?: any) => {
+    if (!account) return 'Неизвестный счет';
 
-    // Проверяем, есть ли сохраненное имя в самой транзакции (для удаленных счетов)
-    if (item.itemType === 'transactions') {
-      // Для основного счета транзакции
-      if (accountId === item.accountId && item.accountName) {
-        return item.accountName;
-      }
-      // Для счета назначения (при переводе)
-      if (accountId === item.toAccountId && item.toAccountName) {
-        return item.toAccountName;
-      }
+    // Если account - это populated объект, возвращаем его имя
+    if (typeof account === 'object' && account.name) {
+      return account.name;
     }
 
-    // Ищем счет в списке активных счетов
-    const account = accounts?.find(a => a.id === accountId);
+    // Если account - это строка ID
+    if (typeof account === 'string') {
+      // Проверяем, есть ли сохраненное имя в самой транзакции (для удаленных счетов)
+      if (item.itemType === 'transactions') {
+        // Для основного счета транзакции
+        if (account === item.accountId && item.accountName) {
+          return item.accountName;
+        }
+        // Для счета назначения (при переводе)
+        if (account === item.toAccountId && item.toAccountName) {
+          return item.toAccountName;
+        }
+      }
 
-    // Если счет найден, возвращаем его имя, иначе "Неизвестный счет"
-    return account?.name || 'Неизвестный счет';
+      // Ищем счет в списке активных счетов
+      const foundAccount = accounts?.find(a => a.id === account);
+      return foundAccount?.name || 'Неизвестный счет';
+    }
+
+    return 'Неизвестный счет';
   };
 
   // Определяем тип объекта для отображения соответствующей иконки
@@ -356,25 +364,33 @@ const ArchiveTransactionsList: React.FC<{
 }> = ({ items, onRestore, onDelete, transactionFilterType }) => {
   const { data: accounts } = useGetAccountsQuery();
 
-  // Находим имя счета по его ID
-  const getAccountName = (item: any, accountId?: string) => {
-    if (!accountId) return 'Неизвестный счет';
+  // Находим имя счета по его ID или populated объекту
+  const getAccountName = (item: any, account?: any) => {
+    if (!account) return 'Неизвестный счет';
 
-    // Проверяем, есть ли сохраненное имя в самой транзакции (для удаленных счетов)
-    // Для основного счета транзакции
-    if (accountId === item.accountId && item.accountName) {
-      return item.accountName;
-    }
-    // Для счета назначения (при переводе)
-    if (accountId === item.toAccountId && item.toAccountName) {
-      return item.toAccountName;
+    // Если account - это populated объект, возвращаем его имя
+    if (typeof account === 'object' && account.name) {
+      return account.name;
     }
 
-    // Ищем счет в списке активных счетов
-    const account = accounts?.find(a => a.id === accountId);
+    // Если account - это строка ID
+    if (typeof account === 'string') {
+      // Проверяем, есть ли сохраненное имя в самой транзакции (для удаленных счетов)
+      // Для основного счета транзакции
+      if (account === item.accountId && item.accountName) {
+        return item.accountName;
+      }
+      // Для счета назначения (при переводе)
+      if (account === item.toAccountId && item.toAccountName) {
+        return item.toAccountName;
+      }
 
-    // Если счет найден, возвращаем его имя, иначе "Неизвестный счет"
-    return account?.name || 'Неизвестный счет';
+      // Ищем счет в списке активных счетов
+      const foundAccount = accounts?.find(a => a.id === account);
+      return foundAccount?.name || 'Неизвестный счет';
+    }
+
+    return 'Неизвестный счет';
   };
 
   // Определяем тип транзакции с учетом описания

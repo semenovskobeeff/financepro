@@ -203,6 +203,11 @@ exports.createTransaction = async (req, res) => {
     // Сохраняем изменения
     await Promise.all([transaction.save(), account.save()]);
 
+    // Получаем созданную транзакцию с populated данными
+    const populatedTransaction = await Transaction.findById(transaction._id)
+      .populate('accountId', 'name type')
+      .populate('categoryId', 'name type icon');
+
     console.log('✅ Транзакция успешно создана:', {
       transactionId: transaction._id,
       type: transaction.type,
@@ -213,7 +218,7 @@ exports.createTransaction = async (req, res) => {
     res.status(201).json({
       status: 'success',
       data: {
-        transaction,
+        transaction: populatedTransaction,
         account: {
           id: account._id,
           name: account.name,

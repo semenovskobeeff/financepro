@@ -172,19 +172,40 @@ const Transactions: React.FC = () => {
   };
 
   // Вспомогательные функции для отображения данных
-  const getAccountName = (accountId: string) => {
-    if (!accounts || !Array.isArray(accounts)) return 'Неизвестный счет';
-    const account = accounts.find(a => a.id === accountId);
-    return account?.name || 'Неизвестный счет';
+  const getAccountName = (account: any) => {
+    // Если account - это populated объект, возвращаем его имя
+    if (account && typeof account === 'object' && account.name) {
+      return account.name;
+    }
+
+    // Если account - это строка ID, ищем в массиве счетов
+    if (typeof account === 'string') {
+      if (!accounts || !Array.isArray(accounts)) return 'Неизвестный счет';
+      const foundAccount = accounts.find(a => a.id === account);
+      return foundAccount?.name || 'Неизвестный счет';
+    }
+
+    return 'Неизвестный счет';
   };
 
-  const getCategoryName = (categoryId?: string) => {
-    if (!categoryId) return '-';
-    if (!categories || !Array.isArray(categories))
-      return 'Неизвестная категория';
+  const getCategoryName = (category?: any) => {
+    if (!category) return '-';
 
-    const category = categories.find(c => c.id === categoryId);
-    return category?.name || 'Неизвестная категория';
+    // Если category - это populated объект, возвращаем его имя
+    if (typeof category === 'object' && category.name) {
+      return category.name;
+    }
+
+    // Если category - это строка ID, ищем в массиве категорий
+    if (typeof category === 'string') {
+      if (!categories || !Array.isArray(categories))
+        return 'Неизвестная категория';
+
+      const foundCategory = categories.find(c => c.id === category);
+      return foundCategory?.name || 'Неизвестная категория';
+    }
+
+    return 'Неизвестная категория';
   };
 
   const getTransactionTypeText = (type: TransactionType) => {
@@ -506,24 +527,6 @@ const Transactions: React.FC = () => {
                       <TableCell>
                         {transaction.type === 'transfer'
                           ? '-'
-                          : transaction.type === 'income' &&
-                            transaction.categoryId === 'category1'
-                          ? 'Зарплата'
-                          : transaction.type === 'income' &&
-                            transaction.categoryId === 'category5'
-                          ? 'Подработка'
-                          : transaction.type === 'expense' &&
-                            transaction.categoryId === 'category2'
-                          ? 'Продукты'
-                          : transaction.type === 'expense' &&
-                            transaction.categoryId === 'category3'
-                          ? 'Развлечения'
-                          : transaction.type === 'expense' &&
-                            transaction.categoryId === 'category4'
-                          ? 'Коммунальные услуги'
-                          : transaction.type === 'expense' &&
-                            transaction.categoryId === 'category6'
-                          ? 'Техника'
                           : getCategoryName(transaction.categoryId)}
                       </TableCell>
                       <TableCell>{transaction.description || '-'}</TableCell>
