@@ -270,7 +270,8 @@ transactionSchema.pre('save', async function (next) {
   }
 });
 
-// Middleware для обновления балансов счетов
+// Middleware для обновления балансов счетов - ОТКЛЮЧЕН
+/*
 transactionSchema.post('save', async function (doc) {
   try {
     // Пропускаем обновление баланса если установлен флаг
@@ -341,6 +342,7 @@ transactionSchema.post('save', async function (doc) {
     }
   }
 });
+*/
 
 // Статические методы
 transactionSchema.statics.findByUserId = function (userId, options = {}) {

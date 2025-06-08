@@ -215,125 +215,25 @@ router.patch('/:id', transactionController.updateTransaction);
  */
 router.delete('/:id', transactionController.deleteTransaction);
 
-/**
- * @swagger
- * /api/transactions/recalculate-balances:
- *   post:
- *     tags:
- *       - Transactions
- *     summary: Пересчитать балансы всех счетов на основе транзакций
- *     description: Утилита для исправления ошибок в балансах счетов
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Балансы успешно пересчитаны
- *       401:
- *         description: Не авторизован
- *       500:
- *         description: Ошибка при пересчете
- */
+// МАРШРУТЫ СИНХРОНИЗАЦИИ БАЛАНСОВ ОТКЛЮЧЕНЫ
+/*
+// Пересчет балансов всех счетов на основе транзакций
 router.post('/recalculate-balances', transactionController.recalculateBalances);
 
-/**
- * @swagger
- * /api/transactions/check-balances:
- *   get:
- *     tags:
- *       - Transactions
- *     summary: Проверить корректность балансов счетов
- *     description: Проверяет соответствие балансов счетов суммам транзакций без изменения данных
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Результат проверки балансов
- *       401:
- *         description: Не авторизован
- *       500:
- *         description: Ошибка при проверке
- */
+// Проверить корректность балансов счетов
 router.get('/check-balances', transactionController.checkBalances);
 
-/**
- * @swagger
- * /api/transactions/sync-account/{accountId}:
- *   post:
- *     tags:
- *       - Transactions
- *     summary: Синхронизировать баланс отдельного счета
- *     description: Пересчет и корректировка баланса конкретного счета
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: accountId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID счета для синхронизации
- *     responses:
- *       200:
- *         description: Баланс счета синхронизирован
- *       404:
- *         description: Счет не найден
- *       401:
- *         description: Не авторизован
- *       500:
- *         description: Ошибка при синхронизации
- */
+// Синхронизировать баланс отдельного счета
 router.post(
   '/sync-account/:accountId',
   transactionController.syncAccountBalance
 );
 
-/**
- * @swagger
- * /api/transactions/validate-balances:
- *   post:
- *     tags:
- *       - Transactions
- *     summary: Валидировать и автоисправить балансы
- *     description: Проверка и автоматическое исправление некорректных балансов
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: autoFix
- *         schema:
- *           type: boolean
- *           default: true
- *         description: Автоматически исправлять найденные ошибки
- *     responses:
- *       200:
- *         description: Валидация завершена
- *       400:
- *         description: Найдены некорректные балансы
- *       401:
- *         description: Не авторизован
- *       500:
- *         description: Ошибка при валидации
- */
+// Валидировать и автоисправить балансы
 router.post('/validate-balances', transactionController.validateAndFixBalances);
 
-/**
- * @swagger
- * /api/transactions/balance-snapshot:
- *   post:
- *     tags:
- *       - Transactions
- *     summary: Создать снимок балансов для диагностики
- *     description: Создание снимка текущих балансов для анализа
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Снимок балансов создан
- *       401:
- *         description: Не авторизован
- *       500:
- *         description: Ошибка при создании снимка
- */
+// Создать снимок балансов для диагностики
 router.post('/balance-snapshot', transactionController.createBalanceSnapshot);
+*/
 
 module.exports = router;

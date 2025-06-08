@@ -133,6 +133,8 @@ export const transactionApi = createApi({
       ],
     }),
 
+    // API СИНХРОНИЗАЦИИ БАЛАНСОВ ОТКЛЮЧЕНЫ
+    /*
     // Пересчет балансов всех счетов на основе транзакций
     recalculateBalances: builder.mutation<
       {
@@ -273,6 +275,7 @@ export const transactionApi = createApi({
         method: 'POST',
       }),
     }),
+    */
   }),
 });
 
@@ -282,9 +285,10 @@ export const {
   useCreateTransactionMutation,
   useUpdateTransactionMutation,
   useDeleteTransactionMutation,
-  useRecalculateBalancesMutation,
-  useCheckBalancesQuery,
-  useSyncAccountBalanceMutation,
-  useValidateAndFixBalancesMutation,
-  useCreateBalanceSnapshotMutation,
+  // ХУКИ СИНХРОНИЗАЦИИ БАЛАНСОВ ОТКЛЮЧЕНЫ
+  // useRecalculateBalancesMutation,
+  // useCheckBalancesQuery,
+  // useSyncAccountBalanceMutation,
+  // useValidateAndFixBalancesMutation,
+  // useCreateBalanceSnapshotMutation,
 } = transactionApi;

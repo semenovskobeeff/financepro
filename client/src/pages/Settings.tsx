@@ -1,30 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
-  Typography,
-  Paper,
   Divider,
   Switch,
   FormControlLabel,
-  Card,
-  CardContent,
   List,
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
   Chip,
   Button,
-  Alert,
-  CircularProgress,
 } from '@mui/material';
 import { useTheme } from '../shared/config/ThemeContext';
 import PageContainer from '../shared/ui/PageContainer';
 import NotionCard from '../shared/ui/NotionCard';
 import { config } from '../config/environment';
-import { useRecalculateBalancesMutation } from '../entities/transaction/api/transactionApi';
+// ИМПОРТ ПЕРЕСЧЕТА БАЛАНСОВ ОТКЛЮЧЕН
+// import { useRecalculateBalancesMutation } from '../entities/transaction/api/transactionApi';
 
 const Settings: React.FC = () => {
   const { themeMode, themeToggleEnabled, setThemeToggleEnabled } = useTheme();
+
+  // ФУНКЦИЯ ПЕРЕСЧЕТА БАЛАНСОВ ОТКЛЮЧЕНА
+  /*
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [recalculateMessage, setRecalculateMessage] = useState<string | null>(
     null
@@ -32,11 +30,14 @@ const Settings: React.FC = () => {
   const [recalculateError, setRecalculateError] = useState<string | null>(null);
 
   const [recalculateBalancesMutation] = useRecalculateBalancesMutation();
+  */
 
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setThemeToggleEnabled(event.target.checked);
   };
 
+  // ФУНКЦИЯ ПЕРЕСЧЕТА БАЛАНСОВ ОТКЛЮЧЕНА
+  /*
   const handleRecalculateBalances = async () => {
     try {
       setIsRecalculating(true);
@@ -63,6 +64,7 @@ const Settings: React.FC = () => {
       setIsRecalculating(false);
     }
   };
+  */
 
   return (
     <PageContainer title="Настройки">
@@ -99,42 +101,22 @@ const Settings: React.FC = () => {
         </List>
       </NotionCard>
 
-      {/* Утилиты для разработки */}
+      {/* УТИЛИТЫ РАЗРАБОТЧИКА ОТКЛЮЧЕНЫ - ПЕРЕСЧЕТ БАЛАНСОВ НЕДОСТУПЕН */}
       {config.debug && (
         <NotionCard title="Утилиты разработчика">
           <List>
             <ListItem>
               <ListItemText
-                primary="Пересчет балансов счетов"
-                secondary="Исправляет ошибки в балансах, пересчитывая их на основе всех транзакций"
+                primary="Пересчет балансов счетов (отключено)"
+                secondary="Функция временно отключена для тестирования"
               />
               <ListItemSecondaryAction>
-                <Button
-                  variant="outlined"
-                  color="warning"
-                  onClick={handleRecalculateBalances}
-                  disabled={isRecalculating}
-                  startIcon={
-                    isRecalculating ? <CircularProgress size={16} /> : undefined
-                  }
-                >
-                  {isRecalculating ? 'Пересчет...' : 'Пересчитать'}
+                <Button variant="outlined" color="primary" disabled={true}>
+                  Отключено
                 </Button>
               </ListItemSecondaryAction>
             </ListItem>
           </List>
-
-          {recalculateMessage && (
-            <Alert severity="success" sx={{ mt: 2 }}>
-              {recalculateMessage}. Страница перезагрузится через 3 секунды...
-            </Alert>
-          )}
-
-          {recalculateError && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {recalculateError}
-            </Alert>
-          )}
         </NotionCard>
       )}
     </PageContainer>

@@ -536,10 +536,9 @@ exports.deleteTransaction = async (req, res) => {
   }
 };
 
-/**
- * Пересчет балансов всех счетов на основе транзакций
- * Используется для исправления ошибок в балансах
- */
+// ФУНКЦИИ СИНХРОНИЗАЦИИ БАЛАНСОВ ОТКЛЮЧЕНЫ
+/*
+// Пересчет балансов всех счетов на основе транзакций
 exports.recalculateBalances = async (req, res) => {
   try {
     console.log(
@@ -565,16 +564,13 @@ exports.recalculateBalances = async (req, res) => {
   }
 };
 
-/**
- * Проверка корректности балансов
- */
+// Проверка корректности балансов
 exports.checkBalances = async (req, res) => {
   try {
     console.log('🔍 Проверка балансов для пользователя:', req.user._id);
 
     const result = await balanceService.checkBalancesConsistency(req.user._id);
 
-    // Если найдены несоответствия, автоматически исправляем их
     if (result.hasInconsistencies) {
       console.log('🔧 Автоматическое исправление найденных несоответствий...');
 
@@ -586,13 +582,12 @@ exports.checkBalances = async (req, res) => {
         `✅ Автоматически исправлено ${fixResult.accountsCorrected} балансов`
       );
 
-      // Возвращаем результат с информацией об исправлении
       return res.json({
         status: 'success',
         data: {
           ...result,
-          hasInconsistencies: false, // После исправления несоответствий нет
-          inconsistencies: [], // Очищаем список несоответствий
+          hasInconsistencies: false,
+          inconsistencies: [],
           autoFixed: true,
           fixResult: fixResult,
         },
@@ -612,16 +607,13 @@ exports.checkBalances = async (req, res) => {
   }
 };
 
-/**
- * Синхронизация баланса отдельного счета
- */
+// Синхронизация баланса отдельного счета
 exports.syncAccountBalance = async (req, res) => {
   try {
     const { accountId } = req.params;
 
     console.log('🔄 Запрос синхронизации баланса счета:', accountId);
 
-    // Проверяем, что счет принадлежит пользователю
     const Account = require('../../../core/domain/entities/Account');
     const account = await Account.findOne({
       _id: accountId,
@@ -652,9 +644,7 @@ exports.syncAccountBalance = async (req, res) => {
   }
 };
 
-/**
- * Валидация и автоисправление балансов пользователя
- */
+// Валидация и автоисправление балансов пользователя
 exports.validateAndFixBalances = async (req, res) => {
   try {
     const { autoFix = true } = req.query;
@@ -666,8 +656,6 @@ exports.validateAndFixBalances = async (req, res) => {
       autoFix === 'true'
     );
 
-    // Возвращаем успех если балансы корректны или исправлены
-    // Ошибку возвращаем только если найдены несоответствия и autoFix = false
     const statusCode =
       result.status === 'inconsistent' && autoFix === 'false' ? 400 : 200;
 
@@ -685,9 +673,7 @@ exports.validateAndFixBalances = async (req, res) => {
   }
 };
 
-/**
- * Создание снимка балансов для диагностики
- */
+// Создание снимка балансов для диагностики
 exports.createBalanceSnapshot = async (req, res) => {
   try {
     console.log(
@@ -710,3 +696,4 @@ exports.createBalanceSnapshot = async (req, res) => {
     });
   }
 };
+*/
