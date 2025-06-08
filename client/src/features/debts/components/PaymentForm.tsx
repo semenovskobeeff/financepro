@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { Debt } from 'entities/debt/model/types';
 import { useGetAccountsQuery } from 'entities/account/api/accountApi';
+import { formatCurrencyWithDots } from '../../../shared/utils/formatUtils';
 
 interface PaymentFormProps {
   debt: Debt;
@@ -66,7 +67,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       newErrors.amount = 'Сумма должна быть больше нуля';
       isValid = false;
     } else if (Number(formData.amount) > debt.currentAmount) {
-      newErrors.amount = `Сумма не может превышать остаток долга (${debt.currentAmount.toLocaleString()} ₽)`;
+      newErrors.amount = `Сумма не может превышать остаток долга (${formatCurrencyWithDots(
+        debt.currentAmount
+      )})`;
       isValid = false;
     }
 
@@ -76,7 +79,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         selectedAccount &&
         Number(formData.amount) > selectedAccount.balance
       ) {
-        newErrors.amount = `Недостаточно средств на счете (доступно ${selectedAccount.balance.toLocaleString()} ₽)`;
+        newErrors.amount = `Недостаточно средств на счете (доступно ${formatCurrencyWithDots(
+          selectedAccount.balance
+        )})`;
         isValid = false;
       }
     }
@@ -126,7 +131,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6">{debt.name}</Typography>
           <Typography variant="body2" color="text.secondary">
-            Текущий остаток: {debt.currentAmount.toLocaleString()} ₽
+            Текущий остаток: {formatCurrencyWithDots(debt.currentAmount)}
           </Typography>
           {debt.nextPaymentDate && (
             <Typography variant="body2" color="text.secondary">
@@ -160,11 +165,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               variant="outlined"
               onClick={setRecommendedAmount}
             >
-              Рекомендуемый ({recommendedAmount.toLocaleString()} ₽)
+              Рекомендуемый ({formatCurrencyWithDots(recommendedAmount)})
             </Button>
 
             <Button size="small" variant="outlined" onClick={setFullAmount}>
-              Полное погашение ({fullAmount.toLocaleString()} ₽)
+              Полное погашение ({formatCurrencyWithDots(fullAmount)})
             </Button>
           </Box>
 
@@ -192,7 +197,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                   value={account.id}
                   disabled={account.balance < Number(formData.amount)}
                 >
-                  {account.name} ({account.balance.toLocaleString()} ₽)
+                  {account.name} ({formatCurrencyWithDots(account.balance)})
                 </MenuItem>
               ))}
             </Select>

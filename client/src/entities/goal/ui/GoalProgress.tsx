@@ -5,6 +5,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Goal } from '../model/types';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { formatCurrencyWithDots } from '../../../shared/utils/formatUtils';
 
 // Регистрируем компоненты Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -65,7 +66,7 @@ const GoalProgress: React.FC<GoalProgressProps> = ({ goal }) => {
           label: function (context: any) {
             const label = context.label || '';
             const value = context.raw || 0;
-            return `${label}: ${value.toFixed(2)} ₽`;
+            return `${label}: ${formatCurrencyWithDots(value)}`;
           },
         },
       },
@@ -117,7 +118,7 @@ const GoalProgress: React.FC<GoalProgressProps> = ({ goal }) => {
               Собрано:
             </Typography>
             <Typography variant="body1" fontWeight="500">
-              {progressAmount.toFixed(2)} ₽
+              {formatCurrencyWithDots(progressAmount)}
             </Typography>
           </Box>
 
@@ -126,7 +127,7 @@ const GoalProgress: React.FC<GoalProgressProps> = ({ goal }) => {
               Осталось собрать:
             </Typography>
             <Typography variant="body1" fontWeight="500">
-              {remainingAmount.toFixed(2)} ₽
+              {formatCurrencyWithDots(remainingAmount)}
             </Typography>
           </Box>
 
@@ -135,7 +136,7 @@ const GoalProgress: React.FC<GoalProgressProps> = ({ goal }) => {
               Всего:
             </Typography>
             <Typography variant="body1" fontWeight="500">
-              {goal.targetAmount.toFixed(2)} ₽
+              {formatCurrencyWithDots(goal.targetAmount)}
             </Typography>
           </Box>
 

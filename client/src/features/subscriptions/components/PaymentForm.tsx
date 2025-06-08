@@ -18,7 +18,10 @@ import {
 import { Subscription } from '../../../entities/subscription/model/types';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { formatNumber } from '../../../shared/utils/formatUtils';
+import {
+  formatNumber,
+  formatCurrencyWithDots,
+} from '../../../shared/utils/formatUtils';
 
 interface PaymentFormProps {
   subscription: Subscription;
@@ -213,7 +216,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               </Typography>
               <Typography variant="body2">
                 <strong>Новый баланс:</strong>{' '}
-                {result.account.balance.toFixed(2)} ₽
+                {formatCurrencyWithDots(result.account.balance)}
               </Typography>
             </Paper>
 

@@ -16,6 +16,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ru } from 'date-fns/locale';
+import { formatCurrencyWithDots } from '../../../shared/utils/formatUtils';
 import { TransferFundsRequest } from '../../../entities/account/model/types';
 import {
   useGetAccountsQuery,
@@ -155,8 +156,8 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({
                 )
                 .map(account => (
                   <MenuItem key={account.id} value={account.id}>
-                    {account.name} ({account.balance.toFixed(2)}{' '}
-                    {account.currency})
+                    {account.name} (
+                    {formatCurrencyWithDots(account.balance, account.currency)})
                   </MenuItem>
                 ))}
             </Select>
@@ -188,8 +189,8 @@ const TransferFundsForm: React.FC<TransferFundsFormProps> = ({
                 )
                 .map(account => (
                   <MenuItem key={account.id} value={account.id}>
-                    {account.name} ({account.balance.toFixed(2)}{' '}
-                    {account.currency})
+                    {account.name} (
+                    {formatCurrencyWithDots(account.balance, account.currency)})
                   </MenuItem>
                 ))}
             </Select>

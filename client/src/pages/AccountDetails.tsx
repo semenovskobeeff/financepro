@@ -25,6 +25,7 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import SavingsIcon from '@mui/icons-material/Savings';
 import CreditScoreIcon from '@mui/icons-material/CreditScore';
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
+import { formatCurrencyWithDots } from '../shared/utils/formatUtils';
 import CloseIcon from '@mui/icons-material/Close';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 
@@ -257,7 +258,7 @@ const AccountDetails: React.FC = () => {
                 </Box>
                 <Box>
                   <Typography variant="h4" color="primary">
-                    {account.balance.toFixed(2)} {account.currency}
+                    {formatCurrencyWithDots(account.balance, account.currency)}
                   </Typography>
                 </Box>
               </Box>

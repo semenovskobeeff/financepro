@@ -21,6 +21,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { ru } from 'date-fns/locale';
 import { useGetAccountsQuery } from '../../../entities/account/api/accountApi';
 import { useGetCategoriesQuery } from '../../../entities/category/api/categoryApi';
+import { formatCurrencyWithDots } from '../../../shared/utils/formatUtils';
 import { useCreateSubscriptionMutation } from '../../../entities/subscription/api/subscriptionApi';
 import {
   Subscription,
@@ -259,8 +260,12 @@ const SubscriptionFormContent: React.FC<SubscriptionFormContentProps> = ({
                   .filter(account => account.status === 'active')
                   .map(account => (
                     <MenuItem key={account.id} value={account.id}>
-                      {account.name} ({account.balance.toFixed(2)}{' '}
-                      {account.currency})
+                      {account.name} (
+                      {formatCurrencyWithDots(
+                        account.balance,
+                        account.currency
+                      )}
+                      )
                     </MenuItem>
                   ))}
               </Select>

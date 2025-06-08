@@ -23,6 +23,7 @@ import {
   useUpdateGoalMutation,
 } from '../../../entities/goal/api/goalApi';
 import { useGetAccountsQuery } from '../../../entities/account/api/accountApi';
+import { formatCurrencyWithDots } from '../../../shared/utils/formatUtils';
 
 interface GoalFormProps {
   goal?: Goal | null;
@@ -183,8 +184,8 @@ const GoalForm: React.FC<GoalFormProps> = ({ goal, onClose }) => {
               >
                 {activeAccounts?.map(account => (
                   <MenuItem key={account.id} value={account.id}>
-                    {account.name} ({account.balance.toFixed(2)}{' '}
-                    {account.currency})
+                    {account.name} (
+                    {formatCurrencyWithDots(account.balance, account.currency)})
                   </MenuItem>
                 ))}
               </Select>

@@ -18,6 +18,7 @@ import {
 import { useGetAccountsQuery } from 'entities/account/api/accountApi';
 import { useTransferToGoalMutation } from 'entities/goal/api/goalApi';
 import { Goal } from 'entities/goal/model/types';
+import { formatCurrencyWithDots } from '../../../shared/utils/formatUtils';
 
 interface TransferToGoalFormProps {
   goal: Goal;
@@ -129,8 +130,8 @@ const TransferToGoalForm: React.FC<TransferToGoalFormProps> = ({
       <DialogContent>
         <Box sx={{ mb: 3, mt: 1 }}>
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            Прогресс: {goal.progress.toFixed(2)} /{' '}
-            {goal.targetAmount.toFixed(2)} ₽
+            Прогресс: {formatCurrencyWithDots(goal.progress)} /{' '}
+            {formatCurrencyWithDots(goal.targetAmount)}
           </Typography>
           <LinearProgress
             variant="determinate"
@@ -138,7 +139,7 @@ const TransferToGoalForm: React.FC<TransferToGoalFormProps> = ({
             sx={{ height: 8, borderRadius: 4, mb: 1 }}
           />
           <Typography variant="body2" color="text.secondary">
-            Осталось собрать: {remainingAmount.toFixed(2)} ₽
+            Осталось собрать: {formatCurrencyWithDots(remainingAmount)}
           </Typography>
         </Box>
 
@@ -154,7 +155,7 @@ const TransferToGoalForm: React.FC<TransferToGoalFormProps> = ({
             >
               {availableAccounts.map(account => (
                 <MenuItem key={account.id} value={account.id}>
-                  {account.name} ({account.balance.toFixed(2)} ₽)
+                  {account.name} ({formatCurrencyWithDots(account.balance)})
                 </MenuItem>
               ))}
             </Select>

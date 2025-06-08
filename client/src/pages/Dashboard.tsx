@@ -69,7 +69,10 @@ import { useGetUpcomingPaymentsQuery as useGetUpcomingDebtPaymentsQuery } from '
 import { useGetGoalsQuery } from 'entities/goal/api/goalApi';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from 'shared/ui/PageContainer';
-import { formatNumber } from '../shared/utils/formatUtils';
+import {
+  formatNumber,
+  formatNumberWithDots,
+} from '../shared/utils/formatUtils';
 import {
   getChartColors,
   getNotionChartOptions,
@@ -943,7 +946,8 @@ const Dashboard: React.FC = () => {
   const smartNotificationsData = getSmartNotificationsData();
 
   // Форматирование суммы в рубли
-  const formatCurrency = (amount: number) => `${formatNumber(amount)} ₽`;
+  const formatCurrency = (amount: number) =>
+    `${formatNumberWithDots(amount)} ₽`;
 
   // Обработчики для быстрых действий
   const handleQuickAction = (actionType: string) => {
