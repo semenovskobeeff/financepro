@@ -180,22 +180,28 @@ exports.createTransaction = async (req, res) => {
       return res.status(400).json({ message: 'Недостаточно средств на счете' });
     }
 
-    // Сохраняем транзакцию (баланс обновится автоматически через middleware)
+    // Сохраняем транзакцию
     await transaction.save();
+
+    // Пересчитываем баланс счета на основе всех транзакций для точности
+    const balanceResult = await balanceService.recalculateAccountBalance(
+      accountId
+    );
 
     // Получаем созданную транзакцию с populated данными
     const populatedTransaction = await Transaction.findById(transaction._id)
       .populate('accountId', 'name type')
       .populate('categoryId', 'name type icon');
 
-    // Получаем обновленный счет после middleware
+    // Получаем обновленный счет после пересчета
     const updatedAccount = await Account.findById(accountId);
 
-    console.log('✅ Транзакция успешно создана:', {
+    console.log('✅ Транзакция создана и баланс пересчитан:', {
       transactionId: transaction._id,
       type: transaction.type,
       amount: transaction.amount,
-      accountBalance: updatedAccount.balance,
+      balanceChange: balanceResult.difference,
+      newBalance: balanceResult.newBalance,
     });
 
     res.status(201).json({
@@ -206,6 +212,11 @@ exports.createTransaction = async (req, res) => {
           id: updatedAccount._id,
           name: updatedAccount.name,
           balance: updatedAccount.balance,
+        },
+        balanceInfo: {
+          synchronized: balanceResult.synchronized,
+          difference: balanceResult.difference,
+          transactionsProcessed: balanceResult.transactionsProcessed,
         },
       },
     });
@@ -500,44 +511,41 @@ exports.deleteTransaction = async (req, res) => {
       return res.status(404).json({ message: 'Транзакция не найдена' });
     }
 
-    // Для удаления транзакции необходимо обновить баланс счета
-    const account = await Account.findById(transaction.accountId);
-
-    if (!account) {
-      return res.status(404).json({ message: 'Счет не найден' });
-    }
-
-    // Меняем баланс в обратную сторону
-    if (transaction.type === 'income') {
-      account.balance -= transaction.amount;
-    } else if (transaction.type === 'expense') {
-      account.balance += transaction.amount;
-    } else if (transaction.type === 'transfer') {
-      // Для переводов нужно обработать оба счета
-      const toAccount = await Account.findById(transaction.toAccountId);
-
-      if (!toAccount) {
-        return res.status(404).json({ message: 'Целевой счет не найден' });
-      }
-
-      account.balance += transaction.amount;
-      toAccount.balance -= transaction.amount;
-      await toAccount.save();
-    }
-
-    // Сохраняем изменения счета и удаляем транзакцию
-    await account.save();
+    // Удаляем транзакцию
     await Transaction.findByIdAndDelete(req.params.id);
 
-    res.json({ message: 'Транзакция удалена' });
+    // Пересчитываем баланс основного счета
+    const balanceResult = await balanceService.recalculateAccountBalance(
+      transaction.accountId
+    );
+
+    // Пересчитываем баланс целевого счета для переводов
+    let toAccountBalanceResult = null;
+    if (transaction.type === 'transfer' && transaction.toAccountId) {
+      toAccountBalanceResult = await balanceService.recalculateAccountBalance(
+        transaction.toAccountId
+      );
+    }
+
+    console.log('✅ Транзакция удалена и балансы пересчитаны:', {
+      transactionId: req.params.id,
+      mainAccountBalance: balanceResult.newBalance,
+      toAccountBalance: toAccountBalanceResult?.newBalance || null,
+    });
+
+    res.json({
+      message: 'Транзакция удалена',
+      balanceInfo: {
+        mainAccount: balanceResult,
+        toAccount: toAccountBalanceResult,
+      },
+    });
   } catch (error) {
     console.error('Delete transaction error:', error);
     res.status(500).json({ message: 'Ошибка при удалении транзакции' });
   }
 };
 
-// ФУНКЦИИ СИНХРОНИЗАЦИИ БАЛАНСОВ ОТКЛЮЧЕНЫ
-/*
 // Пересчет балансов всех счетов на основе транзакций
 exports.recalculateBalances = async (req, res) => {
   try {
@@ -626,7 +634,7 @@ exports.syncAccountBalance = async (req, res) => {
       });
     }
 
-    const result = await balanceService.syncAccountBalance(accountId);
+    const result = await balanceService.recalculateAccountBalance(accountId);
 
     res.json({
       status: 'success',
@@ -696,4 +704,3 @@ exports.createBalanceSnapshot = async (req, res) => {
     });
   }
 };
-*/

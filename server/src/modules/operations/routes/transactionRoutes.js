@@ -215,8 +215,7 @@ router.patch('/:id', transactionController.updateTransaction);
  */
 router.delete('/:id', transactionController.deleteTransaction);
 
-// МАРШРУТЫ СИНХРОНИЗАЦИИ БАЛАНСОВ ОТКЛЮЧЕНЫ
-/*
+// МАРШРУТЫ СИНХРОНИЗАЦИИ БАЛАНСОВ
 // Пересчет балансов всех счетов на основе транзакций
 router.post('/recalculate-balances', transactionController.recalculateBalances);
 
@@ -234,6 +233,5 @@ router.post('/validate-balances', transactionController.validateAndFixBalances);
 
 // Создать снимок балансов для диагностики
 router.post('/balance-snapshot', transactionController.createBalanceSnapshot);
-*/
 
 module.exports = router;

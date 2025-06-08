@@ -240,39 +240,45 @@ exports.transferFunds = async (req, res) => {
       description: description || 'Перевод средств',
     });
 
-    // Обновляем балансы счетов
-    fromAccount.balance -= amount;
-    toAccount.balance += amount;
+    // Сохраняем транзакцию
+    await transaction.save();
 
-    // Добавляем записи в историю счетов
-    fromAccount.history.push({
-      operationType: 'expense',
-      amount,
-      date: new Date(),
-      description: description || `Перевод на счет: ${toAccount.name}`,
-      linkedAccountId: toAccount._id,
+    // Пересчитываем балансы обоих счетов для точности
+    const balanceService = require('../services/balanceService');
+    const fromAccountBalance = await balanceService.recalculateAccountBalance(
+      fromAccountId
+    );
+    const toAccountBalance = await balanceService.recalculateAccountBalance(
+      toAccountId
+    );
+
+    // Получаем обновленные счета
+    const updatedFromAccount = await Account.findById(fromAccountId);
+    const updatedToAccount = await Account.findById(toAccountId);
+
+    console.log('✅ Перевод выполнен и балансы пересчитаны:', {
+      transactionId: transaction._id,
+      fromAccountBalance: fromAccountBalance.newBalance,
+      toAccountBalance: toAccountBalance.newBalance,
     });
-
-    toAccount.history.push({
-      operationType: 'income',
-      amount,
-      date: new Date(),
-      description: description || `Перевод со счета: ${fromAccount.name}`,
-      linkedAccountId: fromAccount._id,
-    });
-
-    // Сохраняем изменения
-    await Promise.all([
-      fromAccount.save(),
-      toAccount.save(),
-      transaction.save(),
-    ]);
 
     res.json({
       message: 'Перевод выполнен успешно',
       transaction,
-      fromAccount,
-      toAccount,
+      fromAccount: {
+        id: updatedFromAccount._id,
+        name: updatedFromAccount.name,
+        balance: updatedFromAccount.balance,
+      },
+      toAccount: {
+        id: updatedToAccount._id,
+        name: updatedToAccount.name,
+        balance: updatedToAccount.balance,
+      },
+      balanceInfo: {
+        fromAccount: fromAccountBalance,
+        toAccount: toAccountBalance,
+      },
     });
   } catch (error) {
     console.error('Transfer funds error:', error);
