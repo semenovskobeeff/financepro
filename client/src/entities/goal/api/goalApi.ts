@@ -45,7 +45,12 @@ export const goalApi = createApi({
 
     getGoalById: builder.query<Goal, string>({
       query: id => ({ url: `/goals/${id}` }),
-      transformResponse: (response: Goal) => response,
+      transformResponse: (response: { status: string; data: Goal } | Goal) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Goal;
+      },
       providesTags: (_, __, id) => [{ type: 'Goal', id }],
     }),
 
@@ -55,7 +60,12 @@ export const goalApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: Goal) => response,
+      transformResponse: (response: { status: string; data: Goal } | Goal) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Goal;
+      },
       invalidatesTags: [{ type: 'Goal', id: 'LIST' }],
     }),
 
@@ -66,7 +76,14 @@ export const goalApi = createApi({
           method: 'PUT',
           body: data,
         }),
-        transformResponse: (response: Goal) => response,
+        transformResponse: (
+          response: { status: string; data: Goal } | Goal
+        ) => {
+          if (response && typeof response === 'object' && 'data' in response) {
+            return response.data;
+          }
+          return response as Goal;
+        },
         invalidatesTags: (_, __, { id }) => [
           { type: 'Goal', id },
           { type: 'Goal', id: 'LIST' },
@@ -105,7 +122,12 @@ export const goalApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: Goal) => response,
+      transformResponse: (response: { status: string; data: Goal } | Goal) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Goal;
+      },
       invalidatesTags: (_, __, { id }) => [
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },

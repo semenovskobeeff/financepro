@@ -17,7 +17,14 @@ export const shoppingListApi = createApi({
     // Получение всех списков покупок
     getShoppingLists: builder.query<ShoppingList[], void>({
       query: () => '/shopping-lists',
-      transformResponse: (response: ShoppingList[]) => response || [],
+      transformResponse: (
+        response: { status: string; data: ShoppingList[] } | ShoppingList[]
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data || [];
+        }
+        return (response as ShoppingList[]) || [];
+      },
       providesTags: result =>
         result && Array.isArray(result)
           ? [
@@ -33,7 +40,14 @@ export const shoppingListApi = createApi({
     // Получение конкретного списка
     getShoppingListById: builder.query<ShoppingList, string>({
       query: id => `/shopping-lists/${id}`,
-      transformResponse: (response: ShoppingList) => response,
+      transformResponse: (
+        response: { status: string; data: ShoppingList } | ShoppingList
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as ShoppingList;
+      },
       providesTags: (_, __, id) => [{ type: 'ShoppingList', id }],
     }),
 
@@ -47,7 +61,14 @@ export const shoppingListApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ShoppingList) => response,
+      transformResponse: (
+        response: { status: string; data: ShoppingList } | ShoppingList
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as ShoppingList;
+      },
       invalidatesTags: [{ type: 'ShoppingList', id: 'LIST' }],
     }),
 
@@ -61,7 +82,14 @@ export const shoppingListApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: ShoppingList) => response,
+      transformResponse: (
+        response: { status: string; data: ShoppingList } | ShoppingList
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as ShoppingList;
+      },
       invalidatesTags: (_, __, { id }) => [
         { type: 'ShoppingList', id },
         { type: 'ShoppingList', id: 'LIST' },
@@ -90,7 +118,14 @@ export const shoppingListApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ShoppingList) => response,
+      transformResponse: (
+        response: { status: string; data: ShoppingList } | ShoppingList
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as ShoppingList;
+      },
       invalidatesTags: (_, __, { listId }) => [
         { type: 'ShoppingList', id: listId },
         { type: 'ShoppingList', id: 'LIST' },
@@ -111,7 +146,14 @@ export const shoppingListApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: ShoppingList) => response,
+      transformResponse: (
+        response: { status: string; data: ShoppingList } | ShoppingList
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as ShoppingList;
+      },
       invalidatesTags: (_, __, { listId }) => [
         { type: 'ShoppingList', id: listId },
         { type: 'ShoppingList', id: 'LIST' },
@@ -127,7 +169,14 @@ export const shoppingListApi = createApi({
         url: `/shopping-lists/${listId}/items/${itemId}`,
         method: 'DELETE',
       }),
-      transformResponse: (response: ShoppingList) => response,
+      transformResponse: (
+        response: { status: string; data: ShoppingList } | ShoppingList
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as ShoppingList;
+      },
       invalidatesTags: (_, __, { listId }) => [
         { type: 'ShoppingList', id: listId },
         { type: 'ShoppingList', id: 'LIST' },
@@ -137,7 +186,16 @@ export const shoppingListApi = createApi({
     // Получение статистики
     getShoppingListStatistics: builder.query<ShoppingListStatistics, void>({
       query: () => '/shopping-lists/statistics',
-      transformResponse: (response: ShoppingListStatistics) => response,
+      transformResponse: (
+        response:
+          | { status: string; data: ShoppingListStatistics }
+          | ShoppingListStatistics
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as ShoppingListStatistics;
+      },
       providesTags: [{ type: 'ShoppingList', id: 'STATS' }],
     }),
   }),

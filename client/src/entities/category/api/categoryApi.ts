@@ -52,7 +52,14 @@ export const categoryApi = createApi({
 
     getCategoryById: builder.query<Category, string>({
       query: id => ({ url: `/categories/${id}` }),
-      transformResponse: (response: Category) => response,
+      transformResponse: (
+        response: { status: string; data: Category } | Category
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Category;
+      },
       providesTags: (_, __, id) => [{ type: 'Category', id }],
     }),
 
@@ -62,7 +69,14 @@ export const categoryApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: Category) => response,
+      transformResponse: (
+        response: { status: string; data: Category } | Category
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Category;
+      },
       invalidatesTags: [{ type: 'Category', id: 'LIST' }],
     }),
 
@@ -75,7 +89,14 @@ export const categoryApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: Category) => response,
+      transformResponse: (
+        response: { status: string; data: Category } | Category
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Category;
+      },
       invalidatesTags: (_, __, { id }) => [
         { type: 'Category', id },
         { type: 'Category', id: 'LIST' },

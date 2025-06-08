@@ -23,7 +23,8 @@ export const accountApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: Account[]) => response || [],
+      transformResponse: (response: { status: string; data: Account[] }) =>
+        response?.data || [],
       providesTags: result =>
         result && Array.isArray(result)
           ? [
@@ -38,7 +39,8 @@ export const accountApi = createApi({
 
     getAccountById: builder.query<Account, string>({
       query: id => ({ url: `/accounts/${id}` }),
-      transformResponse: (response: Account) => response,
+      transformResponse: (response: { status: string; data: Account }) =>
+        response?.data,
       providesTags: (_, __, id) => [{ type: 'Account', id }],
     }),
 
@@ -48,7 +50,8 @@ export const accountApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: Account) => response,
+      transformResponse: (response: { status: string; data: Account }) =>
+        response?.data,
       invalidatesTags: [{ type: 'Account', id: 'LIST' }],
     }),
 
@@ -61,7 +64,8 @@ export const accountApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: Account) => response,
+      transformResponse: (response: { status: string; data: Account }) =>
+        response?.data,
       invalidatesTags: (_, __, { id }) => [
         { type: 'Account', id },
         { type: 'Account', id: 'LIST' },
@@ -100,9 +104,9 @@ export const accountApi = createApi({
         body: data,
       }),
       transformResponse: (response: {
-        fromAccount: Account;
-        toAccount: Account;
-      }) => response,
+        status: string;
+        data: { fromAccount: Account; toAccount: Account };
+      }) => response?.data,
       invalidatesTags: [{ type: 'Account', id: 'LIST' }],
     }),
 
@@ -123,14 +127,17 @@ export const accountApi = createApi({
         params: { page, limit },
       }),
       transformResponse: (response: {
-        history: AccountHistoryItem[];
-        pagination?: {
-          total: number;
-          totalPages: number;
-          currentPage: number;
-          limit: number;
+        status: string;
+        data: {
+          history: AccountHistoryItem[];
+          pagination?: {
+            total: number;
+            totalPages: number;
+            currentPage: number;
+            limit: number;
+          };
         };
-      }) => response || { history: [] },
+      }) => response?.data || { history: [] },
       providesTags: (_, __, { accountId }) => [
         { type: 'Account', id: `${accountId}-history` },
       ],

@@ -46,7 +46,12 @@ export const debtApi = createApi({
 
     getDebtById: builder.query<Debt, string>({
       query: id => ({ url: `/debts/${id}` }),
-      transformResponse: (response: Debt) => response,
+      transformResponse: (response: { status: string; data: Debt } | Debt) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Debt;
+      },
       providesTags: (_, __, id) => [{ type: 'Debt', id }],
     }),
 
@@ -56,7 +61,12 @@ export const debtApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: Debt) => response,
+      transformResponse: (response: { status: string; data: Debt } | Debt) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Debt;
+      },
       invalidatesTags: [{ type: 'Debt', id: 'LIST' }],
     }),
 
@@ -67,7 +77,14 @@ export const debtApi = createApi({
           method: 'PUT',
           body: data,
         }),
-        transformResponse: (response: Debt) => response,
+        transformResponse: (
+          response: { status: string; data: Debt } | Debt
+        ) => {
+          if (response && typeof response === 'object' && 'data' in response) {
+            return response.data;
+          }
+          return response as Debt;
+        },
         invalidatesTags: (_, __, { id }) => [
           { type: 'Debt', id },
           { type: 'Debt', id: 'LIST' },
@@ -106,7 +123,12 @@ export const debtApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: Debt) => response,
+      transformResponse: (response: { status: string; data: Debt } | Debt) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as Debt;
+      },
       invalidatesTags: (_, __, { id }) => [
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
@@ -137,7 +159,16 @@ export const debtApi = createApi({
 
     getDebtsStats: builder.query<DebtStatsResponse, void>({
       query: () => ({ url: '/debts/stats' }),
-      transformResponse: (response: DebtStatsResponse) => response,
+      transformResponse: (
+        response:
+          | { status: string; data: DebtStatsResponse }
+          | DebtStatsResponse
+      ) => {
+        if (response && typeof response === 'object' && 'data' in response) {
+          return response.data;
+        }
+        return response as DebtStatsResponse;
+      },
       providesTags: [{ type: 'Debt', id: 'STATS' }],
     }),
   }),
