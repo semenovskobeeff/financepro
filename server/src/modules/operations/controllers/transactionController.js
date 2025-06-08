@@ -261,6 +261,12 @@ exports.updateTransaction = async (req, res) => {
   try {
     const { categoryId, description, amount, date } = req.body;
 
+    console.log('🔄 Обновление транзакции:', {
+      transactionId: req.params.id,
+      userId: req.user._id,
+      requestBody: req.body,
+    });
+
     // Находим транзакцию
     const transaction = await Transaction.findOne({
       _id: req.params.id,
@@ -271,8 +277,9 @@ exports.updateTransaction = async (req, res) => {
       return res.status(404).json({ message: 'Транзакция не найдена' });
     }
 
-    // Сохраняем старую сумму для пересчета баланса
+    // Сохраняем данные старой транзакции для пересчета баланса
     const oldAmount = transaction.amount;
+    const oldType = transaction.type;
     let balanceUpdateNeeded = false;
 
     // Проверка категории, если указана
@@ -302,7 +309,7 @@ exports.updateTransaction = async (req, res) => {
 
     // Обновляем дату
     if (date !== undefined) {
-      transaction.date = date;
+      transaction.date = new Date(date);
     }
 
     // Обновляем сумму и пересчитываем баланс счета
@@ -326,42 +333,105 @@ exports.updateTransaction = async (req, res) => {
         return res.status(404).json({ message: 'Счет не найден' });
       }
 
-      // Сначала "отменяем" старую операцию
-      if (transaction.type === 'income') {
-        account.balance -= oldAmount;
-      } else if (transaction.type === 'expense') {
-        account.balance += oldAmount;
-      }
+      // Обработка для разных типов транзакций
+      if (oldType === 'transfer') {
+        // Для переводов нужно обработать оба счёта
+        const toAccount = await Account.findById(transaction.toAccountId);
 
-      // Затем применяем новую операцию
-      if (transaction.type === 'income') {
-        account.balance += amount;
-      } else if (transaction.type === 'expense') {
-        // Проверяем достаточность средств для расходной операции
+        if (!toAccount) {
+          return res
+            .status(404)
+            .json({ message: 'Целевой счет для перевода не найден' });
+        }
+
+        // Отменяем старую операцию перевода
+        account.balance += oldAmount; // Возвращаем средства на исходный счёт
+        toAccount.balance -= oldAmount; // Убираем средства с целевого счёта
+
+        // Проверяем достаточность средств для новой суммы
         if (account.balance < amount) {
           return res.status(400).json({
-            message: 'Недостаточно средств на счете для данной операции',
+            message:
+              'Недостаточно средств на исходном счете для данной операции',
           });
         }
-        account.balance -= amount;
-      }
 
-      // Добавляем запись в историю счета
-      account.history.push({
-        operationType: transaction.type,
-        amount: amount,
-        date: new Date(),
-        description: `Изменение операции: ${description || 'Без описания'}`,
-      });
+        // Применяем новую операцию перевода
+        account.balance -= amount;
+        toAccount.balance += amount;
+
+        // Добавляем записи в историю обоих счетов
+        account.history.push({
+          operationType: 'transfer',
+          type: 'transfer',
+          amount: amount,
+          date: new Date(),
+          description: `Изменение перевода: ${description || 'Без описания'}`,
+          linkedAccountId: toAccount._id,
+          transactionId: transaction._id,
+        });
+
+        toAccount.history.push({
+          operationType: 'transfer',
+          type: 'transfer',
+          amount: amount,
+          date: new Date(),
+          description: `Получение изменённого перевода: ${
+            description || 'Без описания'
+          }`,
+          linkedAccountId: account._id,
+          transactionId: transaction._id,
+        });
+
+        await toAccount.save();
+      } else {
+        // Для обычных доходов и расходов
+        // Сначала "отменяем" старую операцию
+        if (oldType === 'income') {
+          account.balance -= oldAmount;
+        } else if (oldType === 'expense') {
+          account.balance += oldAmount;
+        }
+
+        // Затем применяем новую операцию
+        if (oldType === 'income') {
+          account.balance += amount;
+        } else if (oldType === 'expense') {
+          // Проверяем достаточность средств для расходной операции
+          if (account.balance < amount) {
+            return res.status(400).json({
+              message: 'Недостаточно средств на счете для данной операции',
+            });
+          }
+          account.balance -= amount;
+        }
+
+        // Добавляем запись в историю счета с обязательными полями
+        account.history.push({
+          operationType: oldType,
+          type: oldType, // Обязательное поле!
+          amount: amount,
+          date: new Date(),
+          description: `Изменение операции: ${description || 'Без описания'}`,
+          transactionId: transaction._id,
+        });
+      }
 
       await account.save();
     }
 
     await transaction.save();
 
+    console.log('✅ Транзакция успешно обновлена:', {
+      transactionId: transaction._id,
+      type: transaction.type,
+      amount: transaction.amount,
+    });
+
     // Возвращаем обновленную транзакцию с данными счета
     const populatedTransaction = await Transaction.findById(transaction._id)
       .populate('accountId', 'name type balance')
+      .populate('toAccountId', 'name type balance')
       .populate('categoryId', 'name icon');
 
     res.json({
@@ -369,7 +439,30 @@ exports.updateTransaction = async (req, res) => {
       data: populatedTransaction,
     });
   } catch (error) {
-    console.error('Update transaction error:', error);
+    console.error('❌ Update transaction error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      userId: req.user?._id,
+      transactionId: req.params.id,
+      body: req.body,
+    });
+
+    // Детализированная обработка ошибок
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        message: 'Ошибка валидации при обновлении транзакции',
+        details: error.message,
+      });
+    }
+
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        message: 'Некорректный ID объекта',
+        details: error.message,
+      });
+    }
+
     res.status(500).json({ message: 'Ошибка при обновлении транзакции' });
   }
 };
