@@ -33,9 +33,17 @@ export const transactionApi = createApi({
         url: '/transactions',
         params,
       }),
-      transformResponse: (response: ApiResponse<GetTransactionsResponse>) => {
+      transformResponse: (
+        response: GetTransactionsResponse | ApiResponse<GetTransactionsResponse>
+      ) => {
+        // Проверяем, обернут ли ответ в объект с data (реальный API)
+        // или это прямой ответ (MSW)
+        if ('data' in response && response.data) {
+          return response.data;
+        }
+        // Прямой ответ от MSW
         return (
-          response.data || {
+          (response as GetTransactionsResponse) || {
             transactions: [],
             totalPages: 0,
             currentPage: 1,
@@ -57,7 +65,12 @@ export const transactionApi = createApi({
 
     getTransactionById: builder.query<Transaction, string>({
       query: id => ({ url: `/transactions/${id}` }),
-      transformResponse: (response: ApiResponse<Transaction>) => response.data,
+      transformResponse: (response: Transaction | ApiResponse<Transaction>) => {
+        if ('data' in response && response.data) {
+          return response.data;
+        }
+        return response as Transaction;
+      },
       providesTags: (_, __, id) => [{ type: 'Transaction', id }],
     }),
 
@@ -67,7 +80,12 @@ export const transactionApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Transaction>) => response.data,
+      transformResponse: (response: Transaction | ApiResponse<Transaction>) => {
+        if ('data' in response && response.data) {
+          return response.data;
+        }
+        return response as Transaction;
+      },
       invalidatesTags: [{ type: 'Transaction', id: 'LIST' }, 'Account'],
     }),
 
@@ -80,7 +98,12 @@ export const transactionApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Transaction>) => response.data,
+      transformResponse: (response: Transaction | ApiResponse<Transaction>) => {
+        if ('data' in response && response.data) {
+          return response.data;
+        }
+        return response as Transaction;
+      },
       invalidatesTags: (_, __, { id }) => [
         { type: 'Transaction', id },
         { type: 'Transaction', id: 'LIST' },

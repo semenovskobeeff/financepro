@@ -24,7 +24,7 @@ import {
   Paper,
 } from '@mui/material';
 import { Info, Settings, Person, Analytics } from '@mui/icons-material';
-import { config } from '../config/environment';
+import { config } from '../../config/environment';
 import {
   getCurrentDataMode,
   getTestAccounts,

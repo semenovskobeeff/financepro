@@ -573,6 +573,19 @@ export const handlers = [
     const page = Number(url.searchParams.get('page')) || 1;
     const limit = Number(url.searchParams.get('limit')) || 10;
 
+    console.log('[MSW] Запрос транзакций:', {
+      status,
+      type,
+      accountId,
+      categoryId,
+      page,
+      limit,
+    });
+    console.log(
+      '[MSW] Всего транзакций в mock данных:',
+      mockTransactions.length
+    );
+
     let filteredTransactions = [...mockTransactions];
 
     if (status) {
@@ -609,6 +622,12 @@ export const handlers = [
       startIndex,
       endIndex
     );
+
+    console.log(
+      '[MSW] После фильтрации транзакций:',
+      filteredTransactions.length
+    );
+    console.log('[MSW] Отправляем транзакции:', paginatedTransactions.length);
 
     return HttpResponse.json({
       transactions: paginatedTransactions,

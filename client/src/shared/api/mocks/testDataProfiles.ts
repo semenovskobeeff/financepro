@@ -104,7 +104,7 @@ export const getTestDataStats = () => ({
   users: 3,
   accounts: 8,
   categories: 17,
-  transactions: 20,
+  transactions: 25, // Обновлено: исправлены дублированные ID
   goals: 7,
   debts: 8,
   subscriptions: 10,
