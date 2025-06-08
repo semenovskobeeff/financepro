@@ -6,6 +6,7 @@
   --light-text-primary: #2d2d2d;
   --light-text-secondary: #787878;
   --light-text-accent: #bae1ff;
+  --light-text-inverse: #2d2d2d;
   --light-icon-primary: #37352f;
   --light-icon-accent: #b0d8ff;
   --light-icon-inactive: #b3b3b3;
@@ -19,6 +20,7 @@
   --dark-text-primary: #ffffff;
   --dark-text-secondary: #b3b3b3;
   --dark-text-accent: #bae1ff;
+  --dark-text-inverse: #2d2d2d;
   --dark-icon-primary: rgba(255, 255, 255, 0.8);
   --dark-icon-accent: #b0d8ff;
   --dark-icon-inactive: #666666;
@@ -73,6 +75,7 @@
   --text-primary: var(--light-text-primary);
   --text-secondary: var(--light-text-secondary);
   --text-accent: var(--light-text-accent);
+  --text-inverse: var(--light-text-inverse);
 
   /* Иконки */
   --icon-primary: var(--light-icon-primary);
@@ -98,6 +101,7 @@
   --text-primary: var(--dark-text-primary);
   --text-secondary: var(--dark-text-secondary);
   --text-accent: var(--dark-text-accent);
+  --text-inverse: var(--dark-text-inverse);
 
   /* Иконки */
   --icon-primary: var(--dark-icon-primary);

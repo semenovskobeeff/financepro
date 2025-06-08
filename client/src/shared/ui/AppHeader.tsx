@@ -294,7 +294,7 @@ const AppHeader: React.FC = () => {
                         width: 32,
                         height: 32,
                         backgroundColor: 'var(--text-accent)',
-                        color: '#fff',
+                        color: 'var(--text-inverse)',
                         fontSize: 14,
                         fontWeight: 500,
                       }}

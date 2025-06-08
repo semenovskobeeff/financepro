@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Tabs,
-  Tab,
   Grid,
-  Paper,
   Dialog,
   DialogContent,
   CircularProgress,
@@ -12,9 +9,6 @@ import {
   IconButton,
   Typography,
   Button,
-  ToggleButtonGroup,
-  ToggleButton,
-  Divider,
   Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -24,6 +18,7 @@ import GoalCard from '../entities/goal/ui/GoalCard';
 import GoalForm from '../features/goals/components/GoalForm';
 import TransferToGoalForm from '../features/goals/components/TransferToGoalForm';
 import PageContainer from '../shared/ui/PageContainer';
+import TabsFilter, { goalStatusOptions } from '../shared/ui/TabsFilter';
 import {
   useGetGoalsQuery,
   useArchiveGoalMutation,
@@ -47,6 +42,9 @@ const Goals: React.FC = () => {
   } = useGetGoalsQuery({
     status: statusFilter === 'all' ? undefined : statusFilter,
   });
+
+  // Получаем все цели для подсчета количества по статусам
+  const { data: allGoals = [] } = useGetGoalsQuery({});
 
   const [archiveGoal] = useArchiveGoalMutation();
   const [restoreGoal] = useRestoreGoalMutation();
@@ -97,14 +95,28 @@ const Goals: React.FC = () => {
     navigate(`/goals/${goal.id}`);
   };
 
-  const handleStatusChange = (
-    _: React.SyntheticEvent,
-    newValue: GoalStatus | 'all'
-  ) => {
-    if (newValue !== null) {
-      setStatusFilter(newValue);
-    }
+  const handleStatusChange = (newValue: string) => {
+    setStatusFilter(newValue as GoalStatus | 'all');
   };
+
+  // Подсчитываем количество целей по статусам
+  const getGoalCounts = () => {
+    const counts = {
+      all: allGoals.length,
+      active: allGoals.filter(goal => goal.status === 'active').length,
+      completed: allGoals.filter(goal => goal.status === 'completed').length,
+      archived: allGoals.filter(goal => goal.status === 'archived').length,
+    };
+    return counts;
+  };
+
+  const goalCounts = getGoalCounts();
+
+  // Опции табов с количеством
+  const tabOptions = goalStatusOptions.map(option => ({
+    ...option,
+    count: goalCounts[option.value as keyof typeof goalCounts],
+  }));
 
   return (
     <PageContainer
@@ -116,25 +128,17 @@ const Goals: React.FC = () => {
       }}
     >
       <Box sx={{ p: 3 }}>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" gutterBottom>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="subtitle1" gutterBottom sx={{ mb: 2 }}>
             Статус цели
           </Typography>
-          <ToggleButtonGroup
+          <TabsFilter
             value={statusFilter}
-            exclusive
             onChange={handleStatusChange}
-            aria-label="goal status filter"
-            size="small"
-          >
-            <ToggleButton value="all">Все</ToggleButton>
-            <ToggleButton value="active">Активные</ToggleButton>
-            <ToggleButton value="completed">Завершенные</ToggleButton>
-            <ToggleButton value="archived">Архивные</ToggleButton>
-          </ToggleButtonGroup>
+            options={tabOptions}
+            size="medium"
+          />
         </Box>
-
-        <Divider sx={{ mb: 3 }} />
 
         {isLoading ? (
           <Box display="flex" justifyContent="center" my={4}>

@@ -679,13 +679,13 @@ const Analytics: React.FC = () => {
         onClick: handleRefresh,
       }}
     >
+      {/* Табы для выбора типа аналитики */}
       <Paper sx={{ mb: 3 }}>
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             px: 2,
-            pt: 2,
             justifyContent: 'space-between',
           }}
         >
@@ -695,9 +695,13 @@ const Analytics: React.FC = () => {
             variant="scrollable"
             scrollButtons="auto"
           >
-            <Tab icon={<TimelineIcon />} label="Транзакции" />
-            <Tab icon={<SavingsIcon />} label="Цели" />
-            <Tab icon={<CreditCardIcon />} label="Долги" />
+            <Tab
+              icon={<TimelineIcon />}
+              iconPosition="start"
+              label="Транзакции"
+            />
+            <Tab icon={<SavingsIcon />} iconPosition="start" label="Цели" />
+            <Tab icon={<CreditCardIcon />} iconPosition="start" label="Долги" />
           </Tabs>
 
           {activeTab === 0 && (
@@ -720,11 +724,13 @@ const Analytics: React.FC = () => {
             </FormControl>
           )}
         </Box>
-        <Box p={3}>
-          {activeTab === 0 && renderTransactionsAnalytics()}
-          {activeTab === 1 && renderGoalsAnalytics()}
-          {activeTab === 2 && renderDebtsAnalytics()}
-        </Box>
+      </Paper>
+
+      {/* Контент аналитики */}
+      <Paper sx={{ p: 3 }}>
+        {activeTab === 0 && renderTransactionsAnalytics()}
+        {activeTab === 1 && renderGoalsAnalytics()}
+        {activeTab === 2 && renderDebtsAnalytics()}
       </Paper>
     </PageContainer>
   );
