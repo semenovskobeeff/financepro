@@ -45,14 +45,47 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     transaction?.type || initialType || 'expense'
   );
 
-  const [formData, setFormData] = useState<CreateTransactionRequest>({
-    type: type,
-    amount: transaction?.amount || 0,
-    categoryId: transaction?.categoryId || '',
-    accountId: transaction?.accountId || '',
-    toAccountId: transaction?.toAccountId || '',
-    date: transaction?.date || new Date().toISOString(),
-    description: transaction?.description || '',
+  const [formData, setFormData] = useState<CreateTransactionRequest>(() => {
+    if (transaction) {
+      // Извлекаем ID из объектов, если они populate
+      const accountId =
+        typeof transaction.accountId === 'object' &&
+        (transaction.accountId as any)?._id
+          ? (transaction.accountId as any)._id
+          : transaction.accountId || '';
+
+      const categoryId =
+        typeof transaction.categoryId === 'object' &&
+        (transaction.categoryId as any)?._id
+          ? (transaction.categoryId as any)._id
+          : transaction.categoryId || '';
+
+      const toAccountId =
+        typeof transaction.toAccountId === 'object' &&
+        (transaction.toAccountId as any)?._id
+          ? (transaction.toAccountId as any)._id
+          : transaction.toAccountId || '';
+
+      return {
+        type: transaction.type,
+        amount: transaction.amount,
+        categoryId: categoryId,
+        accountId: accountId,
+        toAccountId: toAccountId,
+        date: transaction.date,
+        description: transaction.description || '',
+      };
+    }
+
+    return {
+      type: type,
+      amount: 0,
+      categoryId: '',
+      accountId: '',
+      toAccountId: '',
+      date: new Date().toISOString(),
+      description: '',
+    };
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,12 +94,32 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   useEffect(() => {
     if (transaction) {
       setType(transaction.type);
+
+      // Извлекаем ID из объектов, если они populate
+      const accountId =
+        typeof transaction.accountId === 'object' &&
+        (transaction.accountId as any)?._id
+          ? (transaction.accountId as any)._id
+          : transaction.accountId || '';
+
+      const categoryId =
+        typeof transaction.categoryId === 'object' &&
+        (transaction.categoryId as any)?._id
+          ? (transaction.categoryId as any)._id
+          : transaction.categoryId || '';
+
+      const toAccountId =
+        typeof transaction.toAccountId === 'object' &&
+        (transaction.toAccountId as any)?._id
+          ? (transaction.toAccountId as any)._id
+          : transaction.toAccountId || '';
+
       setFormData({
         type: transaction.type,
         amount: transaction.amount,
-        categoryId: transaction.categoryId || '',
-        accountId: transaction.accountId,
-        toAccountId: transaction.toAccountId || '',
+        categoryId: categoryId,
+        accountId: accountId,
+        toAccountId: toAccountId,
         date: transaction.date,
         description: transaction.description || '',
       });
