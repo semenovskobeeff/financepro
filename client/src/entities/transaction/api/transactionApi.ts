@@ -23,7 +23,7 @@ interface ApiResponse<T> {
 export const transactionApi = createApi({
   reducerPath: 'transactionApi',
   baseQuery: baseQuery,
-  tagTypes: ['Transaction', 'Account', 'Analytics'],
+  tagTypes: ['Transaction', 'Account', 'Analytics', 'BalanceCheck'],
   endpoints: builder => ({
     getTransactions: builder.query<
       GetTransactionsResponse,
@@ -185,6 +185,7 @@ export const transactionApi = createApi({
       invalidatesTags: [
         'Account',
         'Analytics',
+        'BalanceCheck',
         { type: 'Transaction', id: 'LIST' },
       ],
     }),
