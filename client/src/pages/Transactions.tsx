@@ -173,14 +173,17 @@ const Transactions: React.FC = () => {
 
   // Вспомогательные функции для отображения данных
   const getAccountName = (accountId: string) => {
-    const account = accounts?.find(a => a.id === accountId);
+    if (!accounts || !Array.isArray(accounts)) return 'Неизвестный счет';
+    const account = accounts.find(a => a.id === accountId);
     return account?.name || 'Неизвестный счет';
   };
 
   const getCategoryName = (categoryId?: string) => {
     if (!categoryId) return '-';
+    if (!categories || !Array.isArray(categories))
+      return 'Неизвестная категория';
 
-    const category = categories?.find(c => c.id === categoryId);
+    const category = categories.find(c => c.id === categoryId);
     return category?.name || 'Неизвестная категория';
   };
 
@@ -330,11 +333,13 @@ const Transactions: React.FC = () => {
                     }
                   >
                     <MenuItem value="">Все</MenuItem>
-                    {accounts?.map(account => (
-                      <MenuItem key={account.id} value={account.id}>
-                        {account.name}
-                      </MenuItem>
-                    ))}
+                    {accounts &&
+                      Array.isArray(accounts) &&
+                      accounts.map(account => (
+                        <MenuItem key={account.id} value={account.id}>
+                          {account.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>
@@ -352,11 +357,13 @@ const Transactions: React.FC = () => {
                     }
                   >
                     <MenuItem value="">Все</MenuItem>
-                    {categories?.map(category => (
-                      <MenuItem key={category.id} value={category.id}>
-                        {category.name}
-                      </MenuItem>
-                    ))}
+                    {categories &&
+                      Array.isArray(categories) &&
+                      categories.map(category => (
+                        <MenuItem key={category.id} value={category.id}>
+                          {category.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Grid>
