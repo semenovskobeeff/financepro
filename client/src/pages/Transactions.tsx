@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Tabs,
-  Tab,
   IconButton,
   CircularProgress,
   Typography,
@@ -30,7 +28,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
-import RestoreIcon from '@mui/icons-material/Restore';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
@@ -42,8 +39,6 @@ import {
 import PageContainer from '../shared/ui/PageContainer';
 import {
   useGetTransactionsQuery,
-  useArchiveTransactionMutation,
-  useRestoreTransactionMutation,
   useDeleteTransactionMutation,
 } from '../entities/transaction/api/transactionApi';
 import { useGetAccountsQuery } from '../entities/account/api/accountApi';
@@ -59,9 +54,6 @@ import { useModal } from '../shared/contexts/ModalContext';
 const Transactions: React.FC = () => {
   // Глобальный контекст модалов
   const { openModal } = useModal();
-
-  // Состояние табов
-  const [status, setStatus] = useState<'active' | 'archived'>('active');
 
   // Состояние фильтров
   const [filters, setFilters] = useState({
@@ -82,13 +74,13 @@ const Transactions: React.FC = () => {
   // Состояние панели фильтров
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
-  // Получение данных
+  // Получение данных - только активные операции
   const {
     data: transactionsData,
     isLoading,
     error,
   } = useGetTransactionsQuery({
-    status,
+    status: 'active',
     page: page + 1,
     limit: rowsPerPage,
     type:
@@ -108,8 +100,6 @@ const Transactions: React.FC = () => {
   const { data: accounts } = useGetAccountsQuery({});
   const { data: categories } = useGetCategoriesQuery({});
 
-  const [archiveTransaction] = useArchiveTransactionMutation();
-  const [restoreTransaction] = useRestoreTransactionMutation();
   const [deleteTransaction] = useDeleteTransactionMutation();
 
   // Обработчики для фильтрации по типу операции
@@ -124,15 +114,7 @@ const Transactions: React.FC = () => {
     setPage(0);
   };
 
-  // Обработчики для табов и пагинации
-  const handleFilterChange = (
-    event: React.SyntheticEvent,
-    newValue: 'active' | 'archived'
-  ) => {
-    setStatus(newValue);
-    setPage(0);
-  };
-
+  // Обработчики для пагинации
   const handlePageChange = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -174,17 +156,16 @@ const Transactions: React.FC = () => {
     }
   };
 
-  // Вспомогательные функции для отображения данных
+  // Функции для получения данных
   const getAccountName = (account: any) => {
-    // Если account - это populated объект, возвращаем его имя
-    if (account && typeof account === 'object' && account.name) {
+    if (!account) return 'Неизвестный счет';
+
+    if (typeof account === 'object' && account.name) {
       return account.name;
     }
 
-    // Если account - это строка ID, ищем в массиве счетов
     if (typeof account === 'string') {
-      if (!accounts || !Array.isArray(accounts)) return 'Неизвестный счет';
-      const foundAccount = accounts.find(a => a.id === account);
+      const foundAccount = accounts?.find(a => a.id === account);
       return foundAccount?.name || 'Неизвестный счет';
     }
 
@@ -192,19 +173,14 @@ const Transactions: React.FC = () => {
   };
 
   const getCategoryName = (category?: any) => {
-    if (!category) return '-';
+    if (!category) return 'Без категории';
 
-    // Если category - это populated объект, возвращаем его имя
     if (typeof category === 'object' && category.name) {
       return category.name;
     }
 
-    // Если category - это строка ID, ищем в массиве категорий
     if (typeof category === 'string') {
-      if (!categories || !Array.isArray(categories))
-        return 'Неизвестная категория';
-
-      const foundCategory = categories.find(c => c.id === category);
+      const foundCategory = categories?.find(c => c.id === category);
       return foundCategory?.name || 'Неизвестная категория';
     }
 
@@ -227,7 +203,7 @@ const Transactions: React.FC = () => {
   const getFormattedDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'dd.MM.yyyy HH:mm', { locale: ru });
-    } catch {
+    } catch (e) {
       return dateString;
     }
   };
@@ -235,22 +211,6 @@ const Transactions: React.FC = () => {
   // Обработчики для операций
   const handleEditTransaction = (transaction: Transaction) => {
     openModal('edit-transaction', transaction);
-  };
-
-  const handleArchiveTransaction = async (transaction: Transaction) => {
-    try {
-      await archiveTransaction(transaction.id).unwrap();
-    } catch (error) {
-      console.error('Failed to archive transaction:', error);
-    }
-  };
-
-  const handleRestoreTransaction = async (transaction: Transaction) => {
-    try {
-      await restoreTransaction(transaction.id).unwrap();
-    } catch (error) {
-      console.error('Failed to restore transaction:', error);
-    }
   };
 
   const handleDeleteTransaction = async (transaction: Transaction) => {
@@ -272,45 +232,45 @@ const Transactions: React.FC = () => {
   }
 
   return (
-    <PageContainer
-      title="Операции"
-      actions={[
-        {
-          label: 'Доходы',
-          icon: <ArrowUpwardIcon />,
-          onClick: () => handleTypeFilter('income'),
-          color: 'success',
-        },
-        {
-          label: 'Расходы',
-          icon: <ArrowDownwardIcon />,
-          onClick: () => handleTypeFilter('expense'),
-          color: 'error',
-        },
-        {
-          label: 'Переводы',
-          icon: <CompareArrowsIcon />,
-          onClick: () => handleTypeFilter('transfer'),
-          color: 'info',
-        },
-      ]}
-    >
+    <PageContainer title="Операции">
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
-        <Box sx={{ flexGrow: 1 }}>
-          <Paper>
-            <Tabs
-              value={status}
-              onChange={handleFilterChange}
-              indicatorColor="primary"
-              textColor="primary"
-              variant="fullWidth"
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="Доходы">
+            <Button
+              variant={activeTypeFilter === 'income' ? 'contained' : 'outlined'}
+              color="success"
+              startIcon={<ArrowUpwardIcon />}
+              onClick={() => handleTypeFilter('income')}
             >
-              <Tab label="Активные" value="active" />
-              <Tab label="Архив" value="archived" />
-            </Tabs>
-          </Paper>
+              Доходы
+            </Button>
+          </Tooltip>
+          <Tooltip title="Расходы">
+            <Button
+              variant={
+                activeTypeFilter === 'expense' ? 'contained' : 'outlined'
+              }
+              color="error"
+              startIcon={<ArrowDownwardIcon />}
+              onClick={() => handleTypeFilter('expense')}
+            >
+              Расходы
+            </Button>
+          </Tooltip>
+          <Tooltip title="Переводы">
+            <Button
+              variant={
+                activeTypeFilter === 'transfer' ? 'contained' : 'outlined'
+              }
+              color="info"
+              startIcon={<CompareArrowsIcon />}
+              onClick={() => handleTypeFilter('transfer')}
+            >
+              Переводы
+            </Button>
+          </Tooltip>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip
             title={isFilterPanelOpen ? 'Скрыть фильтры' : 'Показать фильтры'}
           >
@@ -479,9 +439,8 @@ const Transactions: React.FC = () => {
               Операции не найдены
             </Typography>
             <Typography color="textSecondary" component="div" sx={{ mb: 2 }}>
-              {status === 'active'
-                ? 'У вас пока нет операций или они не соответствуют выбранным фильтрам.'
-                : 'В архиве нет операций, соответствующих выбранным фильтрам.'}
+              У вас пока нет операций или они не соответствуют выбранным
+              фильтрам.
             </Typography>
           </Paper>
         ) : (
@@ -542,41 +501,22 @@ const Transactions: React.FC = () => {
                       </TableCell>
                       <TableCell>{transaction.description || '-'}</TableCell>
                       <TableCell align="right">
-                        {status === 'active' ? (
-                          <>
-                            <Tooltip title="Редактировать">
-                              <IconButton
-                                size="small"
-                                onClick={() =>
-                                  handleEditTransaction(transaction)
-                                }
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Удалить">
-                              <IconButton
-                                size="small"
-                                onClick={() =>
-                                  handleDeleteTransaction(transaction)
-                                }
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </>
-                        ) : (
-                          <Tooltip title="Восстановить">
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleRestoreTransaction(transaction)
-                              }
-                            >
-                              <RestoreIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
+                        <Tooltip title="Редактировать">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEditTransaction(transaction)}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Удалить">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteTransaction(transaction)}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
                   ))}
