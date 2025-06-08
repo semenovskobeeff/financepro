@@ -23,7 +23,13 @@ interface ApiResponse<T> {
 export const transactionApi = createApi({
   reducerPath: 'transactionApi',
   baseQuery: baseQuery,
-  tagTypes: ['Transaction', 'Account', 'Analytics', 'BalanceCheck'],
+  tagTypes: [
+    'Transaction',
+    'Account',
+    'Analytics',
+    'BalanceCheck',
+    'AccountHistory',
+  ],
   endpoints: builder => ({
     getTransactions: builder.query<
       GetTransactionsResponse,
@@ -90,6 +96,8 @@ export const transactionApi = createApi({
         { type: 'Transaction', id: 'LIST' },
         'Account',
         'Analytics',
+        'BalanceCheck',
+        'AccountHistory',
       ],
     }),
 
@@ -117,6 +125,8 @@ export const transactionApi = createApi({
         { type: 'Transaction', id: 'LIST' },
         'Account',
         'Analytics',
+        'BalanceCheck',
+        'AccountHistory',
       ],
     }),
 
@@ -130,6 +140,8 @@ export const transactionApi = createApi({
         { type: 'Transaction', id: 'LIST' },
         'Account',
         'Analytics',
+        'BalanceCheck',
+        'AccountHistory',
       ],
     }),
 
@@ -162,6 +174,7 @@ export const transactionApi = createApi({
         'Account',
         'Analytics',
         'BalanceCheck',
+        'AccountHistory',
         { type: 'Transaction', id: 'LIST' },
       ],
     }),
@@ -217,6 +230,7 @@ export const transactionApi = createApi({
         'Account',
         'Analytics',
         'BalanceCheck',
+        'AccountHistory',
         { type: 'Transaction', id: 'LIST' },
       ],
     }),
@@ -249,6 +263,7 @@ export const transactionApi = createApi({
         'Account',
         'Analytics',
         'BalanceCheck',
+        'AccountHistory',
         { type: 'Transaction', id: 'LIST' },
       ],
     }),

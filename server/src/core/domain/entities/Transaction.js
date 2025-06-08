@@ -270,8 +270,7 @@ transactionSchema.pre('save', async function (next) {
   }
 });
 
-// Middleware для обновления балансов счетов - ОТКЛЮЧЕН
-/*
+// Middleware для обновления балансов счетов
 transactionSchema.post('save', async function (doc) {
   try {
     // Пропускаем обновление баланса если установлен флаг
@@ -299,7 +298,7 @@ transactionSchema.post('save', async function (doc) {
     }
 
     // Автосинхронизация баланса основного счета
-    await balanceService.syncAccountBalance(doc.accountId);
+    await balanceService.recalculateAccountBalance(doc.accountId);
 
     // Для переводов синхронизируем и целевой счет
     if (doc.type === 'transfer' && doc.toAccountId) {
@@ -319,7 +318,7 @@ transactionSchema.post('save', async function (doc) {
       }
 
       // Автосинхронизация баланса целевого счета
-      await balanceService.syncAccountBalance(doc.toAccountId);
+      await balanceService.recalculateAccountBalance(doc.toAccountId);
     }
 
     console.log(
@@ -342,7 +341,33 @@ transactionSchema.post('save', async function (doc) {
     }
   }
 });
-*/
+
+// Middleware для обновления балансов при удалении транзакции
+transactionSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) {
+    try {
+      console.log('🔄 Обновление балансов после удаления транзакции:', doc._id);
+
+      const Account = mongoose.model('Account');
+      const balanceService = require('../../../modules/operations/services/balanceService');
+
+      // Пересчитываем баланс основного счета
+      await balanceService.recalculateAccountBalance(doc.accountId);
+
+      // Для переводов пересчитываем и целевой счет
+      if (doc.type === 'transfer' && doc.toAccountId) {
+        await balanceService.recalculateAccountBalance(doc.toAccountId);
+      }
+
+      console.log('✅ Автосинхронизация балансов после удаления завершена');
+    } catch (error) {
+      console.error(
+        '❌ Ошибка при автосинхронизации балансов после удаления:',
+        error
+      );
+    }
+  }
+});
 
 // Статические методы
 transactionSchema.statics.findByUserId = function (userId, options = {}) {

@@ -180,13 +180,8 @@ exports.createTransaction = async (req, res) => {
       return res.status(400).json({ message: 'Недостаточно средств на счете' });
     }
 
-    // Сохраняем транзакцию
+    // Сохраняем транзакцию (баланс будет автоматически пересчитан через middleware)
     await transaction.save();
-
-    // Пересчитываем баланс счета на основе всех транзакций для точности
-    const balanceResult = await balanceService.recalculateAccountBalance(
-      accountId
-    );
 
     // Получаем созданную транзакцию с populated данными
     const populatedTransaction = await Transaction.findById(transaction._id)
@@ -196,12 +191,11 @@ exports.createTransaction = async (req, res) => {
     // Получаем обновленный счет после пересчета
     const updatedAccount = await Account.findById(accountId);
 
-    console.log('✅ Транзакция создана и баланс пересчитан:', {
+    console.log('✅ Транзакция создана:', {
       transactionId: transaction._id,
       type: transaction.type,
       amount: transaction.amount,
-      balanceChange: balanceResult.difference,
-      newBalance: balanceResult.newBalance,
+      newBalance: updatedAccount.balance,
     });
 
     res.status(201).json({
@@ -212,11 +206,6 @@ exports.createTransaction = async (req, res) => {
           id: updatedAccount._id,
           name: updatedAccount.name,
           balance: updatedAccount.balance,
-        },
-        balanceInfo: {
-          synchronized: balanceResult.synchronized,
-          difference: balanceResult.difference,
-          transactionsProcessed: balanceResult.transactionsProcessed,
         },
       },
     });
@@ -511,34 +500,15 @@ exports.deleteTransaction = async (req, res) => {
       return res.status(404).json({ message: 'Транзакция не найдена' });
     }
 
-    // Удаляем транзакцию
+    // Удаляем транзакцию (баланс будет автоматически пересчитан через middleware)
     await Transaction.findByIdAndDelete(req.params.id);
 
-    // Пересчитываем баланс основного счета
-    const balanceResult = await balanceService.recalculateAccountBalance(
-      transaction.accountId
-    );
-
-    // Пересчитываем баланс целевого счета для переводов
-    let toAccountBalanceResult = null;
-    if (transaction.type === 'transfer' && transaction.toAccountId) {
-      toAccountBalanceResult = await balanceService.recalculateAccountBalance(
-        transaction.toAccountId
-      );
-    }
-
-    console.log('✅ Транзакция удалена и балансы пересчитаны:', {
+    console.log('✅ Транзакция удалена:', {
       transactionId: req.params.id,
-      mainAccountBalance: balanceResult.newBalance,
-      toAccountBalance: toAccountBalanceResult?.newBalance || null,
     });
 
     res.json({
       message: 'Транзакция удалена',
-      balanceInfo: {
-        mainAccount: balanceResult,
-        toAccount: toAccountBalanceResult,
-      },
     });
   } catch (error) {
     console.error('Delete transaction error:', error);

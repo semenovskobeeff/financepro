@@ -18,10 +18,10 @@ class BalanceService {
 
       const oldBalance = account.balance;
 
-      // Получаем все активные транзакции, связанные с этим счетом
+      // Получаем все транзакции, связанные с этим счетом (включая все статусы кроме deleted)
       const transactions = await Transaction.find({
         $or: [{ accountId: accountId }, { toAccountId: accountId }],
-        status: 'active',
+        status: { $ne: 'deleted' }, // исключаем только удаленные
       }).sort({ date: 1 });
 
       let calculatedBalance = 0;
@@ -153,10 +153,10 @@ class BalanceService {
 
       for (const account of accounts) {
         try {
-          // Вычисляем правильный баланс без изменения счета
+          // Вычисляем правильный баланс без изменения счета (включая все статусы кроме deleted)
           const transactions = await Transaction.find({
             $or: [{ accountId: account._id }, { toAccountId: account._id }],
-            status: 'active',
+            status: { $ne: 'deleted' }, // исключаем только удаленные
           });
 
           let calculatedBalance = 0;

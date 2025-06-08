@@ -13,7 +13,7 @@ import { RootState } from 'app/store';
 export const accountApi = createApi({
   reducerPath: 'accountApi',
   baseQuery,
-  tagTypes: ['Account', 'Analytics'],
+  tagTypes: ['Account', 'Analytics', 'AccountHistory'],
   endpoints: builder => ({
     getAccounts: builder.query<Account[], { status?: string } | void>({
       query: params => {
@@ -110,7 +110,11 @@ export const accountApi = createApi({
         status: string;
         data: { fromAccount: Account; toAccount: Account };
       }) => response?.data,
-      invalidatesTags: [{ type: 'Account', id: 'LIST' }, 'Analytics'],
+      invalidatesTags: [
+        { type: 'Account', id: 'LIST' },
+        'Analytics',
+        'AccountHistory',
+      ],
     }),
 
     getAccountHistory: builder.query<
@@ -142,7 +146,7 @@ export const accountApi = createApi({
         };
       }) => response?.data || { history: [] },
       providesTags: (_, __, { accountId }) => [
-        { type: 'Account', id: `${accountId}-history` },
+        { type: 'AccountHistory', id: accountId },
       ],
     }),
   }),
