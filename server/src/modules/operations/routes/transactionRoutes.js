@@ -172,6 +172,13 @@ router.post('/', transactionController.createTransaction);
  *                 type: string
  *               amount:
  *                 type: number
+ *               accountId:
+ *                 type: string
+ *               toAccountId:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date-time
  *     responses:
  *       200:
  *         description: Транзакция обновлена

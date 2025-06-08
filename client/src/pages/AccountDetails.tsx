@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
   Divider,
+  Tooltip,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
@@ -40,8 +41,7 @@ import {
   useArchiveAccountMutation,
   useRestoreAccountMutation,
 } from '../entities/account/api/accountApi';
-import TransactionDetailsModal from '../entities/transaction/ui/TransactionDetailsModal';
-import { useUpdateTransactionMutation } from '../entities/transaction/api/transactionApi';
+import TransactionForm from '../features/transactions/components/TransactionForm';
 
 const getAccountIcon = (type: AccountType) => {
   switch (type) {
@@ -90,7 +90,6 @@ const AccountDetails: React.FC = () => {
 
   const [archiveAccount] = useArchiveAccountMutation();
   const [restoreAccount] = useRestoreAccountMutation();
-  const [updateTransaction] = useUpdateTransactionMutation();
 
   if (isLoading) {
     return (
@@ -170,42 +169,6 @@ const AccountDetails: React.FC = () => {
   const handleTransactionModalClose = () => {
     setIsTransactionModalOpen(false);
     setSelectedTransaction(null);
-  };
-
-  const handleTransactionSave = async (updatedTransaction: any) => {
-    if (!updatedTransaction?.id) {
-      console.error('Нет ID транзакции');
-      alert('Ошибка: не удается определить ID операции');
-      return;
-    }
-
-    try {
-      await updateTransaction({
-        id: updatedTransaction.id,
-        data: {
-          amount: updatedTransaction.amount,
-          description: updatedTransaction.description,
-          categoryId: updatedTransaction.categoryId,
-          date: updatedTransaction.date,
-        },
-      }).unwrap();
-
-      // Закрыть модальное окно после успешного сохранения
-      handleTransactionModalClose();
-      // Можно добавить toast/уведомление об успехе
-      console.log('Операция успешно обновлена');
-    } catch (error) {
-      // Можно добавить toast/уведомление об ошибке
-      console.error('Ошибка при обновлении операции:', error);
-      alert(
-        'Ошибка при сохранении операции: ' + (error as any)?.data?.message ||
-          'Неизвестная ошибка'
-      );
-    }
-  };
-
-  const handleTransactionDelete = (transactionId: string) => {
-    // TODO: Implement delete logic
   };
 
   return (
@@ -365,13 +328,28 @@ const AccountDetails: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      <TransactionDetailsModal
+      <Dialog
         open={isTransactionModalOpen}
-        transaction={selectedTransaction}
         onClose={handleTransactionModalClose}
-        onSave={handleTransactionSave}
-        onDelete={handleTransactionDelete}
-      />
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Редактирование операции
+          <IconButton
+            onClick={handleTransactionModalClose}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <TransactionForm
+            transaction={selectedTransaction}
+            onClose={handleTransactionModalClose}
+          />
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 };

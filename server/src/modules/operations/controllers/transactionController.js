@@ -259,7 +259,8 @@ exports.createTransaction = async (req, res) => {
  */
 exports.updateTransaction = async (req, res) => {
   try {
-    const { categoryId, description, amount, date } = req.body;
+    const { categoryId, description, amount, date, accountId, toAccountId } =
+      req.body;
 
     console.log('🔄 Обновление транзакции:', {
       transactionId: req.params.id,
@@ -279,8 +280,58 @@ exports.updateTransaction = async (req, res) => {
 
     // Сохраняем данные старой транзакции для пересчета баланса
     const oldAmount = transaction.amount;
+    const oldAccountId = transaction.accountId;
+    const oldToAccountId = transaction.toAccountId;
     const oldType = transaction.type;
     let balanceUpdateNeeded = false;
+    let accountsChanged = false;
+
+    // Проверяем изменение счетов
+    if (accountId !== undefined && accountId !== oldAccountId.toString()) {
+      // Проверяем, что новый счет существует и принадлежит пользователю
+      const newAccount = await Account.findOne({
+        _id: accountId,
+        userId: req.user._id,
+        status: 'active',
+      });
+
+      if (!newAccount) {
+        return res.status(404).json({ message: 'Выбранный счет не найден' });
+      }
+
+      transaction.accountId = accountId;
+      accountsChanged = true;
+    }
+
+    if (
+      oldType === 'transfer' &&
+      toAccountId !== undefined &&
+      toAccountId !== oldToAccountId?.toString()
+    ) {
+      // Проверяем, что новый целевой счет существует и принадлежит пользователю
+      const newToAccount = await Account.findOne({
+        _id: toAccountId,
+        userId: req.user._id,
+        status: 'active',
+      });
+
+      if (!newToAccount) {
+        return res
+          .status(404)
+          .json({ message: 'Выбранный целевой счет не найден' });
+      }
+
+      if (
+        accountId === toAccountId ||
+        (accountId === undefined &&
+          transaction.accountId.toString() === toAccountId)
+      ) {
+        return res.status(400).json({ message: 'Счета должны быть разными' });
+      }
+
+      transaction.toAccountId = toAccountId;
+      accountsChanged = true;
+    }
 
     // Проверка категории, если указана
     if (categoryId !== undefined) {
@@ -312,7 +363,7 @@ exports.updateTransaction = async (req, res) => {
       transaction.date = new Date(date);
     }
 
-    // Обновляем сумму и пересчитываем баланс счета
+    // Обновляем сумму
     if (amount !== undefined && amount !== oldAmount) {
       // Валидация суммы
       if (amount <= 0) {
@@ -325,99 +376,117 @@ exports.updateTransaction = async (req, res) => {
       balanceUpdateNeeded = true;
     }
 
-    // Если изменилась сумма, нужно обновить баланс счета
-    if (balanceUpdateNeeded) {
-      const account = await Account.findById(transaction.accountId);
-
-      if (!account) {
-        return res.status(404).json({ message: 'Счет не найден' });
+    // Если изменились счета или сумма, нужно пересчитать балансы
+    if (balanceUpdateNeeded || accountsChanged) {
+      // Сначала отменяем старую операцию
+      const oldAccount = await Account.findById(oldAccountId);
+      if (!oldAccount) {
+        return res.status(404).json({ message: 'Старый счет не найден' });
       }
 
-      // Обработка для разных типов транзакций
       if (oldType === 'transfer') {
-        // Для переводов нужно обработать оба счёта
-        const toAccount = await Account.findById(transaction.toAccountId);
-
-        if (!toAccount) {
+        const oldToAccount = await Account.findById(oldToAccountId);
+        if (!oldToAccount) {
           return res
             .status(404)
-            .json({ message: 'Целевой счет для перевода не найден' });
+            .json({ message: 'Старый целевой счет не найден' });
         }
 
         // Отменяем старую операцию перевода
-        account.balance += oldAmount; // Возвращаем средства на исходный счёт
-        toAccount.balance -= oldAmount; // Убираем средства с целевого счёта
+        oldAccount.balance += oldAmount;
+        oldToAccount.balance -= oldAmount;
+        await oldToAccount.save();
+      } else {
+        // Отменяем старую операцию дохода/расхода
+        if (oldType === 'income') {
+          oldAccount.balance -= oldAmount;
+        } else if (oldType === 'expense') {
+          oldAccount.balance += oldAmount;
+        }
+      }
+      await oldAccount.save();
 
-        // Проверяем достаточность средств для новой суммы
-        if (account.balance < amount) {
+      // Теперь применяем новую операцию с новыми счетами и суммой
+      const newAmount = amount !== undefined ? amount : oldAmount;
+      const newAccount = await Account.findById(transaction.accountId);
+
+      if (!newAccount) {
+        return res.status(404).json({ message: 'Новый счет не найден' });
+      }
+
+      if (oldType === 'transfer') {
+        const newToAccount = await Account.findById(transaction.toAccountId);
+        if (!newToAccount) {
+          return res
+            .status(404)
+            .json({ message: 'Новый целевой счет не найден' });
+        }
+
+        // Проверяем достаточность средств
+        if (newAccount.balance < newAmount) {
           return res.status(400).json({
-            message:
-              'Недостаточно средств на исходном счете для данной операции',
+            message: 'Недостаточно средств на счете для перевода',
           });
         }
 
         // Применяем новую операцию перевода
-        account.balance -= amount;
-        toAccount.balance += amount;
+        newAccount.balance -= newAmount;
+        newToAccount.balance += newAmount;
 
-        // Добавляем записи в историю обоих счетов
-        account.history.push({
+        // Добавляем записи в историю
+        newAccount.history.push({
           operationType: 'transfer',
           type: 'transfer',
-          amount: amount,
+          amount: newAmount,
           date: new Date(),
-          description: `Изменение перевода: ${description || 'Без описания'}`,
-          linkedAccountId: toAccount._id,
+          description: `Изменение перевода: ${
+            description || transaction.description || 'Без описания'
+          }`,
+          linkedAccountId: newToAccount._id,
           transactionId: transaction._id,
         });
 
-        toAccount.history.push({
+        newToAccount.history.push({
           operationType: 'transfer',
           type: 'transfer',
-          amount: amount,
+          amount: newAmount,
           date: new Date(),
           description: `Получение изменённого перевода: ${
-            description || 'Без описания'
+            description || transaction.description || 'Без описания'
           }`,
-          linkedAccountId: account._id,
+          linkedAccountId: newAccount._id,
           transactionId: transaction._id,
         });
 
-        await toAccount.save();
+        await newToAccount.save();
       } else {
         // Для обычных доходов и расходов
-        // Сначала "отменяем" старую операцию
         if (oldType === 'income') {
-          account.balance -= oldAmount;
+          newAccount.balance += newAmount;
         } else if (oldType === 'expense') {
-          account.balance += oldAmount;
-        }
-
-        // Затем применяем новую операцию
-        if (oldType === 'income') {
-          account.balance += amount;
-        } else if (oldType === 'expense') {
-          // Проверяем достаточность средств для расходной операции
-          if (account.balance < amount) {
+          // Проверяем достаточность средств
+          if (newAccount.balance < newAmount) {
             return res.status(400).json({
               message: 'Недостаточно средств на счете для данной операции',
             });
           }
-          account.balance -= amount;
+          newAccount.balance -= newAmount;
         }
 
-        // Добавляем запись в историю счета с обязательными полями
-        account.history.push({
+        // Добавляем запись в историю счета
+        newAccount.history.push({
           operationType: oldType,
-          type: oldType, // Обязательное поле!
-          amount: amount,
+          type: oldType,
+          amount: newAmount,
           date: new Date(),
-          description: `Изменение операции: ${description || 'Без описания'}`,
+          description: `Изменение операции: ${
+            description || transaction.description || 'Без описания'
+          }`,
           transactionId: transaction._id,
         });
       }
 
-      await account.save();
+      await newAccount.save();
     }
 
     await transaction.save();
@@ -426,6 +495,8 @@ exports.updateTransaction = async (req, res) => {
       transactionId: transaction._id,
       type: transaction.type,
       amount: transaction.amount,
+      accountId: transaction.accountId,
+      toAccountId: transaction.toAccountId,
     });
 
     // Возвращаем обновленную транзакцию с данными счета
