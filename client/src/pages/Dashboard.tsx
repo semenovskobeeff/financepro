@@ -203,7 +203,7 @@ const getFinancialInsights = (
   }
 
   // Анализ целей
-  if (goalsData && goalsData.length > 0) {
+  if (Array.isArray(goalsData) && goalsData.length > 0) {
     const completedGoals = goalsData.filter(
       (goal: any) => goal.status === 'completed'
     );
@@ -478,7 +478,7 @@ const Dashboard: React.FC = () => {
       transactionsAnalytics.categoryStats?.expense || [];
 
     // Если нет категорий, показываем заглушку
-    if (expenseCategories.length === 0) {
+    if (!Array.isArray(expenseCategories) || expenseCategories.length === 0) {
       return {
         hasData: false,
         totalExpense,
@@ -518,7 +518,7 @@ const Dashboard: React.FC = () => {
 
   // Подготовка данных для прогресса целей
   const getGoalsProgressData = () => {
-    if (!goalsData || goalsData.length === 0) {
+    if (!goalsData || !Array.isArray(goalsData) || goalsData.length === 0) {
       return {
         hasData: false,
         goals: [],
@@ -684,10 +684,11 @@ const Dashboard: React.FC = () => {
         },
         {
           label: 'Выполнено целей',
-          value:
-            goalsData?.filter((goal: any) => goal.status === 'completed')
-              ?.length || 0,
-          target: goalsData?.length || 0,
+          value: Array.isArray(goalsData)
+            ? goalsData.filter((goal: any) => goal.status === 'completed')
+                .length
+            : 0,
+          target: Array.isArray(goalsData) ? goalsData.length : 0,
           format: 'number' as const,
           color: 'primary' as const,
           icon: <GoalIcon />,
@@ -759,7 +760,10 @@ const Dashboard: React.FC = () => {
     }
 
     // Уведомления о предстоящих платежах по долгам
-    if (upcomingDebtPayments && upcomingDebtPayments.length > 0) {
+    if (
+      Array.isArray(upcomingDebtPayments) &&
+      upcomingDebtPayments.length > 0
+    ) {
       upcomingDebtPayments.slice(0, 2).forEach((payment: Debt, index) => {
         notifications.push({
           id: `debt-${payment.id}`,
@@ -784,23 +788,25 @@ const Dashboard: React.FC = () => {
     }
 
     // Уведомления о достигнутых целях
-    if (goalsData) {
+    if (Array.isArray(goalsData)) {
       const completedGoals = goalsData.filter(
         (goal: any) => goal.status === 'completed'
       );
-      completedGoals.slice(0, 1).forEach((goal: any) => {
-        notifications.push({
-          id: `goal-${goal.id}`,
-          type: 'success' as const,
-          priority: 'low' as const,
-          title: 'Цель достигнута!',
-          message: `Поздравляем! Вы накопили на отпуск`,
-          dismissible: true,
-          category: 'goal' as const,
-          timestamp: new Date().toISOString(),
-          amount: goal.targetAmount || 50000,
+      if (Array.isArray(completedGoals) && completedGoals.length > 0) {
+        completedGoals.slice(0, 1).forEach((goal: any) => {
+          notifications.push({
+            id: `goal-${goal.id}`,
+            type: 'success' as const,
+            priority: 'low' as const,
+            title: 'Цель достигнута!',
+            message: `Поздравляем! Вы накопили на отпуск`,
+            dismissible: true,
+            category: 'goal' as const,
+            timestamp: new Date().toISOString(),
+            amount: goal.targetAmount || 50000,
+          });
         });
-      });
+      }
     }
 
     console.log('Final notifications array:', notifications);
@@ -818,18 +824,25 @@ const Dashboard: React.FC = () => {
     }
 
     const categoryCounts = {
-      spending: notifications.filter((n: any) => n.category === 'spending')
-        .length,
-      debt: notifications.filter((n: any) => n.category === 'debt').length,
-      goal: notifications.filter((n: any) => n.category === 'goal').length,
+      spending: Array.isArray(notifications)
+        ? notifications.filter((n: any) => n.category === 'spending').length
+        : 0,
+      debt: Array.isArray(notifications)
+        ? notifications.filter((n: any) => n.category === 'debt').length
+        : 0,
+      goal: Array.isArray(notifications)
+        ? notifications.filter((n: any) => n.category === 'goal').length
+        : 0,
     };
 
     return {
       hasData: true,
       notifications,
-      totalUnread: notifications.filter(
-        (n: any) => !n.dismissible || n.priority === 'high'
-      ).length,
+      totalUnread: Array.isArray(notifications)
+        ? notifications.filter(
+            (n: any) => !n.dismissible || n.priority === 'high'
+          ).length
+        : 0,
       categories: [
         { name: 'Расходы', count: categoryCounts.spending, color: '#ef4444' },
         { name: 'Долги', count: categoryCounts.debt, color: '#f59e0b' },
@@ -1204,7 +1217,8 @@ const Dashboard: React.FC = () => {
                     color="red"
                     badge={upcomingDebtPayments?.length?.toString() || '0'}
                   >
-                    {upcomingDebtPayments && upcomingDebtPayments.length > 0 ? (
+                    {Array.isArray(upcomingDebtPayments) &&
+                    upcomingDebtPayments.length > 0 ? (
                       <Box>
                         {upcomingDebtPayments.slice(0, 5).map(payment => (
                           <Box
@@ -1269,7 +1283,8 @@ const Dashboard: React.FC = () => {
                     color="blue"
                     badge={upcomingPayments?.length?.toString() || '0'}
                   >
-                    {upcomingPayments && upcomingPayments.length > 0 ? (
+                    {Array.isArray(upcomingPayments) &&
+                    upcomingPayments.length > 0 ? (
                       <Box>
                         {upcomingPayments.slice(0, 5).map(payment => (
                           <Box
