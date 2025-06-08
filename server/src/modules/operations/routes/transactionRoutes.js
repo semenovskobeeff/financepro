@@ -61,6 +61,12 @@ router.use(auth);
  *         schema:
  *           type: string
  *           format: date
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, archived]
+ *           default: active
  *     responses:
  *       200:
  *         description: Список транзакций

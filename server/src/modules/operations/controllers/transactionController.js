@@ -19,12 +19,13 @@ exports.getTransactions = async (req, res) => {
       categoryId,
       startDate,
       endDate,
+      status = 'active',
     } = req.query;
 
     // Создаем базовый фильтр по пользователю и статусу
     const filter = {
       userId: req.user._id,
-      status: 'active',
+      status,
     };
 
     // Добавляем дополнительные фильтры, если они указаны
