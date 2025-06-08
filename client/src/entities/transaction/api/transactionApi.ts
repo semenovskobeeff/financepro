@@ -178,6 +178,13 @@ export const transactionApi = createApi({
             calculatedBalance: number;
             difference: number;
           }>;
+          autoFixed?: boolean;
+          fixResult?: {
+            accountsProcessed: number;
+            accountsCorrected: number;
+            results: Array<any>;
+            success: boolean;
+          };
         };
       },
       void

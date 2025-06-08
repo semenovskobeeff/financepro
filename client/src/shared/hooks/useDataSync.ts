@@ -69,8 +69,12 @@ export const useDataSync = () => {
     }
 
     if (balanceCheckData?.data) {
-      const { hasInconsistencies, inconsistencies = [] } =
-        balanceCheckData.data;
+      const {
+        hasInconsistencies,
+        inconsistencies = [],
+        autoFixed,
+        fixResult,
+      } = balanceCheckData.data;
 
       setSyncState(prev => ({
         ...prev,
@@ -78,9 +82,14 @@ export const useDataSync = () => {
         hasMismatch: hasInconsistencies,
         inconsistencies,
         syncError: null,
+        lastSyncTime: autoFixed ? new Date() : prev.lastSyncTime,
       }));
 
-      if (hasInconsistencies) {
+      if (autoFixed && fixResult) {
+        console.log(
+          `✅ Автоматически исправлено ${fixResult.accountsCorrected} из ${fixResult.accountsProcessed} счетов`
+        );
+      } else if (hasInconsistencies) {
         console.warn('🚨 Обнаружены несоответствия балансов:', inconsistencies);
       } else {
         console.log('✅ Все балансы корректны');

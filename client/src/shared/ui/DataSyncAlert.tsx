@@ -72,8 +72,9 @@ const DataSyncAlert: React.FC<DataSyncAlertProps> = ({
     }
     if (isSyncing)
       return 'Выполняется интеллектуальный пересчет балансов на основе операций...';
-    if (lastSyncTime)
-      return `Последняя синхронизация: ${lastSyncTime.toLocaleString()}`;
+    if (lastSyncTime) {
+      return `Балансы автоматически синхронизированы: ${lastSyncTime.toLocaleString()}`;
+    }
     return 'Все данные корректны';
   };
 

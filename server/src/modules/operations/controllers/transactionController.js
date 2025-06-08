@@ -574,6 +574,31 @@ exports.checkBalances = async (req, res) => {
 
     const result = await balanceService.checkBalancesConsistency(req.user._id);
 
+    // Если найдены несоответствия, автоматически исправляем их
+    if (result.hasInconsistencies) {
+      console.log('🔧 Автоматическое исправление найденных несоответствий...');
+
+      const fixResult = await balanceService.recalculateAllBalances(
+        req.user._id
+      );
+
+      console.log(
+        `✅ Автоматически исправлено ${fixResult.accountsCorrected} балансов`
+      );
+
+      // Возвращаем результат с информацией об исправлении
+      return res.json({
+        status: 'success',
+        data: {
+          ...result,
+          hasInconsistencies: false, // После исправления несоответствий нет
+          inconsistencies: [], // Очищаем список несоответствий
+          autoFixed: true,
+          fixResult: fixResult,
+        },
+      });
+    }
+
     res.json({
       status: 'success',
       data: result,
@@ -641,7 +666,10 @@ exports.validateAndFixBalances = async (req, res) => {
       autoFix === 'true'
     );
 
-    const statusCode = result.status === 'inconsistent' ? 400 : 200;
+    // Возвращаем успех если балансы корректны или исправлены
+    // Ошибку возвращаем только если найдены несоответствия и autoFix = false
+    const statusCode =
+      result.status === 'inconsistent' && autoFix === 'false' ? 400 : 200;
 
     res.status(statusCode).json({
       status: 'success',
