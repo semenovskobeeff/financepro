@@ -46,66 +46,69 @@ export const baseQuery: BaseQueryFn<
 
   const result = await baseQueryWithAuth(args, api, extraOptions);
 
-  // Обработка ошибок
+  // Обработка ошибок с подробным логированием
   if (result.error) {
     const endpoint = typeof args === 'string' ? args : args.url;
     const isNetworkError = result.error.status === 'FETCH_ERROR';
+    const isTimeoutError = result.error.status === 'TIMEOUT_ERROR';
 
-    // Более мягкое логирование ошибок
-    if (isNetworkError && !config.useMocks) {
-      console.warn('[API] Сервер недоступен:', {
+    // Логирование ошибок подключения к серверу
+    if (isNetworkError) {
+      console.error('[API] ❌ Ошибка подключения к серверу:', {
         endpoint,
-        recommendation:
-          'Переключитесь на тестовые данные для работы без сервера',
-      });
-
-      // Не спамим в консоль если сервер недоступен
-      const shouldShowTip = !localStorage.getItem('networkErrorTipShown');
-      if (shouldShowTip) {
-        console.info(
-          '💡 Совет: Используйте переключатель "Режим данных" в правом верхнем углу'
-        );
-        localStorage.setItem('networkErrorTipShown', 'true');
-      }
-    } else if (config.debug) {
-      console.warn('[API] Ошибка:', {
-        status: result.error.status,
-        endpoint,
+        apiUrl: config.apiUrl,
         useMocks: config.useMocks,
+        error: 'Сервер недоступен',
+        recommendation: config.useMocks
+          ? 'Проверьте работу MSW и настройки моков'
+          : 'Проверьте работу сервера и сетевое подключение',
       });
-    }
 
-    // Обработка различных типов ошибок без агрессивных действий
-    if (result.error.status === 'TIMEOUT_ERROR') {
-      if (config.debug) {
-        console.warn('[API] Таймаут запроса:', {
-          endpoint,
-          recommendation: 'Проверьте соединение с сервером',
-        });
+      if (!config.useMocks) {
+        console.error('[API] 🔧 Рекомендации для продакшена:');
+        console.error('- Проверьте что сервер запущен');
+        console.error('- Проверьте URL API:', config.apiUrl);
+        console.error('- Проверьте CORS настройки сервера');
+        console.error('- Проверьте сетевое подключение');
       }
-    } else if (result.error.status === 401) {
-      // Минимальное логирование для 401
-      if (config.debug) {
-        console.info('[API] Требуется авторизация для:', endpoint);
-      }
-    } else if (result.error.status === 403) {
-      if (config.debug) {
-        console.warn('[API] Доступ запрещен:', endpoint);
-      }
-    } else if (result.error.status === 404) {
-      if (config.debug) {
-        console.info('[API] Ресурс не найден:', endpoint);
-      }
-    } else if (result.error.status === 500) {
-      console.warn('[API] Ошибка сервера:', {
+    } else if (isTimeoutError) {
+      console.error('[API] ⏰ Таймаут запроса:', {
         endpoint,
-        recommendation: 'Попробуйте позже или переключитесь на тестовые данные',
+        timeout: '15 секунд',
+        recommendation: 'Сервер слишком долго отвечает',
+      });
+    } else if (result.error.status === 401) {
+      console.warn('[API] 🔐 Ошибка авторизации:', {
+        endpoint,
+        message: 'Требуется аутентификация',
+      });
+    } else if (result.error.status === 403) {
+      console.warn('[API] 🚫 Доступ запрещен:', {
+        endpoint,
+        message: 'Недостаточно прав доступа',
+      });
+    } else if (result.error.status === 404) {
+      console.warn('[API] 📄 Ресурс не найден:', {
+        endpoint,
+        message: 'Запрашиваемый ресурс не существует',
+      });
+    } else if (result.error.status === 500) {
+      console.error('[API] 💥 Внутренняя ошибка сервера:', {
+        endpoint,
+        message: 'Ошибка на стороне сервера',
+        recommendation: 'Обратитесь к администратору',
+      });
+    } else {
+      console.error('[API] ❌ Неизвестная ошибка:', {
+        endpoint,
+        status: result.error.status,
+        error: result.error,
       });
     }
   } else if (config.debug && result.data) {
     // Логирование успешных ответов в режиме отладки
     const endpoint = typeof args === 'string' ? args : args.url;
-    console.log('[API] Успех:', {
+    console.log('[API] ✅ Успешный запрос:', {
       endpoint,
       dataType: Array.isArray(result.data)
         ? `array[${result.data.length}]`

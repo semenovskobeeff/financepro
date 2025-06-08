@@ -139,7 +139,7 @@ export const analyticsApi = createApi({
         }
 
         if (response && typeof response === 'object' && 'summary' in response) {
-          return response as TransactionAnalytics;
+          return response as unknown as TransactionAnalytics;
         }
 
         console.warn('💰 [API] Invalid response, returning fallback data');
@@ -164,7 +164,7 @@ export const analyticsApi = createApi({
         }
 
         if (response && typeof response === 'object' && 'summary' in response) {
-          return response as GoalsAnalytics;
+          return response as unknown as GoalsAnalytics;
         }
 
         console.warn('🎯 [API] Invalid response, returning fallback data');
@@ -194,7 +194,7 @@ export const analyticsApi = createApi({
         }
 
         if (response && typeof response === 'object' && 'summary' in response) {
-          return response as DebtsAnalytics;
+          return response as unknown as DebtsAnalytics;
         }
 
         console.warn('💳 [API] Invalid response, returning fallback data');
@@ -232,11 +232,13 @@ export const analyticsApi = createApi({
           'accounts' in response
         ) {
           console.log('📊 [API] Response is direct data, using as is');
-          return response as DashboardAnalytics;
+          return response as unknown as DashboardAnalytics;
         }
 
-        // Фоллбэк с базовыми данными
-        console.warn('📊 [API] Invalid response, returning fallback data');
+        // Фоллбэк с базовыми данными только если ответ действительно пустой
+        console.warn(
+          '📊 [API] Invalid response structure, returning fallback data'
+        );
         return {
           accounts: { count: 0, totalBalance: 0 },
           monthStats: { income: 0, expense: 0, balance: 0 },

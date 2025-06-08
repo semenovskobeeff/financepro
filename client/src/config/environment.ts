@@ -41,7 +41,13 @@ const forceFilledDataMode = (): void => {
 
 // Функция для определения среды
 const isProduction = (): boolean => {
-  return import.meta.env.PROD || import.meta.env.MODE === 'production';
+  // Проверяем несколько индикаторов продакшена
+  return (
+    import.meta.env.PROD ||
+    import.meta.env.MODE === 'production' ||
+    (window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1')
+  );
 };
 
 const isDevelopment = (): boolean => {
@@ -84,14 +90,16 @@ class AppConfig {
   get apiUrl(): string {
     // В production используем переменную окружения или fallback URL
     if (isProduction()) {
-      return import.meta.env.VITE_API_URL || 'https://your-api-domain.com/api';
+      return (
+        import.meta.env.VITE_API_URL || 'https://finance-app-production.com/api'
+      );
     }
 
     // В development используем локальный сервер
     return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   }
 
-  // Режим отладки (включен в режиме разработки)
+  // Режим отладки (включен только в режиме разработки)
   get debug(): boolean {
     return isDevelopment() || import.meta.env.VITE_DEBUG === 'true';
   }
@@ -117,11 +125,18 @@ class AppConfig {
     console.log(`[CONFIG] Обновлена настройка mockDataType: ${value}`);
   }
 
-  // Метод для принудительного сброса к заполненным данным
+  // Метод для принудительного сброса к заполненным данным (только для development)
   forceFilledDataMode(): void {
+    if (isProduction()) {
+      console.warn('[CONFIG] Моки недоступны в продакшене');
+      return;
+    }
+
     this.useMocks = true;
     this.mockDataType = 'filled';
-    console.log('[CONFIG] Принудительно установлен режим заполненных данных');
+    console.log(
+      '[CONFIG] Принудительно установлен режим заполненных данных (только для разработки)'
+    );
   }
 
   // Метод для получения текущего состояния
@@ -144,7 +159,7 @@ export const config = new AppConfig();
 // Экспортируем функцию для принудительного сброса
 export { forceFilledDataMode };
 
-// Логирование конфигурации в режиме разработки (только один раз)
+// Логирование конфигурации в режиме разработки
 if (config.debug && typeof window !== 'undefined') {
   // Проверяем, что логирование еще не было выполнено
   const hasLoggedConfig = sessionStorage.getItem('configLogged');
@@ -152,7 +167,11 @@ if (config.debug && typeof window !== 'undefined') {
     console.log('[CONFIG] Настройки приложения:', config.getState());
     sessionStorage.setItem('configLogged', 'true');
 
-    // ВАЖНО: Принудительно устанавливаем режим заполненных данных для демонстрации
-    config.forceFilledDataMode();
+    // Принудительно устанавливаем режим заполненных данных только для разработки
+    if (isDevelopment()) {
+      config.forceFilledDataMode();
+    } else {
+      console.log('[CONFIG] Продакшен режим - моки отключены');
+    }
   }
 }
