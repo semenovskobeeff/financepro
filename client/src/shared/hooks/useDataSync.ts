@@ -12,6 +12,12 @@ interface DataSyncState {
   isSyncing: boolean;
   lastSyncTime: Date | null;
   syncError: string | null;
+  errorType:
+    | 'transaction_error'
+    | 'balance_error'
+    | 'network_error'
+    | 'unknown_error'
+    | null;
   inconsistencies: Array<{
     accountId: string;
     accountName: string;
@@ -28,6 +34,7 @@ export const useDataSync = () => {
     isSyncing: false,
     lastSyncTime: null,
     syncError: null,
+    errorType: null,
     inconsistencies: [],
   });
 
@@ -43,10 +50,37 @@ export const useDataSync = () => {
   const [validateAndFixBalances] = useValidateAndFixBalancesMutation();
   const [syncAccountBalance] = useSyncAccountBalanceMutation();
 
+  // Функция для определения типа ошибки
+  const getErrorType = (errorMessage: string): DataSyncState['errorType'] => {
+    if (
+      errorMessage.includes('транзакци') ||
+      errorMessage.includes('операци')
+    ) {
+      return 'transaction_error';
+    }
+    if (errorMessage.includes('баланс') || errorMessage.includes('счет')) {
+      return 'balance_error';
+    }
+    if (
+      errorMessage.includes('сеть') ||
+      errorMessage.includes('подключени') ||
+      errorMessage.includes('network') ||
+      errorMessage.includes('connection')
+    ) {
+      return 'network_error';
+    }
+    return 'unknown_error';
+  };
+
   // Обновляем состояние на основе серверной проверки
   useEffect(() => {
     if (isCheckingBalances) {
-      setSyncState(prev => ({ ...prev, isChecking: true, syncError: null }));
+      setSyncState(prev => ({
+        ...prev,
+        isChecking: true,
+        syncError: null,
+        errorType: null,
+      }));
       return;
     }
 
@@ -60,10 +94,17 @@ export const useDataSync = () => {
         errorMessage = checkBalancesError.message || errorMessage;
       }
 
+      // Проверяем специфические ошибки
+      if (errorMessage.includes('транзакци')) {
+        errorMessage =
+          'Ошибка при получении транзакций. Проверьте подключение к серверу.';
+      }
+
       setSyncState(prev => ({
         ...prev,
         isChecking: false,
         syncError: errorMessage,
+        errorType: getErrorType(errorMessage),
       }));
       return;
     }
@@ -82,6 +123,7 @@ export const useDataSync = () => {
         hasMismatch: hasInconsistencies,
         inconsistencies,
         syncError: null,
+        errorType: null,
         lastSyncTime: autoFixed ? new Date() : prev.lastSyncTime,
       }));
 
@@ -100,7 +142,7 @@ export const useDataSync = () => {
   // Проверка балансов (вызов refetch)
   const checkBalances = async () => {
     try {
-      setSyncState(prev => ({ ...prev, syncError: null }));
+      setSyncState(prev => ({ ...prev, syncError: null, errorType: null }));
       await refetchBalanceCheck();
     } catch (error) {
       console.error('Ошибка при проверке балансов:', error);
@@ -109,13 +151,19 @@ export const useDataSync = () => {
       setSyncState(prev => ({
         ...prev,
         syncError: errorMessage,
+        errorType: getErrorType(errorMessage),
       }));
     }
   };
 
   // Быстрая синхронизация с валидацией и автоисправлением
   const syncBalances = async () => {
-    setSyncState(prev => ({ ...prev, isSyncing: true, syncError: null }));
+    setSyncState(prev => ({
+      ...prev,
+      isSyncing: true,
+      syncError: null,
+      errorType: null,
+    }));
 
     try {
       console.log('🔄 Запуск интеллектуальной синхронизации балансов...');
@@ -129,6 +177,7 @@ export const useDataSync = () => {
         inconsistencies: [],
         lastSyncTime: new Date(),
         syncError: null,
+        errorType: null,
       }));
 
       // Показываем информацию о результатах
@@ -160,6 +209,7 @@ export const useDataSync = () => {
         ...prev,
         isSyncing: false,
         syncError: errorMessage,
+        errorType: getErrorType(errorMessage),
       }));
     }
   };
@@ -193,7 +243,12 @@ export const useDataSync = () => {
 
   // Устаревший метод для совместимости
   const legacySyncBalances = async () => {
-    setSyncState(prev => ({ ...prev, isSyncing: true, syncError: null }));
+    setSyncState(prev => ({
+      ...prev,
+      isSyncing: true,
+      syncError: null,
+      errorType: null,
+    }));
 
     try {
       const result = await recalculateBalances().unwrap();
@@ -204,6 +259,7 @@ export const useDataSync = () => {
         inconsistencies: [],
         lastSyncTime: new Date(),
         syncError: null,
+        errorType: null,
       }));
 
       // Перепроверяем балансы после синхронизации
@@ -234,6 +290,7 @@ export const useDataSync = () => {
         ...prev,
         isSyncing: false,
         syncError: errorMessage,
+        errorType: getErrorType(errorMessage),
       }));
     }
   };
