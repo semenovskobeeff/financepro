@@ -98,10 +98,14 @@ export const transactionApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: Transaction | ApiResponse<Transaction>) => {
-        if ('data' in response && response.data) {
+      transformResponse: (
+        response: Transaction | { status: string; data: Transaction }
+      ) => {
+        // Обработка ответа от реального API с обертками
+        if ('status' in response && 'data' in response) {
           return response.data;
         }
+        // Обработка ответа от MSW (прямой объект)
         return response as Transaction;
       },
       invalidatesTags: (_, __, { id }) => [

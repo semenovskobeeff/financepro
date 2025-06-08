@@ -206,7 +206,7 @@ exports.createTransaction = async (req, res) => {
  */
 exports.updateTransaction = async (req, res) => {
   try {
-    const { categoryId, description, amount } = req.body;
+    const { categoryId, description, amount, date } = req.body;
 
     // Находим транзакцию
     const transaction = await Transaction.findOne({
@@ -245,6 +245,11 @@ exports.updateTransaction = async (req, res) => {
     // Обновляем описание
     if (description !== undefined) {
       transaction.description = description;
+    }
+
+    // Обновляем дату
+    if (date !== undefined) {
+      transaction.date = date;
     }
 
     // Обновляем сумму и пересчитываем баланс счета
@@ -306,7 +311,10 @@ exports.updateTransaction = async (req, res) => {
       .populate('accountId', 'name type balance')
       .populate('categoryId', 'name icon');
 
-    res.json(populatedTransaction);
+    res.json({
+      status: 'success',
+      data: populatedTransaction,
+    });
   } catch (error) {
     console.error('Update transaction error:', error);
     res.status(500).json({ message: 'Ошибка при обновлении транзакции' });

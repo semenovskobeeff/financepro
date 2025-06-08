@@ -182,8 +182,12 @@ const AccountDetails: React.FC = () => {
     try {
       await updateTransaction({
         id: updatedTransaction.id,
-        accountId: account.id, // Добавляем accountId для правильной инвалидации кеша
-        ...updatedTransaction,
+        data: {
+          amount: updatedTransaction.amount,
+          description: updatedTransaction.description,
+          categoryId: updatedTransaction.categoryId,
+          date: updatedTransaction.date,
+        },
       }).unwrap();
 
       // Закрыть модальное окно после успешного сохранения

@@ -91,7 +91,7 @@ class AppConfig {
     // В production используем переменную окружения или fallback URL
     if (isProduction()) {
       return (
-        import.meta.env.VITE_API_URL || 'https://finance-app-production.com/api'
+        import.meta.env.VITE_API_URL || 'https://financepro-patx.vercel.app/api'
       );
     }
 

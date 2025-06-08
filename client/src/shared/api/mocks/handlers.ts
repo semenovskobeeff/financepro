@@ -676,7 +676,7 @@ export const handlers = [
   }),
 
   // Обновление транзакции
-  http.patch('/api/transactions/:id', async ({ params, request }) => {
+  http.put('/api/transactions/:id', async ({ params, request }) => {
     await delay(500);
     const { id } = params;
     const transactionIndex = mockTransactions.findIndex(t => t.id === id);
@@ -729,7 +729,10 @@ export const handlers = [
       });
     }
 
-    return HttpResponse.json(updatedTransaction);
+    return HttpResponse.json({
+      status: 'success',
+      data: updatedTransaction,
+    });
   }),
 
   // Архивация транзакции
