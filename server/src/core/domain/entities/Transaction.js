@@ -227,6 +227,15 @@ transactionSchema.virtual('user', {
 // Middleware для валидации перед сохранением
 transactionSchema.pre('save', async function (next) {
   try {
+    console.log('🔍 Валидация транзакции перед сохранением:', {
+      id: this._id,
+      type: this.type,
+      amount: this.amount,
+      categoryId: this.categoryId,
+      accountId: this.accountId,
+      userId: this.userId,
+    });
+
     // Проверяем существование связанных документов
     if (this.categoryId && this.type !== 'transfer') {
       const Category = mongoose.model('Category');
@@ -253,8 +262,10 @@ transactionSchema.pre('save', async function (next) {
       }
     }
 
+    console.log('✅ Валидация транзакции прошла успешно');
     next();
   } catch (error) {
+    console.error('❌ Ошибка валидации транзакции:', error.message);
     next(error);
   }
 });

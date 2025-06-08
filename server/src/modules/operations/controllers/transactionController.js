@@ -108,6 +108,23 @@ exports.createTransaction = async (req, res) => {
   try {
     const { type, amount, categoryId, accountId, date, description } = req.body;
 
+    console.log('🔄 Создание транзакции:', {
+      type,
+      amount,
+      categoryId,
+      accountId,
+      date,
+      description,
+      userId: req.user._id,
+    });
+
+    // Проверка авторизации
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        message: 'Пользователь не авторизован',
+      });
+    }
+
     // Проверка обязательных полей
     if (
       !type ||
@@ -161,6 +178,7 @@ exports.createTransaction = async (req, res) => {
       account.balance += amount;
       account.history.push({
         operationType: 'income',
+        type: 'income',
         amount,
         date: transaction.date,
         description: description || 'Доход',
@@ -175,6 +193,7 @@ exports.createTransaction = async (req, res) => {
       account.balance -= amount;
       account.history.push({
         operationType: 'expense',
+        type: 'expense',
         amount,
         date: transaction.date,
         description: description || 'Расход',
@@ -183,6 +202,13 @@ exports.createTransaction = async (req, res) => {
 
     // Сохраняем изменения
     await Promise.all([transaction.save(), account.save()]);
+
+    console.log('✅ Транзакция успешно создана:', {
+      transactionId: transaction._id,
+      type: transaction.type,
+      amount: transaction.amount,
+      accountBalance: account.balance,
+    });
 
     res.status(201).json({
       status: 'success',
@@ -196,7 +222,29 @@ exports.createTransaction = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Create transaction error:', error);
+    console.error('❌ Create transaction error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      userId: req.user?._id,
+      body: req.body,
+    });
+
+    // Детализированная обработка ошибок
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        message: 'Ошибка валидации данных транзакции',
+        details: error.message,
+      });
+    }
+
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        message: 'Некорректный ID объекта',
+        details: error.message,
+      });
+    }
+
     res.status(500).json({ message: 'Ошибка при создании транзакции' });
   }
 };
