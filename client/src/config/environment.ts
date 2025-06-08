@@ -26,8 +26,17 @@ const getMockDataType = (): 'filled' | 'empty' => {
     }
   }
 
-  // По умолчанию используем заполненные данные
+  // ВАЖНО: По умолчанию используем заполненные данные для демонстрации функциональности
   return 'filled';
+};
+
+// Функция для принудительного сброса настроек к заполненным данным
+const forceFilledDataMode = (): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('mockDataType', 'filled');
+    localStorage.setItem('useMocks', 'true');
+    console.log('[CONFIG] Принудительно установлен режим заполненных данных');
+  }
 };
 
 // Функция для определения среды
@@ -108,6 +117,13 @@ class AppConfig {
     console.log(`[CONFIG] Обновлена настройка mockDataType: ${value}`);
   }
 
+  // Метод для принудительного сброса к заполненным данным
+  forceFilledDataMode(): void {
+    this.useMocks = true;
+    this.mockDataType = 'filled';
+    console.log('[CONFIG] Принудительно установлен режим заполненных данных');
+  }
+
   // Метод для получения текущего состояния
   getState() {
     return {
@@ -125,6 +141,9 @@ class AppConfig {
 // Экспортируем единственный экземпляр конфигурации
 export const config = new AppConfig();
 
+// Экспортируем функцию для принудительного сброса
+export { forceFilledDataMode };
+
 // Логирование конфигурации в режиме разработки (только один раз)
 if (config.debug && typeof window !== 'undefined') {
   // Проверяем, что логирование еще не было выполнено
@@ -132,5 +151,8 @@ if (config.debug && typeof window !== 'undefined') {
   if (!hasLoggedConfig) {
     console.log('[CONFIG] Настройки приложения:', config.getState());
     sessionStorage.setItem('configLogged', 'true');
+
+    // ВАЖНО: Принудительно устанавливаем режим заполненных данных для демонстрации
+    config.forceFilledDataMode();
   }
 }

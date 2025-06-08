@@ -16,9 +16,23 @@ const mongoose = require('mongoose');
  */
 const getTransactionsAnalytics = async (userId, options = {}) => {
   try {
+    console.log(
+      '🔍 [TRANSACTIONS] Получение аналитики транзакций для пользователя:',
+      userId,
+      'опции:',
+      options
+    );
+
     // Определяем временной диапазон для анализа
     const { period = 'month', startDate, endDate } = options;
     const dateRange = getDateRange(period, startDate, endDate);
+
+    console.log(
+      '📅 [TRANSACTIONS] Диапазон дат:',
+      dateRange.startDate.toISOString(),
+      'до',
+      dateRange.endDate.toISOString()
+    );
 
     // Получаем все транзакции пользователя за период
     const transactions = await Transaction.find({
@@ -26,8 +40,14 @@ const getTransactionsAnalytics = async (userId, options = {}) => {
       date: { $gte: dateRange.startDate, $lte: dateRange.endDate },
     }).populate('categoryId');
 
+    console.log(
+      '💰 [TRANSACTIONS] Найдено транзакций за период:',
+      transactions.length
+    );
+
     // Получаем все счета пользователя для анализа баланса
     const accounts = await Account.find({ userId });
+    console.log('📊 [TRANSACTIONS] Найдено счетов:', accounts.length);
 
     // Подготавливаем данные для анализа
     const summary = {
@@ -48,6 +68,13 @@ const getTransactionsAnalytics = async (userId, options = {}) => {
     // Анализируем транзакции
     transactions.forEach(transaction => {
       const { type, amount, categoryId, date } = transaction;
+
+      console.log(
+        '🔍 [TRANSACTIONS] Обрабатываем транзакцию:',
+        type,
+        amount,
+        categoryId?.name || 'Без категории'
+      );
 
       // Обновляем общую сумму по типу
       summary[type] += amount;
@@ -94,7 +121,7 @@ const getTransactionsAnalytics = async (userId, options = {}) => {
       }
     });
 
-    return {
+    const result = {
       summary,
       categoryStats: {
         income: Object.values(categoriesIncome),
@@ -111,8 +138,23 @@ const getTransactionsAnalytics = async (userId, options = {}) => {
         balance: acc.balance,
       })),
     };
+
+    console.log('📈 [TRANSACTIONS] Итоговая сводка:', summary);
+    console.log(
+      '📊 [TRANSACTIONS] Категории доходов:',
+      Object.keys(categoriesIncome).length
+    );
+    console.log(
+      '📊 [TRANSACTIONS] Категории расходов:',
+      Object.keys(categoriesExpense).length
+    );
+
+    return result;
   } catch (error) {
-    console.error('Ошибка при получении аналитики транзакций:', error);
+    console.error(
+      '❌ [TRANSACTIONS] Ошибка при получении аналитики транзакций:',
+      error
+    );
     throw error;
   }
 };
@@ -305,21 +347,65 @@ const getDebtsAnalytics = async userId => {
  */
 const getDashboardAnalytics = async userId => {
   try {
+    console.log(
+      '🔍 [ANALYTICS] Получение сводной аналитики для пользователя:',
+      userId
+    );
+
     // Получаем счета
     const accounts = await Account.find({ userId });
+    console.log('📊 [ANALYTICS] Найдено счетов:', accounts.length);
 
     // Получаем статистику по транзакциям за текущий месяц
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
+    const now = new Date();
+    console.log(
+      '📅 [ANALYTICS] Период анализа:',
+      monthStart.toISOString(),
+      'до',
+      now.toISOString()
+    );
+
     const transactions = await Transaction.find({
       userId,
       date: { $gte: monthStart },
     });
 
-    const monthStats = transactions.reduce(
+    console.log(
+      '💰 [ANALYTICS] Найдено транзакций за текущий месяц:',
+      transactions.length
+    );
+
+    // Если нет транзакций за текущий месяц, берем последние 30 дней
+    let transactionsForAnalysis = transactions;
+    if (transactions.length === 0) {
+      console.log(
+        '⚠️ [ANALYTICS] Нет транзакций за текущий месяц, ищем за последние 30 дней'
+      );
+      const last30Days = new Date();
+      last30Days.setDate(last30Days.getDate() - 30);
+
+      transactionsForAnalysis = await Transaction.find({
+        userId,
+        date: { $gte: last30Days },
+      });
+
+      console.log(
+        '💰 [ANALYTICS] Найдено транзакций за последние 30 дней:',
+        transactionsForAnalysis.length
+      );
+    }
+
+    const monthStats = transactionsForAnalysis.reduce(
       (stats, tx) => {
+        console.log(
+          '🔍 [ANALYTICS] Обрабатываем транзакцию:',
+          tx.type,
+          tx.amount
+        );
         if (tx.type === 'income') stats.income += tx.amount;
         else if (tx.type === 'expense') stats.expense += tx.amount;
         return stats;
@@ -329,8 +415,12 @@ const getDashboardAnalytics = async userId => {
 
     monthStats.balance = monthStats.income - monthStats.expense;
 
+    console.log('📈 [ANALYTICS] Статистика месяца:', monthStats);
+
     // Получаем подписки
     const subscriptions = await Subscription.find({ userId });
+    console.log('🔄 [ANALYTICS] Найдено подписок:', subscriptions.length);
+
     const monthlySubscriptionAmount = subscriptions.reduce((sum, sub) => {
       return (
         sum + sub.amount * getPaymentFrequencyMultiplier(sub.paymentFrequency)
@@ -339,12 +429,19 @@ const getDashboardAnalytics = async userId => {
 
     // Получаем долги
     const debts = await Debt.find({ userId, remainingAmount: { $gt: 0 } });
+    console.log('💳 [ANALYTICS] Найдено активных долгов:', debts.length);
 
     // Получаем цели
     const goals = await Goal.find({ userId });
     const activeGoals = goals.filter(goal => goal.progress < goal.targetAmount);
+    console.log(
+      '🎯 [ANALYTICS] Найдено целей/активных:',
+      goals.length,
+      '/',
+      activeGoals.length
+    );
 
-    return {
+    const result = {
       accounts: {
         count: accounts.length,
         totalBalance: accounts.reduce((sum, acc) => sum + acc.balance, 0),
@@ -370,8 +467,18 @@ const getDashboardAnalytics = async userId => {
         ),
       },
     };
+
+    console.log(
+      '✅ [ANALYTICS] Итоговая аналитика дашборда:',
+      JSON.stringify(result, null, 2)
+    );
+
+    return result;
   } catch (error) {
-    console.error('Ошибка при получении сводной аналитики:', error);
+    console.error(
+      '❌ [ANALYTICS] Ошибка при получении сводной аналитики:',
+      error
+    );
     throw error;
   }
 };

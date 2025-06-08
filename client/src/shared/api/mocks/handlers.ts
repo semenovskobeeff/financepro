@@ -1243,39 +1243,41 @@ export const handlers = [
   // Получение аналитики дашборда
   http.get('/api/analytics/dashboard', async () => {
     await delay(700);
-    // Принудительно используем заполненные данные для демонстрации
-    console.log('Mock: config.mockDataType:', config.mockDataType);
-    console.log('Mock: Using filled analytics data for dashboard');
-    console.log('Mock: Dashboard analytics data:', mockAnalytics.dashboard);
-    console.log(
-      'Mock: monthStats specifically:',
-      mockAnalytics.dashboard.monthStats
-    );
-    console.log(
-      'Mock: income value:',
-      mockAnalytics.dashboard.monthStats.income
-    );
-    console.log(
-      'Mock: balance value:',
-      mockAnalytics.dashboard.monthStats.balance
-    );
 
-    // Принудительно устанавливаем значения для гарантированного результата
-    const forcedData = {
-      ...mockAnalytics.dashboard,
+    // ВАЖНО: Всегда возвращаем заполненные данные для дашборда
+    // независимо от настройки mockDataType, чтобы показать функциональность
+    console.log('Mock: Returning filled analytics data for dashboard');
+
+    const filledDashboardData = {
+      accounts: {
+        count: 3,
+        totalBalance: 558500,
+      },
       monthStats: {
         income: 435000,
         expense: 400000,
         balance: 35000,
       },
+      subscriptions: {
+        count: 4,
+        monthlyAmount: 2500,
+      },
+      debts: {
+        count: 2,
+        totalAmount: 60000,
+      },
+      goals: {
+        count: 3,
+        totalTarget: 1500000,
+        totalProgress: 850000,
+      },
     };
 
-    // Оборачиваем данные в формат ApiResponse
     const apiResponse = {
-      data: forcedData,
+      data: filledDashboardData,
     };
 
-    console.log('Mock: Sending API response format:', apiResponse);
+    console.log('Mock: Dashboard analytics response:', apiResponse);
     return HttpResponse.json(apiResponse);
   }),
 
@@ -1287,9 +1289,11 @@ export const handlers = [
 
     console.log('Mock: Analytics request for period:', period);
 
-    const { analytics } = getMockData();
+    // ВАЖНО: Всегда используем заполненные данные для демонстрации функциональности
     const analyticsData =
-      analytics.transactions[period as keyof typeof analytics.transactions];
+      mockAnalytics.transactions[
+        period as keyof typeof mockAnalytics.transactions
+      ];
 
     if (!analyticsData) {
       console.warn(
@@ -1297,31 +1301,45 @@ export const handlers = [
         period,
         'falling back to month'
       );
-      const fallbackData = analytics.transactions.month;
+      const fallbackData = mockAnalytics.transactions.month;
       console.log('Mock: Returning fallback data:', fallbackData);
-      return HttpResponse.json(fallbackData);
+      const apiResponse = {
+        data: fallbackData,
+      };
+      return HttpResponse.json(apiResponse);
     }
 
     console.log(
-      'Mock: Returning analytics data for period:',
+      'Mock: Returning filled analytics data for period:',
       period,
       analyticsData
     );
-    return HttpResponse.json(analyticsData);
+    const apiResponse = {
+      data: analyticsData,
+    };
+    return HttpResponse.json(apiResponse);
   }),
 
   // Получение аналитики целей
   http.get('/api/analytics/goals', async () => {
     await delay(700);
-    const { analytics } = getMockData();
-    return HttpResponse.json(analytics.goals || []);
+    // ВАЖНО: Всегда используем заполненные данные для демонстрации функциональности
+    console.log('Mock: Returning filled goals analytics data');
+    const apiResponse = {
+      data: mockAnalytics.goals,
+    };
+    return HttpResponse.json(apiResponse);
   }),
 
   // Получение аналитики долгов
   http.get('/api/analytics/debts', async () => {
     await delay(700);
-    const { analytics } = getMockData();
-    return HttpResponse.json(analytics.debts || []);
+    // ВАЖНО: Всегда используем заполненные данные для демонстрации функциональности
+    console.log('Mock: Returning filled debts analytics data');
+    const apiResponse = {
+      data: mockAnalytics.debts,
+    };
+    return HttpResponse.json(apiResponse);
   }),
 
   // ===================== АРХИВ =====================

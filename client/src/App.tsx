@@ -60,6 +60,9 @@ import { config } from './config/environment';
 // Модули для работы с API и данными
 import ApiModeToggle from './shared/ui/ApiModeToggle';
 
+// Утилиты для диагностики
+import './utils/fixAnalyticsData';
+
 // Константы
 const drawerWidth = 240;
 

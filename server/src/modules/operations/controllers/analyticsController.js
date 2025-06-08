@@ -42,18 +42,32 @@ const analyticsService = require('../services/analyticsService');
  */
 const getTransactionsAnalytics = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
     const { period, startDate, endDate } = req.query;
+
+    console.log(
+      '🎯 [CONTROLLER] Запрос аналитики транзакций от пользователя:',
+      userId
+    );
+    console.log('🎯 [CONTROLLER] Параметры запроса:', {
+      period,
+      startDate,
+      endDate,
+    });
 
     const analytics = await analyticsService.getTransactionsAnalytics(userId, {
       period,
       startDate,
-      endDate
+      endDate,
     });
 
+    console.log('✅ [CONTROLLER] Аналитика транзакций получена успешно');
     res.json(analytics);
   } catch (error) {
-    console.error('Ошибка при получении аналитики транзакций:', error);
+    console.error(
+      '❌ [CONTROLLER] Ошибка при получении аналитики транзакций:',
+      error
+    );
     res.status(500).json({ message: 'Ошибка сервера при получении аналитики' });
   }
 };
@@ -74,7 +88,7 @@ const getTransactionsAnalytics = async (req, res) => {
  */
 const getGoalsAnalytics = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
 
     const analytics = await analyticsService.getGoalsAnalytics(userId);
 
@@ -101,7 +115,7 @@ const getGoalsAnalytics = async (req, res) => {
  */
 const getDebtsAnalytics = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
 
     const analytics = await analyticsService.getDebtsAnalytics(userId);
 
@@ -128,13 +142,24 @@ const getDebtsAnalytics = async (req, res) => {
  */
 const getDashboardAnalytics = async (req, res) => {
   try {
-    const userId = req.user.id;
+    // Получаем userId из объекта пользователя (MongoDB использует _id)
+    const userId = req.user._id || req.user.id;
+    console.log(
+      '🎯 [CONTROLLER] Запрос сводной аналитики от пользователя:',
+      userId
+    );
+    console.log('🎯 [CONTROLLER] Объект пользователя (_id):', req.user._id);
+    console.log('🎯 [CONTROLLER] Объект пользователя (id):', req.user.id);
 
     const analytics = await analyticsService.getDashboardAnalytics(userId);
 
+    console.log('✅ [CONTROLLER] Аналитика получена успешно');
     res.json(analytics);
   } catch (error) {
-    console.error('Ошибка при получении сводной аналитики:', error);
+    console.error(
+      '❌ [CONTROLLER] Ошибка при получении сводной аналитики:',
+      error
+    );
     res.status(500).json({ message: 'Ошибка сервера при получении аналитики' });
   }
 };
@@ -178,7 +203,7 @@ const getDashboardAnalytics = async (req, res) => {
  */
 const exportAnalyticsData = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
     const { type, format, period, startDate, endDate } = req.query;
 
     const result = await analyticsService.exportAnalytics(userId, {
@@ -186,12 +211,17 @@ const exportAnalyticsData = async (req, res) => {
       format,
       period,
       startDate,
-      endDate
+      endDate,
     });
 
     // Устанавливаем заголовки для скачивания файла
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="analytics-${type}-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="analytics-${type}-${new Date()
+        .toISOString()
+        .slice(0, 10)}.csv"`
+    );
 
     // Преобразуем данные в CSV формат
     const csvData = result.data.map(row => row.join(',')).join('\n');
@@ -208,5 +238,5 @@ module.exports = {
   getGoalsAnalytics,
   getDebtsAnalytics,
   getDashboardAnalytics,
-  exportAnalyticsData
+  exportAnalyticsData,
 };
