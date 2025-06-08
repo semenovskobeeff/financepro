@@ -8,10 +8,6 @@ import {
   MakePaymentRequest,
 } from '../model/types';
 
-interface ApiResponse<T> {
-  data: T;
-}
-
 export const debtApi = createApi({
   reducerPath: 'debtApi',
   baseQuery,
@@ -25,9 +21,9 @@ export const debtApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: ApiResponse<Debt[]>) => response.data || [],
+      transformResponse: (response: Debt[]) => response || [],
       providesTags: result =>
-        result
+        result && Array.isArray(result)
           ? [
               ...result.map(({ id }) => ({
                 type: 'Debt' as const,
@@ -40,7 +36,7 @@ export const debtApi = createApi({
 
     getDebtById: builder.query<Debt, string>({
       query: id => ({ url: `/debts/${id}` }),
-      transformResponse: (response: ApiResponse<Debt>) => response.data,
+      transformResponse: (response: Debt) => response,
       providesTags: (_, __, id) => [{ type: 'Debt', id }],
     }),
 
@@ -50,7 +46,7 @@ export const debtApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Debt>) => response.data,
+      transformResponse: (response: Debt) => response,
       invalidatesTags: [{ type: 'Debt', id: 'LIST' }],
     }),
 
@@ -61,7 +57,7 @@ export const debtApi = createApi({
           method: 'PUT',
           body: data,
         }),
-        transformResponse: (response: ApiResponse<Debt>) => response.data,
+        transformResponse: (response: Debt) => response,
         invalidatesTags: (_, __, { id }) => [
           { type: 'Debt', id },
           { type: 'Debt', id: 'LIST' },
@@ -100,7 +96,7 @@ export const debtApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Debt>) => response.data,
+      transformResponse: (response: Debt) => response,
       invalidatesTags: (_, __, { id }) => [
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
@@ -115,14 +111,13 @@ export const debtApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: ApiResponse<Debt[]>) => response.data || [],
+      transformResponse: (response: Debt[]) => response || [],
       providesTags: [{ type: 'Debt', id: 'UPCOMING' }],
     }),
 
     getDebtsStats: builder.query<DebtStatsResponse, void>({
       query: () => ({ url: '/debts/stats' }),
-      transformResponse: (response: ApiResponse<DebtStatsResponse>) =>
-        response.data,
+      transformResponse: (response: DebtStatsResponse) => response,
       providesTags: [{ type: 'Debt', id: 'STATS' }],
     }),
   }),

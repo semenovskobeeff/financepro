@@ -9,10 +9,6 @@ import {
   ShoppingListStatistics,
 } from '../model/types';
 
-interface ApiResponse<T> {
-  data: T;
-}
-
 export const shoppingListApi = createApi({
   reducerPath: 'shoppingListApi',
   baseQuery,
@@ -21,10 +17,9 @@ export const shoppingListApi = createApi({
     // Получение всех списков покупок
     getShoppingLists: builder.query<ShoppingList[], void>({
       query: () => '/shopping-lists',
-      transformResponse: (response: ApiResponse<ShoppingList[]>) =>
-        response.data || [],
+      transformResponse: (response: ShoppingList[]) => response || [],
       providesTags: result =>
-        result
+        result && Array.isArray(result)
           ? [
               ...result.map(({ id }) => ({
                 type: 'ShoppingList' as const,
@@ -38,7 +33,7 @@ export const shoppingListApi = createApi({
     // Получение конкретного списка
     getShoppingListById: builder.query<ShoppingList, string>({
       query: id => `/shopping-lists/${id}`,
-      transformResponse: (response: ApiResponse<ShoppingList>) => response.data,
+      transformResponse: (response: ShoppingList) => response,
       providesTags: (_, __, id) => [{ type: 'ShoppingList', id }],
     }),
 
@@ -52,7 +47,7 @@ export const shoppingListApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<ShoppingList>) => response.data,
+      transformResponse: (response: ShoppingList) => response,
       invalidatesTags: [{ type: 'ShoppingList', id: 'LIST' }],
     }),
 
@@ -66,7 +61,7 @@ export const shoppingListApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<ShoppingList>) => response.data,
+      transformResponse: (response: ShoppingList) => response,
       invalidatesTags: (_, __, { id }) => [
         { type: 'ShoppingList', id },
         { type: 'ShoppingList', id: 'LIST' },
@@ -95,7 +90,7 @@ export const shoppingListApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<ShoppingList>) => response.data,
+      transformResponse: (response: ShoppingList) => response,
       invalidatesTags: (_, __, { listId }) => [
         { type: 'ShoppingList', id: listId },
         { type: 'ShoppingList', id: 'LIST' },
@@ -116,7 +111,7 @@ export const shoppingListApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<ShoppingList>) => response.data,
+      transformResponse: (response: ShoppingList) => response,
       invalidatesTags: (_, __, { listId }) => [
         { type: 'ShoppingList', id: listId },
         { type: 'ShoppingList', id: 'LIST' },
@@ -132,7 +127,7 @@ export const shoppingListApi = createApi({
         url: `/shopping-lists/${listId}/items/${itemId}`,
         method: 'DELETE',
       }),
-      transformResponse: (response: ApiResponse<ShoppingList>) => response.data,
+      transformResponse: (response: ShoppingList) => response,
       invalidatesTags: (_, __, { listId }) => [
         { type: 'ShoppingList', id: listId },
         { type: 'ShoppingList', id: 'LIST' },
@@ -142,8 +137,7 @@ export const shoppingListApi = createApi({
     // Получение статистики
     getShoppingListStatistics: builder.query<ShoppingListStatistics, void>({
       query: () => '/shopping-lists/statistics',
-      transformResponse: (response: ApiResponse<ShoppingListStatistics>) =>
-        response.data,
+      transformResponse: (response: ShoppingListStatistics) => response,
       providesTags: [{ type: 'ShoppingList', id: 'STATS' }],
     }),
   }),

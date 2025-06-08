@@ -27,9 +27,9 @@ export const categoryApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: Category[]) => response,
+      transformResponse: (response: Category[]) => response || [],
       providesTags: result =>
-        result
+        result && Array.isArray(result)
           ? [
               ...result.map(({ id }) => ({
                 type: 'Category' as const,

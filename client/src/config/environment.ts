@@ -171,7 +171,9 @@ if (config.debug && typeof window !== 'undefined') {
     if (isDevelopment()) {
       config.forceFilledDataMode();
     } else {
-      console.log('[CONFIG] Продакшен режим - моки отключены');
+      console.log(
+        '[CONFIG] Продакшен режим - принудительное исправление отключено'
+      );
     }
   }
 }

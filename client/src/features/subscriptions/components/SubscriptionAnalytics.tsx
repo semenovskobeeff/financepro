@@ -107,25 +107,25 @@ const SubscriptionAnalytics: React.FC<SubscriptionAnalyticsProps> = ({
   }
 
   // Подготовка данных для графиков
-  const pieData = data.categoryStats.map(item => ({
+  const pieData = (data.categoryStats || []).map(item => ({
     name: item.categoryName,
     value: item.amount,
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     icon: item.categoryIcon,
   }));
 
-  const frequencyData = data.frequencyStats.map(item => ({
+  const frequencyData = (data.frequencyStats || []).map(item => ({
     name: item.label,
     amount: item.amount,
     count: item.count,
   }));
 
-  const forecastData = data.monthlyForecast.map(item => ({
+  const forecastData = (data.monthlyForecast || []).map(item => ({
     name: `${item.month} ${item.year}`,
     amount: item.totalAmount,
   }));
 
-  const historyData = data.paymentHistory.map(item => ({
+  const historyData = (data.paymentHistory || []).map(item => ({
     name: `${item.month} ${item.year}`,
     amount: item.totalAmount,
   }));
@@ -285,7 +285,7 @@ const SubscriptionAnalytics: React.FC<SubscriptionAnalyticsProps> = ({
                   Категории
                 </Typography>
                 <List>
-                  {data.categoryStats.map(category => (
+                  {(data.categoryStats || []).map(category => (
                     <React.Fragment
                       key={category.categoryId || 'uncategorized'}
                     >
@@ -345,7 +345,7 @@ const SubscriptionAnalytics: React.FC<SubscriptionAnalyticsProps> = ({
                   Периодичность
                 </Typography>
                 <List>
-                  {data.frequencyStats.map(item => (
+                  {(data.frequencyStats || []).map(item => (
                     <React.Fragment key={item.frequency}>
                       <ListItem>
                         <ListItemIcon>
@@ -405,14 +405,14 @@ const SubscriptionAnalytics: React.FC<SubscriptionAnalyticsProps> = ({
                   Детали по месяцам
                 </Typography>
                 <Box sx={{ maxHeight: 350, overflowY: 'auto' }}>
-                  {data.monthlyForecast.map((month, index) => (
+                  {(data.monthlyForecast || []).map((month, index) => (
                     <Paper key={index} sx={{ p: 2, mb: 2 }}>
                       <Typography variant="subtitle1">
                         {month.month} {month.year} -{' '}
                         {formatNumber(month.totalAmount)} ₽
                       </Typography>
                       <List dense>
-                        {month.subscriptionsDue.map(sub => (
+                        {(month.subscriptionsDue || []).map(sub => (
                           <ListItem key={sub.id}>
                             <ListItemIcon>
                               <CalendarIcon fontSize="small" />
@@ -463,14 +463,14 @@ const SubscriptionAnalytics: React.FC<SubscriptionAnalyticsProps> = ({
                   Детализация платежей
                 </Typography>
                 <Box sx={{ maxHeight: 350, overflowY: 'auto' }}>
-                  {data.paymentHistory.map((month, index) => (
+                  {(data.paymentHistory || []).map((month, index) => (
                     <Paper key={index} sx={{ p: 2, mb: 2 }}>
                       <Typography variant="subtitle1">
                         {month.month} {month.year} -{' '}
                         {formatNumber(month.totalAmount)} ₽
                       </Typography>
                       <List dense>
-                        {month.payments.map((payment, paymentIndex) => (
+                        {(month.payments || []).map((payment, paymentIndex) => (
                           <ListItem key={paymentIndex}>
                             <ListItemIcon>
                               <PaymentIcon fontSize="small" />

@@ -81,41 +81,41 @@ export const fixAnalyticsData = (): void => {
 
 // Автоматическая диагностика при импорте
 if (typeof window !== 'undefined') {
-  // Сначала очищаем localStorage от избыточных данных
-  cleanupLocalStorage();
+  // Определяем среду
+  const isProduction =
+    import.meta.env.PROD ||
+    import.meta.env.MODE === 'production' ||
+    (window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1');
 
-  const diagnosis = diagnoseAnalyticsData();
-
-  if (diagnosis.issues.length > 0) {
-    console.warn(
-      '⚠️ Обнаружены проблемы с аналитическими данными:',
-      diagnosis.issues
-    );
-    console.log('💡 Рекомендуемые исправления:', diagnosis.fixes);
-
-    // Определяем среду
-    const isProduction =
-      import.meta.env.PROD ||
-      import.meta.env.MODE === 'production' ||
-      (window.location.hostname !== 'localhost' &&
-        window.location.hostname !== '127.0.0.1');
-
-    // Автоматическое исправление ТОЛЬКО в development режиме
-    if (import.meta.env.DEV && !isProduction) {
-      console.log(
-        '🔧 Автоматическое исправление настроек аналитики (development)...'
-      );
-      // Принудительно устанавливаем правильные настройки только для разработки
-      localStorage.setItem('useMocks', 'true');
-      localStorage.setItem('mockDataType', 'filled');
-      console.log('✅ Настройки автоматически исправлены для разработки');
-    } else if (isProduction) {
-      console.error('❌ [PRODUCTION] Проблемы с аналитикой на продакшене:');
-      console.error('- Моки недоступны в продакшене');
-      console.error('- Проверьте подключение к базе данных');
-      console.error('- Проверьте работу API сервера');
-    }
+  // В продакшене не выполняем диагностику для избежания лишних логов
+  if (isProduction) {
+    console.log('[CONFIG] Production режим - диагностика аналитики отключена');
   } else {
-    console.log('✅ Настройки аналитических данных корректны');
+    // Сначала очищаем localStorage от избыточных данных только в development
+    cleanupLocalStorage();
+
+    const diagnosis = diagnoseAnalyticsData();
+
+    if (diagnosis.issues.length > 0) {
+      console.warn(
+        '⚠️ Обнаружены проблемы с аналитическими данными:',
+        diagnosis.issues
+      );
+      console.log('💡 Рекомендуемые исправления:', diagnosis.fixes);
+
+      // Автоматическое исправление ТОЛЬКО в development режиме
+      if (import.meta.env.DEV) {
+        console.log(
+          '🔧 Автоматическое исправление настроек аналитики (development)...'
+        );
+        // Принудительно устанавливаем правильные настройки только для разработки
+        localStorage.setItem('useMocks', 'true');
+        localStorage.setItem('mockDataType', 'filled');
+        console.log('✅ Настройки автоматически исправлены для разработки');
+      }
+    } else {
+      console.log('✅ Настройки аналитических данных корректны');
+    }
   }
 }

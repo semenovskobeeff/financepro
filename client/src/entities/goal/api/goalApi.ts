@@ -7,10 +7,6 @@ import {
   TransferToGoalRequest,
 } from '../model/types';
 
-interface ApiResponse<T> {
-  data: T;
-}
-
 export const goalApi = createApi({
   reducerPath: 'goalApi',
   baseQuery,
@@ -24,9 +20,9 @@ export const goalApi = createApi({
         }
         return { url };
       },
-      transformResponse: (response: ApiResponse<Goal[]>) => response.data || [],
+      transformResponse: (response: Goal[]) => response || [],
       providesTags: result =>
-        result
+        result && Array.isArray(result)
           ? [
               ...result.map(({ id }) => ({
                 type: 'Goal' as const,
@@ -39,7 +35,7 @@ export const goalApi = createApi({
 
     getGoalById: builder.query<Goal, string>({
       query: id => ({ url: `/goals/${id}` }),
-      transformResponse: (response: ApiResponse<Goal>) => response.data,
+      transformResponse: (response: Goal) => response,
       providesTags: (_, __, id) => [{ type: 'Goal', id }],
     }),
 
@@ -49,7 +45,7 @@ export const goalApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Goal>) => response.data,
+      transformResponse: (response: Goal) => response,
       invalidatesTags: [{ type: 'Goal', id: 'LIST' }],
     }),
 
@@ -60,7 +56,7 @@ export const goalApi = createApi({
           method: 'PUT',
           body: data,
         }),
-        transformResponse: (response: ApiResponse<Goal>) => response.data,
+        transformResponse: (response: Goal) => response,
         invalidatesTags: (_, __, { id }) => [
           { type: 'Goal', id },
           { type: 'Goal', id: 'LIST' },
@@ -99,7 +95,7 @@ export const goalApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Goal>) => response.data,
+      transformResponse: (response: Goal) => response,
       invalidatesTags: (_, __, { id }) => [
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
