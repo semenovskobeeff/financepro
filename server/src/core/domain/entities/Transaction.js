@@ -282,7 +282,7 @@ transactionSchema.post('save', async function (doc) {
     console.log('🔄 Обновление балансов после сохранения транзакции:', doc._id);
 
     const Account = mongoose.model('Account');
-    const balanceService = require('../../modules/operations/services/balanceService');
+    const balanceService = require('../../../modules/operations/services/balanceService');
 
     // Проверяем и синхронизируем баланс основного счета
     const account = await Account.findById(doc.accountId);
@@ -330,7 +330,7 @@ transactionSchema.post('save', async function (doc) {
 
     // В случае критической ошибки запускаем полную проверку и исправление
     try {
-      const balanceService = require('../../modules/operations/services/balanceService');
+      const balanceService = require('../../../modules/operations/services/balanceService');
       console.log('🚨 Запуск аварийной синхронизации балансов...');
       await balanceService.validateAndFixBalances(doc.userId, true);
     } catch (emergencyError) {

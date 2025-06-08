@@ -1,4 +1,5 @@
-const { Account, Transaction } = require('../../../core/domain/entities');
+const Account = require('../../../core/domain/entities/Account');
+const Transaction = require('../../../core/domain/entities/Transaction');
 
 class BalanceService {
   /**

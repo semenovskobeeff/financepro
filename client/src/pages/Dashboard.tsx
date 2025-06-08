@@ -102,6 +102,7 @@ import DataSyncAlert from '../shared/ui/DataSyncAlert';
 import QuickActionButtons from '../shared/ui/QuickActionButtons';
 import SmartFinancialSummary from '../shared/ui/SmartFinancialSummary';
 import SmartNotifications from '../shared/ui/SmartNotifications';
+import { useDataSync } from '../shared/hooks/useDataSync';
 import ExpenseStructureChart from '../shared/ui/DashboardCharts/ExpenseStructureChart';
 import GoalsProgressChart from '../shared/ui/DashboardCharts/GoalsProgressChart';
 import TransactionForm from '../features/transactions/components/TransactionForm';
@@ -242,6 +243,9 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { themeMode } = useTheme();
   const isDarkMode = themeMode === 'dark';
+
+  // Инициализируем синхронизацию данных
+  const {} = useDataSync();
 
   // Состояние для модальных окон быстрых действий
   const [formType, setFormType] = useState<string | null>(null);
