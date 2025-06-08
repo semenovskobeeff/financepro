@@ -32,6 +32,7 @@ import ThemeToggle from './ThemeToggle';
 import { useTheme } from '../config/ThemeContext';
 import AddActionMenu from './AddActionMenu';
 import AddFormModal from './AddFormModal';
+import { useModal } from '../contexts/ModalContext';
 
 // Стилизованные компоненты для шапки
 const StyledAppBar = styled(AppBar)(({ theme }) => {
@@ -137,9 +138,15 @@ const AppHeader: React.FC = () => {
   const [addMenuAnchorEl, setAddMenuAnchorEl] = useState<null | HTMLElement>(
     null
   );
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [addFormType, setAddFormType] = useState<string | null>(null);
-  const [addFormData, setAddFormData] = useState<any>(null);
+
+  // Используем глобальный контекст модалов
+  const {
+    openModal,
+    closeModal,
+    isOpen: showAddForm,
+    modalType: addFormType,
+    modalData: addFormData,
+  } = useModal();
 
   const [logoutMutation] = useLogoutMutation();
   const [makePayment] = useMakePaymentMutation();
@@ -205,15 +212,11 @@ const AppHeader: React.FC = () => {
   };
 
   const handleAddAction = (actionType: string, actionData?: any) => {
-    setAddFormType(actionType);
-    setAddFormData(actionData);
-    setShowAddForm(true);
+    openModal(actionType, actionData);
   };
 
   const handleAddFormClose = () => {
-    setShowAddForm(false);
-    setAddFormType(null);
-    setAddFormData(null);
+    closeModal();
   };
 
   // Определение контента в зависимости от страницы

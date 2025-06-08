@@ -1,6 +1,11 @@
 // Функция для получения настройки использования моков
 const getUseMocks = (): boolean => {
-  // Сначала проверяем localStorage
+  // В production НИКОГДА не используем моки
+  if (isProduction()) {
+    return false;
+  }
+
+  // В development проверяем localStorage
   if (typeof window !== 'undefined') {
     const localStorageSetting = localStorage.getItem('useMocks');
     if (localStorageSetting !== null) {
@@ -8,8 +13,8 @@ const getUseMocks = (): boolean => {
     }
   }
 
-  // В production по умолчанию не используем моки
-  return !isProduction();
+  // По умолчанию в development используем моки
+  return true;
 };
 
 // Функция для получения типа моковых данных

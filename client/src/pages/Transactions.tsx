@@ -49,8 +49,12 @@ import { useGetCategoriesQuery } from '../entities/category/api/categoryApi';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { formatNumber } from '../shared/utils/formatUtils';
+import { useModal } from '../shared/contexts/ModalContext';
 
 const Transactions: React.FC = () => {
+  // Глобальный контекст модалов
+  const { openModal } = useModal();
+
   // Состояние табов
   const [status, setStatus] = useState<'active' | 'archived'>('active');
 
@@ -200,8 +204,7 @@ const Transactions: React.FC = () => {
 
   // Обработчики для операций
   const handleEditTransaction = (transaction: Transaction) => {
-    // Логика редактирования будет обрабатываться через глобальную форму
-    console.log('Edit transaction:', transaction);
+    openModal('edit-transaction', transaction);
   };
 
   const handleArchiveTransaction = async (transaction: Transaction) => {

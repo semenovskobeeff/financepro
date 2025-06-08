@@ -38,6 +38,8 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
         return 'Новый расход';
       case 'transfer':
         return 'Перевод между счетами';
+      case 'edit-transaction':
+        return 'Редактировать операцию';
       case 'account':
         return 'Новый счет';
       case 'category-income':
@@ -67,6 +69,9 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
 
       case 'transfer':
         return <TransferFundsForm onClose={onClose} />;
+
+      case 'edit-transaction':
+        return <TransactionForm onClose={onClose} transaction={data} />;
 
       case 'account':
         return <AccountForm onClose={onClose} />;
