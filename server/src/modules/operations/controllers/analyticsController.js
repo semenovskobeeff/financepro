@@ -62,13 +62,20 @@ const getTransactionsAnalytics = async (req, res) => {
     });
 
     console.log('✅ [CONTROLLER] Аналитика транзакций получена успешно');
-    res.json(analytics);
+    res.json({
+      data: analytics,
+      success: true,
+    });
   } catch (error) {
     console.error(
       '❌ [CONTROLLER] Ошибка при получении аналитики транзакций:',
       error
     );
-    res.status(500).json({ message: 'Ошибка сервера при получении аналитики' });
+    res.status(500).json({
+      message: 'Ошибка сервера при получении аналитики',
+      error: error.message,
+      success: false,
+    });
   }
 };
 
@@ -92,10 +99,17 @@ const getGoalsAnalytics = async (req, res) => {
 
     const analytics = await analyticsService.getGoalsAnalytics(userId);
 
-    res.json(analytics);
+    res.json({
+      data: analytics,
+      success: true,
+    });
   } catch (error) {
     console.error('Ошибка при получении аналитики целей:', error);
-    res.status(500).json({ message: 'Ошибка сервера при получении аналитики' });
+    res.status(500).json({
+      message: 'Ошибка сервера при получении аналитики',
+      error: error.message,
+      success: false,
+    });
   }
 };
 
@@ -119,10 +133,17 @@ const getDebtsAnalytics = async (req, res) => {
 
     const analytics = await analyticsService.getDebtsAnalytics(userId);
 
-    res.json(analytics);
+    res.json({
+      data: analytics,
+      success: true,
+    });
   } catch (error) {
     console.error('Ошибка при получении аналитики долгов:', error);
-    res.status(500).json({ message: 'Ошибка сервера при получении аналитики' });
+    res.status(500).json({
+      message: 'Ошибка сервера при получении аналитики',
+      error: error.message,
+      success: false,
+    });
   }
 };
 
@@ -154,13 +175,22 @@ const getDashboardAnalytics = async (req, res) => {
     const analytics = await analyticsService.getDashboardAnalytics(userId);
 
     console.log('✅ [CONTROLLER] Аналитика получена успешно');
-    res.json(analytics);
+
+    // Возвращаем данные в правильном формате API с полем data
+    res.json({
+      data: analytics,
+      success: true,
+    });
   } catch (error) {
     console.error(
       '❌ [CONTROLLER] Ошибка при получении сводной аналитики:',
       error
     );
-    res.status(500).json({ message: 'Ошибка сервера при получении аналитики' });
+    res.status(500).json({
+      message: 'Ошибка сервера при получении аналитики',
+      error: error.message,
+      success: false,
+    });
   }
 };
 

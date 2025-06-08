@@ -353,7 +353,10 @@ const getDashboardAnalytics = async userId => {
     );
 
     // Получаем счета
-    const accounts = await Account.find({ userId });
+    const accounts = await Account.find({ userId }).catch(err => {
+      console.warn('⚠️ [ANALYTICS] Ошибка получения счетов:', err.message);
+      return [];
+    });
     console.log('📊 [ANALYTICS] Найдено счетов:', accounts.length);
 
     // Получаем статистику по транзакциям за текущий месяц
@@ -372,6 +375,9 @@ const getDashboardAnalytics = async userId => {
     const transactions = await Transaction.find({
       userId,
       date: { $gte: monthStart },
+    }).catch(err => {
+      console.warn('⚠️ [ANALYTICS] Ошибка получения транзакций:', err.message);
+      return [];
     });
 
     console.log(
@@ -391,6 +397,12 @@ const getDashboardAnalytics = async userId => {
       transactionsForAnalysis = await Transaction.find({
         userId,
         date: { $gte: last30Days },
+      }).catch(err => {
+        console.warn(
+          '⚠️ [ANALYTICS] Ошибка получения транзакций за 30 дней:',
+          err.message
+        );
+        return [];
       });
 
       console.log(
@@ -418,7 +430,10 @@ const getDashboardAnalytics = async userId => {
     console.log('📈 [ANALYTICS] Статистика месяца:', monthStats);
 
     // Получаем подписки
-    const subscriptions = await Subscription.find({ userId });
+    const subscriptions = await Subscription.find({ userId }).catch(err => {
+      console.warn('⚠️ [ANALYTICS] Ошибка получения подписок:', err.message);
+      return [];
+    });
     console.log('🔄 [ANALYTICS] Найдено подписок:', subscriptions.length);
 
     const monthlySubscriptionAmount = subscriptions.reduce((sum, sub) => {
@@ -428,11 +443,20 @@ const getDashboardAnalytics = async userId => {
     }, 0);
 
     // Получаем долги
-    const debts = await Debt.find({ userId, remainingAmount: { $gt: 0 } });
+    const debts = await Debt.find({
+      userId,
+      remainingAmount: { $gt: 0 },
+    }).catch(err => {
+      console.warn('⚠️ [ANALYTICS] Ошибка получения долгов:', err.message);
+      return [];
+    });
     console.log('💳 [ANALYTICS] Найдено активных долгов:', debts.length);
 
     // Получаем цели
-    const goals = await Goal.find({ userId });
+    const goals = await Goal.find({ userId }).catch(err => {
+      console.warn('⚠️ [ANALYTICS] Ошибка получения целей:', err.message);
+      return [];
+    });
     const activeGoals = goals.filter(goal => goal.progress < goal.targetAmount);
     console.log(
       '🎯 [ANALYTICS] Найдено целей/активных:',
@@ -444,7 +468,10 @@ const getDashboardAnalytics = async userId => {
     const result = {
       accounts: {
         count: accounts.length,
-        totalBalance: accounts.reduce((sum, acc) => sum + acc.balance, 0),
+        totalBalance: accounts.reduce(
+          (sum, acc) => sum + (acc.balance || 0),
+          0
+        ),
       },
       monthStats,
       subscriptions: {
@@ -453,16 +480,19 @@ const getDashboardAnalytics = async userId => {
       },
       debts: {
         count: debts.length,
-        totalAmount: debts.reduce((sum, debt) => sum + debt.remainingAmount, 0),
+        totalAmount: debts.reduce(
+          (sum, debt) => sum + (debt.remainingAmount || 0),
+          0
+        ),
       },
       goals: {
         count: activeGoals.length,
         totalTarget: activeGoals.reduce(
-          (sum, goal) => sum + goal.targetAmount,
+          (sum, goal) => sum + (goal.targetAmount || 0),
           0
         ),
         totalProgress: activeGoals.reduce(
-          (sum, goal) => sum + goal.progress,
+          (sum, goal) => sum + (goal.progress || 0),
           0
         ),
       },
@@ -479,7 +509,35 @@ const getDashboardAnalytics = async userId => {
       '❌ [ANALYTICS] Ошибка при получении сводной аналитики:',
       error
     );
-    throw error;
+
+    // Возвращаем базовую структуру с нулевыми значениями вместо ошибки
+    const fallbackResult = {
+      accounts: {
+        count: 0,
+        totalBalance: 0,
+      },
+      monthStats: {
+        income: 0,
+        expense: 0,
+        balance: 0,
+      },
+      subscriptions: {
+        count: 0,
+        monthlyAmount: 0,
+      },
+      debts: {
+        count: 0,
+        totalAmount: 0,
+      },
+      goals: {
+        count: 0,
+        totalTarget: 0,
+        totalProgress: 0,
+      },
+    };
+
+    console.log('⚠️ [ANALYTICS] Возвращаем базовые данные вместо ошибки');
+    return fallbackResult;
   }
 };
 

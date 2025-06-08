@@ -8,6 +8,30 @@ interface AnalyticsDataCheck {
   fixes: string[];
 }
 
+// Функция для очистки избыточных данных localStorage
+export const cleanupLocalStorage = (): void => {
+  try {
+    // Удаляем потенциально большие данные из localStorage
+    const keysToRemove = [
+      'persist:root',
+      'debug',
+      'networkErrorTipShown',
+      'configLogged',
+    ];
+
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+    });
+
+    // Очищаем sessionStorage
+    sessionStorage.clear();
+
+    console.log('🧹 localStorage очищен от избыточных данных');
+  } catch (error) {
+    console.warn('⚠️ Ошибка при очистке localStorage:', error);
+  }
+};
+
 export const diagnoseAnalyticsData = (): AnalyticsDataCheck => {
   const issues: string[] = [];
   const fixes: string[] = [];
@@ -52,16 +76,14 @@ export const fixAnalyticsData = (): void => {
   console.log('✅ Настройки исправлены:');
   console.log('- useMocks: true');
   console.log('- mockDataType: filled');
-  console.log('Перезагрузите страницу для применения изменений');
-
-  // Автоматическая перезагрузка
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
+  console.log('💡 Настройки применятся при следующем запросе к API');
 };
 
 // Автоматическая диагностика при импорте
 if (typeof window !== 'undefined') {
+  // Сначала очищаем localStorage от избыточных данных
+  cleanupLocalStorage();
+
   const diagnosis = diagnoseAnalyticsData();
 
   if (diagnosis.issues.length > 0) {
@@ -71,10 +93,13 @@ if (typeof window !== 'undefined') {
     );
     console.log('💡 Рекомендуемые исправления:', diagnosis.fixes);
 
-    // Автоматическое исправление в development режиме
+    // Автоматическое исправление в development режиме БЕЗ перезагрузки
     if (import.meta.env.DEV) {
       console.log('🔧 Автоматическое исправление в режиме разработки...');
-      fixAnalyticsData();
+      // Принудительно устанавливаем правильные настройки
+      localStorage.setItem('useMocks', 'true');
+      localStorage.setItem('mockDataType', 'filled');
+      console.log('✅ Настройки автоматически исправлены');
     }
   } else {
     console.log('✅ Настройки аналитических данных корректны');

@@ -132,14 +132,23 @@ export const analyticsApi = createApi({
         params,
       }),
       transformResponse: (response: ApiResponse<TransactionAnalytics>) => {
-        return (
-          response.data || {
-            summary: { income: 0, expense: 0, transfer: 0, balance: 0 },
-            categoryStats: { income: [], expense: [] },
-            timeStats: { income: [], expense: [] },
-            accounts: [],
-          }
-        );
+        console.log('💰 [API] getTransactionsAnalytics response:', response);
+
+        if (response && response.data) {
+          return response.data;
+        }
+
+        if (response && typeof response === 'object' && 'summary' in response) {
+          return response as TransactionAnalytics;
+        }
+
+        console.warn('💰 [API] Invalid response, returning fallback data');
+        return {
+          summary: { income: 0, expense: 0, transfer: 0, balance: 0 },
+          categoryStats: { income: [], expense: [] },
+          timeStats: { income: [], expense: [] },
+          accounts: [],
+        };
       },
       providesTags: ['Analytics'],
     }),
@@ -148,19 +157,28 @@ export const analyticsApi = createApi({
     getGoalsAnalytics: builder.query<GoalsAnalytics, void>({
       query: () => '/analytics/goals',
       transformResponse: (response: ApiResponse<GoalsAnalytics>) => {
-        return (
-          response.data || {
-            summary: {
-              activeCount: 0,
-              completedCount: 0,
-              totalTargetAmount: 0,
-              totalProgress: 0,
-              averageProgress: 0,
-              averageCompletion: 0,
-            },
-            goals: [],
-          }
-        );
+        console.log('🎯 [API] getGoalsAnalytics response:', response);
+
+        if (response && response.data) {
+          return response.data;
+        }
+
+        if (response && typeof response === 'object' && 'summary' in response) {
+          return response as GoalsAnalytics;
+        }
+
+        console.warn('🎯 [API] Invalid response, returning fallback data');
+        return {
+          summary: {
+            activeCount: 0,
+            completedCount: 0,
+            totalTargetAmount: 0,
+            totalProgress: 0,
+            averageProgress: 0,
+            averageCompletion: 0,
+          },
+          goals: [],
+        };
       },
       providesTags: ['Analytics'],
     }),
@@ -169,20 +187,29 @@ export const analyticsApi = createApi({
     getDebtsAnalytics: builder.query<DebtsAnalytics, void>({
       query: () => '/analytics/debts',
       transformResponse: (response: ApiResponse<DebtsAnalytics>) => {
-        return (
-          response.data || {
-            summary: {
-              totalCount: 0,
-              activeCount: 0,
-              paidCount: 0,
-              totalInitialAmount: 0,
-              totalCurrentAmount: 0,
-              totalPayments: 0,
-            },
-            typeStats: [],
-            upcomingPayments: [],
-          }
-        );
+        console.log('💳 [API] getDebtsAnalytics response:', response);
+
+        if (response && response.data) {
+          return response.data;
+        }
+
+        if (response && typeof response === 'object' && 'summary' in response) {
+          return response as DebtsAnalytics;
+        }
+
+        console.warn('💳 [API] Invalid response, returning fallback data');
+        return {
+          summary: {
+            totalCount: 0,
+            activeCount: 0,
+            paidCount: 0,
+            totalInitialAmount: 0,
+            totalCurrentAmount: 0,
+            totalPayments: 0,
+          },
+          typeStats: [],
+          upcomingPayments: [],
+        };
       },
       providesTags: ['Analytics'],
     }),
@@ -191,15 +218,32 @@ export const analyticsApi = createApi({
     getDashboardAnalytics: builder.query<DashboardAnalytics, void>({
       query: () => '/analytics/dashboard',
       transformResponse: (response: ApiResponse<DashboardAnalytics>) => {
-        return (
-          response.data || {
-            accounts: { count: 0, totalBalance: 0 },
-            monthStats: { income: 0, expense: 0, balance: 0 },
-            subscriptions: { count: 0, monthlyAmount: 0 },
-            debts: { count: 0, totalAmount: 0 },
-            goals: { count: 0, totalTarget: 0, totalProgress: 0 },
-          }
-        );
+        console.log('📊 [API] getDashboardAnalytics response:', response);
+
+        // Проверяем, что ответ содержит данные
+        if (response && response.data) {
+          return response.data;
+        }
+
+        // Если response является самими данными (без обертки)
+        if (
+          response &&
+          typeof response === 'object' &&
+          'accounts' in response
+        ) {
+          console.log('📊 [API] Response is direct data, using as is');
+          return response as DashboardAnalytics;
+        }
+
+        // Фоллбэк с базовыми данными
+        console.warn('📊 [API] Invalid response, returning fallback data');
+        return {
+          accounts: { count: 0, totalBalance: 0 },
+          monthStats: { income: 0, expense: 0, balance: 0 },
+          subscriptions: { count: 0, monthlyAmount: 0 },
+          debts: { count: 0, totalAmount: 0 },
+          goals: { count: 0, totalTarget: 0, totalProgress: 0 },
+        };
       },
       providesTags: ['Analytics'],
     }),
