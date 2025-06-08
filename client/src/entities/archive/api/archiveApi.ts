@@ -4,7 +4,6 @@ import { baseQuery } from 'shared/api/baseQuery';
 // Типы архивных объектов
 export type ArchiveItemType =
   | 'accounts'
-  | 'transactions'
   | 'categories'
   | 'goals'
   | 'debts'
@@ -38,7 +37,6 @@ export interface ArchiveStats {
   total: number;
   byType: {
     accounts: number;
-    transactions: number;
     categories: number;
     goals: number;
     debts: number;
@@ -92,7 +90,6 @@ export const archiveApi = createApi({
             total: 0,
             byType: {
               accounts: 0,
-              transactions: 0,
               categories: 0,
               goals: 0,
               debts: 0,

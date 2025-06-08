@@ -120,32 +120,6 @@ export const transactionApi = createApi({
       ],
     }),
 
-    archiveTransaction: builder.mutation<void, string>({
-      query: id => ({
-        url: `/transactions/${id}/archive`,
-        method: 'PUT',
-      }),
-      invalidatesTags: (_, __, id) => [
-        { type: 'Transaction', id },
-        { type: 'Transaction', id: 'LIST' },
-        'Account',
-        'Analytics',
-      ],
-    }),
-
-    restoreTransaction: builder.mutation<void, string>({
-      query: id => ({
-        url: `/transactions/${id}/restore`,
-        method: 'PUT',
-      }),
-      invalidatesTags: (_, __, id) => [
-        { type: 'Transaction', id },
-        { type: 'Transaction', id: 'LIST' },
-        'Account',
-        'Analytics',
-      ],
-    }),
-
     deleteTransaction: builder.mutation<void, string>({
       query: id => ({
         url: `/transactions/${id}`,
@@ -219,8 +193,6 @@ export const {
   useGetTransactionByIdQuery,
   useCreateTransactionMutation,
   useUpdateTransactionMutation,
-  useArchiveTransactionMutation,
-  useRestoreTransactionMutation,
   useDeleteTransactionMutation,
   useRecalculateBalancesMutation,
   useCheckBalancesQuery,

@@ -192,56 +192,6 @@ router.patch('/:id', transactionController.updateTransaction);
 
 /**
  * @swagger
- * /api/transactions/{id}/archive:
- *   patch:
- *     tags:
- *       - Transactions
- *     summary: Архивировать транзакцию
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Транзакция архивирована
- *       404:
- *         description: Транзакция не найдена
- *       401:
- *         description: Не авторизован
- */
-router.put('/:id/archive', transactionController.archiveTransaction);
-
-/**
- * @swagger
- * /api/transactions/{id}/restore:
- *   patch:
- *     tags:
- *       - Transactions
- *     summary: Восстановить транзакцию из архива
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Транзакция восстановлена
- *       404:
- *         description: Транзакция не найдена
- *       401:
- *         description: Не авторизован
- */
-router.put('/:id/restore', transactionController.restoreTransaction);
-
-/**
- * @swagger
  * /api/transactions/{id}:
  *   delete:
  *     tags:

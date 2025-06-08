@@ -1371,9 +1371,6 @@ export const handlers = [
     const archivedAccounts = mockAccounts.filter(
       a => a.status === 'archived'
     ).length;
-    const archivedTransactions = mockTransactions.filter(
-      t => t.status === 'archived'
-    ).length;
     const archivedCategories = mockCategories.filter(
       c => c.status === 'archived'
     ).length;
@@ -1385,7 +1382,6 @@ export const handlers = [
 
     const total =
       archivedAccounts +
-      archivedTransactions +
       archivedCategories +
       archivedGoals +
       archivedDebts +
@@ -1394,7 +1390,6 @@ export const handlers = [
     // Определение самого старого элемента в архиве
     const allArchivedItems = [
       ...mockAccounts.filter(a => a.status === 'archived'),
-      ...mockTransactions.filter(t => t.status === 'archived'),
       ...mockCategories.filter(c => c.status === 'archived'),
       ...mockGoals.filter(g => g.status === 'archived'),
       ...mockDebts.filter(d => d.status === 'archived'),
@@ -1416,7 +1411,6 @@ export const handlers = [
       total,
       byType: {
         accounts: archivedAccounts,
-        transactions: archivedTransactions,
         categories: archivedCategories,
         goals: archivedGoals,
         debts: archivedDebts,
@@ -1440,42 +1434,35 @@ export const handlers = [
     let archivedItems: any[] = [];
 
     // Получаем архивные элементы в зависимости от типа
-    if (type === 'accounts' || type === 'all') {
+    if (type === 'accounts') {
       const accounts = mockAccounts
         .filter(a => a.status === 'archived')
         .map(item => ({ ...item, itemType: 'accounts' }));
       archivedItems = [...archivedItems, ...accounts];
     }
 
-    if (type === 'transactions' || type === 'all') {
-      const transactions = mockTransactions
-        .filter(t => t.status === 'archived')
-        .map(item => ({ ...item, itemType: 'transactions' }));
-      archivedItems = [...archivedItems, ...transactions];
-    }
-
-    if (type === 'categories' || type === 'all') {
+    if (type === 'categories') {
       const categories = mockCategories
         .filter(c => c.status === 'archived')
         .map(item => ({ ...item, itemType: 'categories' }));
       archivedItems = [...archivedItems, ...categories];
     }
 
-    if (type === 'goals' || type === 'all') {
+    if (type === 'goals') {
       const goals = mockGoals
         .filter(g => g.status === 'archived')
         .map(item => ({ ...item, itemType: 'goals' }));
       archivedItems = [...archivedItems, ...goals];
     }
 
-    if (type === 'debts' || type === 'all') {
+    if (type === 'debts') {
       const debts = mockDebts
         .filter(d => d.status === 'archived')
         .map(item => ({ ...item, itemType: 'debts' }));
       archivedItems = [...archivedItems, ...debts];
     }
 
-    if (type === 'subscriptions' || type === 'all') {
+    if (type === 'subscriptions') {
       const subscriptions = mockSubscriptions
         .filter(s => s.status === 'archived')
         .map(item => ({ ...item, itemType: 'subscriptions' }));
@@ -1486,40 +1473,11 @@ export const handlers = [
     if (search) {
       const searchLower = search.toLowerCase();
 
-      // Проверяем, есть ли фильтр по типу транзакции в формате type:income
-      const typeFilter = search.match(/type:([a-z]+)/);
-
       archivedItems = archivedItems.filter(item => {
-        // Применяем фильтр по типу транзакции, если он есть
-        if (typeFilter && item.itemType === 'transactions') {
-          const requestedType = typeFilter[1];
-
-          // Если ищем переводы
-          if (requestedType === 'transfer') {
-            const isTransfer =
-              item.type === 'transfer' ||
-              !!item.toAccountId ||
-              (item.description &&
-                (item.description.toLowerCase().includes('перевод') ||
-                  item.description.toLowerCase().includes('transfer') ||
-                  item.description.toLowerCase().includes('на счет') ||
-                  item.description.toLowerCase().includes('со счета')));
-
-            if (!isTransfer) {
-              return false;
-            }
-          }
-          // Для других типов просто проверяем тип
-          else if (item.type !== requestedType) {
-            return false;
-          }
-        }
-
         // Стандартный поиск по имени и описанию
         return (
           item.name?.toLowerCase().includes(searchLower) ||
-          item.description?.toLowerCase().includes(searchLower) ||
-          search.includes(`type:${item.type}`) // Поиск по типу
+          item.description?.toLowerCase().includes(searchLower)
         );
       });
     }
@@ -1577,15 +1535,6 @@ export const handlers = [
         mockAccounts[index].status = 'active';
         mockAccounts[index].updatedAt = new Date().toISOString();
         restoredItem = mockAccounts[index];
-      }
-    } else if (type === 'transactions') {
-      const index = mockTransactions.findIndex(
-        t => t.id === id && t.status === 'archived'
-      );
-      if (index !== -1) {
-        mockTransactions[index].status = 'active';
-        mockTransactions[index].updatedAt = new Date().toISOString();
-        restoredItem = mockTransactions[index];
       }
     } else if (type === 'categories') {
       const index = mockCategories.findIndex(
@@ -1672,14 +1621,6 @@ export const handlers = [
 
         // Удаляем счет
         mockAccounts.splice(index, 1);
-      }
-    } else if (type === 'transactions') {
-      const index = mockTransactions.findIndex(
-        t => t.id === id && t.status === 'archived'
-      );
-      if (index !== -1) {
-        deletedItem = { ...mockTransactions[index] };
-        mockTransactions.splice(index, 1);
       }
     } else if (type === 'categories') {
       const index = mockCategories.findIndex(

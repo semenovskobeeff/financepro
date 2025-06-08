@@ -22,7 +22,7 @@ const {
  *         name: type
  *         schema:
  *           type: string
- *           enum: [accounts, transactions, categories, goals, debts, subscriptions, all]
+ *           enum: [accounts, categories, goals, debts, subscriptions]
  *         required: true
  *         description: Тип архивных объектов
  *       - in: query
@@ -88,15 +88,7 @@ const getArchivedItems = async (req, res) => {
           .limit(parseInt(limit));
         total = await Account.countDocuments(query);
         break;
-      case 'transactions':
-        items = await Transaction.find(query)
-          .populate('categoryId')
-          .populate('accountId')
-          .sort({ updatedAt: -1 })
-          .skip(skip)
-          .limit(parseInt(limit));
-        total = await Transaction.countDocuments(query);
-        break;
+
       case 'categories':
         items = await Category.find(query)
           .sort({ updatedAt: -1 })
@@ -125,85 +117,7 @@ const getArchivedItems = async (req, res) => {
           .limit(parseInt(limit));
         total = await Subscription.countDocuments(query);
         break;
-      case 'all':
-        // Собираем данные из всех коллекций
-        const [
-          accounts,
-          transactions,
-          categories,
-          goals,
-          debts,
-          subscriptions,
-        ] = await Promise.all([
-          Account.find(query)
-            .sort({ updatedAt: -1 })
-            .limit(parseInt(limit / 6)),
-          Transaction.find(query)
-            .populate('categoryId')
-            .sort({ updatedAt: -1 })
-            .limit(parseInt(limit / 6)),
-          Category.find(query)
-            .sort({ updatedAt: -1 })
-            .limit(parseInt(limit / 6)),
-          Goal.find(query)
-            .sort({ updatedAt: -1 })
-            .limit(parseInt(limit / 6)),
-          Debt.find(query)
-            .sort({ updatedAt: -1 })
-            .limit(parseInt(limit / 6)),
-          Subscription.find(query)
-            .sort({ updatedAt: -1 })
-            .limit(parseInt(limit / 6)),
-        ]);
 
-        // Добавляем тип объекта для каждого элемента
-        items = [
-          ...accounts.map(item => ({
-            ...item.toObject(),
-            itemType: 'account',
-          })),
-          ...transactions.map(item => ({
-            ...item.toObject(),
-            itemType: 'transaction',
-          })),
-          ...categories.map(item => ({
-            ...item.toObject(),
-            itemType: 'category',
-          })),
-          ...goals.map(item => ({ ...item.toObject(), itemType: 'goal' })),
-          ...debts.map(item => ({ ...item.toObject(), itemType: 'debt' })),
-          ...subscriptions.map(item => ({
-            ...item.toObject(),
-            itemType: 'subscription',
-          })),
-        ]
-          .sort((a, b) => b.updatedAt - a.updatedAt)
-          .slice(0, parseInt(limit));
-
-        // Общее количество архивных объектов
-        const [
-          accountsCount,
-          transactionsCount,
-          categoriesCount,
-          goalsCount,
-          debtsCount,
-          subscriptionsCount,
-        ] = await Promise.all([
-          Account.countDocuments(query),
-          Transaction.countDocuments(query),
-          Category.countDocuments(query),
-          Goal.countDocuments(query),
-          Debt.countDocuments(query),
-          Subscription.countDocuments(query),
-        ]);
-        total =
-          accountsCount +
-          transactionsCount +
-          categoriesCount +
-          goalsCount +
-          debtsCount +
-          subscriptionsCount;
-        break;
       default:
         return res
           .status(400)
@@ -243,7 +157,7 @@ const getArchivedItems = async (req, res) => {
  *         name: type
  *         schema:
  *           type: string
- *           enum: [accounts, transactions, categories, goals, debts, subscriptions]
+ *           enum: [accounts, categories, goals, debts, subscriptions]
  *         required: true
  *         description: Тип архивного объекта
  *       - in: path
@@ -272,13 +186,7 @@ const restoreFromArchive = async (req, res) => {
           { new: true }
         );
         break;
-      case 'transactions':
-        item = await Transaction.findOneAndUpdate(
-          { _id: id, userId, status: 'archived' },
-          { status: 'active' },
-          { new: true }
-        );
-        break;
+
       case 'categories':
         item = await Category.findOneAndUpdate(
           { _id: id, userId, status: 'archived' },
@@ -351,14 +259,12 @@ const getArchiveStats = async (req, res) => {
     // Получаем статистику по каждому типу
     const [
       accountsCount,
-      transactionsCount,
       categoriesCount,
       goalsCount,
       debtsCount,
       subscriptionsCount,
     ] = await Promise.all([
       Account.countDocuments(query),
-      Transaction.countDocuments(query),
       Category.countDocuments(query),
       Goal.countDocuments(query),
       Debt.countDocuments(query),
@@ -368,7 +274,6 @@ const getArchiveStats = async (req, res) => {
     // Суммарная статистика
     const totalItems =
       accountsCount +
-      transactionsCount +
       categoriesCount +
       goalsCount +
       debtsCount +
@@ -377,7 +282,6 @@ const getArchiveStats = async (req, res) => {
     // Дата самого старого архивного объекта
     const oldestDate = await [
       Account,
-      Transaction,
       Category,
       Goal,
       Debt,
@@ -393,7 +297,6 @@ const getArchiveStats = async (req, res) => {
       total: totalItems,
       byType: {
         accounts: accountsCount,
-        transactions: transactionsCount,
         categories: categoriesCount,
         goals: goalsCount,
         debts: debtsCount,
