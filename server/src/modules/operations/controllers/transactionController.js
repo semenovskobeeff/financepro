@@ -59,10 +59,13 @@ exports.getTransactions = async (req, res) => {
     const total = await Transaction.countDocuments(filter);
 
     res.json({
-      transactions,
-      totalPages: Math.ceil(total / parseInt(limit)),
-      currentPage: parseInt(page),
-      total,
+      status: 'success',
+      data: {
+        transactions,
+        totalPages: Math.ceil(total / parseInt(limit)),
+        currentPage: parseInt(page),
+        total,
+      },
     });
   } catch (error) {
     console.error('Get transactions error:', error);
@@ -87,7 +90,10 @@ exports.getTransactionById = async (req, res) => {
       return res.status(404).json({ message: 'Транзакция не найдена' });
     }
 
-    res.json(transaction);
+    res.json({
+      status: 'success',
+      data: transaction,
+    });
   } catch (error) {
     console.error('Get transaction by ID error:', error);
     res.status(500).json({ message: 'Ошибка при получении транзакции' });
@@ -178,11 +184,14 @@ exports.createTransaction = async (req, res) => {
     await Promise.all([transaction.save(), account.save()]);
 
     res.status(201).json({
-      transaction,
-      account: {
-        id: account._id,
-        name: account.name,
-        balance: account.balance,
+      status: 'success',
+      data: {
+        transaction,
+        account: {
+          id: account._id,
+          name: account.name,
+          balance: account.balance,
+        },
       },
     });
   } catch (error) {

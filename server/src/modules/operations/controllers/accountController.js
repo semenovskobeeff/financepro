@@ -5,15 +5,23 @@ const { Account, Transaction } = require('../../../core/domain/entities');
  */
 exports.getAccounts = async (req, res) => {
   try {
+    const { status = 'active' } = req.query;
+
     const accounts = await Account.find({
       userId: req.user._id,
-      status: 'active',
+      status: status,
     });
 
-    res.json(accounts);
+    res.json({
+      status: 'success',
+      data: accounts,
+    });
   } catch (error) {
     console.error('Get accounts error:', error);
-    res.status(500).json({ message: 'Ошибка при получении счетов' });
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка при получении счетов',
+    });
   }
 };
 
@@ -28,13 +36,22 @@ exports.getAccountById = async (req, res) => {
     });
 
     if (!account) {
-      return res.status(404).json({ message: 'Счет не найден' });
+      return res.status(404).json({
+        status: 'error',
+        message: 'Счет не найден',
+      });
     }
 
-    res.json(account);
+    res.json({
+      status: 'success',
+      data: account,
+    });
   } catch (error) {
     console.error('Get account by ID error:', error);
-    res.status(500).json({ message: 'Ошибка при получении счета' });
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка при получении счета',
+    });
   }
 };
 
@@ -67,7 +84,10 @@ exports.createAccount = async (req, res) => {
       await account.save();
     }
 
-    res.status(201).json(account);
+    res.status(201).json({
+      status: 'success',
+      data: account,
+    });
   } catch (error) {
     console.error('Create account error:', error);
     res.status(500).json({ message: 'Ошибка при создании счета' });
@@ -101,7 +121,10 @@ exports.updateAccount = async (req, res) => {
 
     await account.save();
 
-    res.json(account);
+    res.json({
+      status: 'success',
+      data: account,
+    });
   } catch (error) {
     console.error('Update account error:', error);
     if (error.name === 'ValidationError') {

@@ -16,6 +16,7 @@ interface GetTransactionsResponse {
 }
 
 interface ApiResponse<T> {
+  status: 'success' | 'error';
   data: T;
 }
 

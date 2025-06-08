@@ -24,11 +24,16 @@ const getGoals = async (req, res) => {
   try {
     const { status } = req.query;
     const goals = await goalService.getUserGoals(req.user._id, status);
-    res.status(200).json(goals);
+    res.status(200).json({
+      status: 'success',
+      data: goals,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Ошибка при получении целей', error: error.message });
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка при получении целей',
+      error: error.message,
+    });
   }
 };
 
@@ -58,14 +63,22 @@ const getGoalById = async (req, res) => {
     const goal = await goalService.getGoalById(req.params.id, req.user._id);
 
     if (!goal) {
-      return res.status(404).json({ message: 'Цель не найдена' });
+      return res.status(404).json({
+        status: 'error',
+        message: 'Цель не найдена',
+      });
     }
 
-    res.status(200).json(goal);
+    res.status(200).json({
+      status: 'success',
+      data: goal,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Ошибка при получении цели', error: error.message });
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка при получении цели',
+      error: error.message,
+    });
   }
 };
 
@@ -96,11 +109,16 @@ const getGoalById = async (req, res) => {
 const createGoal = async (req, res) => {
   try {
     const newGoal = await goalService.createGoal(req.body, req.user._id);
-    res.status(201).json(newGoal);
+    res.status(201).json({
+      status: 'success',
+      data: newGoal,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Ошибка при создании цели', error: error.message });
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка при создании цели',
+      error: error.message,
+    });
   }
 };
 

@@ -115,6 +115,9 @@ docker-volumes/
 .cursor/temp/
 nul
 
+# Скрипты разработки
+server/scripts/
+
 # Скрипты управления задачами
 task
 create-task

@@ -18,7 +18,10 @@ exports.getCategories = async (req, res) => {
 
     const categories = await Category.find(filter).sort({ name: 1 });
 
-    res.json(categories);
+    res.json({
+      status: 'success',
+      data: categories,
+    });
   } catch (error) {
     console.error('Get categories error:', error);
     res.status(500).json({ message: 'Ошибка при получении категорий' });
@@ -36,10 +39,16 @@ exports.getCategoryById = async (req, res) => {
     });
 
     if (!category) {
-      return res.status(404).json({ message: 'Категория не найдена' });
+      return res.status(404).json({
+        status: 'error',
+        message: 'Категория не найдена',
+      });
     }
 
-    res.json(category);
+    res.json({
+      status: 'success',
+      data: category,
+    });
   } catch (error) {
     console.error('Get category by ID error:', error);
     res.status(500).json({ message: 'Ошибка при получении категории' });
@@ -102,7 +111,10 @@ exports.createCategory = async (req, res) => {
     const savedCategory = await category.save();
     console.log('[DEBUG] Category created successfully:', savedCategory._id);
 
-    res.status(201).json(savedCategory);
+    res.status(201).json({
+      status: 'success',
+      data: savedCategory,
+    });
   } catch (error) {
     console.error('Create category error:', error);
 

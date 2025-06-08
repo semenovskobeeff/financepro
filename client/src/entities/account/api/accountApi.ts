@@ -11,6 +11,7 @@ import {
 import { RootState } from 'app/store';
 
 interface ApiResponse<T> {
+  status: 'success' | 'error';
   data: T;
 }
 

@@ -7,9 +7,15 @@ const getDebts = async (req, res) => {
   try {
     const { status } = req.query;
     const debts = await debtService.getUserDebts(req.user._id, status);
-    res.status(200).json({ data: debts });
+    res.status(200).json({
+      status: 'success',
+      data: debts,
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({
+      status: 'error',
+      error: error.message,
+    });
   }
 };
 
