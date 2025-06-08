@@ -13,7 +13,7 @@ import { RootState } from 'app/store';
 export const accountApi = createApi({
   reducerPath: 'accountApi',
   baseQuery,
-  tagTypes: ['Account'],
+  tagTypes: ['Account', 'Analytics'],
   endpoints: builder => ({
     getAccounts: builder.query<Account[], { status?: string } | void>({
       query: params => {
@@ -52,7 +52,7 @@ export const accountApi = createApi({
       }),
       transformResponse: (response: { status: string; data: Account }) =>
         response?.data,
-      invalidatesTags: [{ type: 'Account', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Account', id: 'LIST' }, 'Analytics'],
     }),
 
     updateAccount: builder.mutation<
@@ -69,6 +69,7 @@ export const accountApi = createApi({
       invalidatesTags: (_, __, { id }) => [
         { type: 'Account', id },
         { type: 'Account', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -80,6 +81,7 @@ export const accountApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Account', id },
         { type: 'Account', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -91,6 +93,7 @@ export const accountApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Account', id },
         { type: 'Account', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -107,7 +110,7 @@ export const accountApi = createApi({
         status: string;
         data: { fromAccount: Account; toAccount: Account };
       }) => response?.data,
-      invalidatesTags: [{ type: 'Account', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Account', id: 'LIST' }, 'Analytics'],
     }),
 
     getAccountHistory: builder.query<

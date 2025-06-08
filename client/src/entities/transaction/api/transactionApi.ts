@@ -23,7 +23,7 @@ interface ApiResponse<T> {
 export const transactionApi = createApi({
   reducerPath: 'transactionApi',
   baseQuery: baseQuery,
-  tagTypes: ['Transaction', 'Account'],
+  tagTypes: ['Transaction', 'Account', 'Analytics'],
   endpoints: builder => ({
     getTransactions: builder.query<
       GetTransactionsResponse,
@@ -86,7 +86,11 @@ export const transactionApi = createApi({
         }
         return response as Transaction;
       },
-      invalidatesTags: [{ type: 'Transaction', id: 'LIST' }, 'Account'],
+      invalidatesTags: [
+        { type: 'Transaction', id: 'LIST' },
+        'Account',
+        'Analytics',
+      ],
     }),
 
     updateTransaction: builder.mutation<
@@ -112,6 +116,7 @@ export const transactionApi = createApi({
         { type: 'Transaction', id },
         { type: 'Transaction', id: 'LIST' },
         'Account',
+        'Analytics',
       ],
     }),
 
@@ -124,6 +129,7 @@ export const transactionApi = createApi({
         { type: 'Transaction', id },
         { type: 'Transaction', id: 'LIST' },
         'Account',
+        'Analytics',
       ],
     }),
 
@@ -136,6 +142,7 @@ export const transactionApi = createApi({
         { type: 'Transaction', id },
         { type: 'Transaction', id: 'LIST' },
         'Account',
+        'Analytics',
       ],
     }),
 
@@ -148,6 +155,7 @@ export const transactionApi = createApi({
         { type: 'Transaction', id },
         { type: 'Transaction', id: 'LIST' },
         'Account',
+        'Analytics',
       ],
     }),
   }),

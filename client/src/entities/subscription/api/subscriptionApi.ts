@@ -27,7 +27,7 @@ interface ApiResponse<T> {
 export const subscriptionApi = createApi({
   reducerPath: 'subscriptionApi',
   baseQuery,
-  tagTypes: ['Subscription'],
+  tagTypes: ['Subscription', 'Analytics'],
   endpoints: builder => ({
     getSubscriptions: builder.query<
       GetSubscriptionsResponse,
@@ -76,7 +76,7 @@ export const subscriptionApi = createApi({
         body: data,
       }),
       transformResponse: (response: ApiResponse<Subscription>) => response.data,
-      invalidatesTags: [{ type: 'Subscription', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Subscription', id: 'LIST' }, 'Analytics'],
     }),
 
     updateSubscription: builder.mutation<
@@ -92,6 +92,7 @@ export const subscriptionApi = createApi({
       invalidatesTags: (result, error, { id }) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -104,6 +105,7 @@ export const subscriptionApi = createApi({
       invalidatesTags: (result, error, id) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -116,6 +118,7 @@ export const subscriptionApi = createApi({
       invalidatesTags: (result, error, id) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -132,6 +135,7 @@ export const subscriptionApi = createApi({
       invalidatesTags: (result, error, { id }) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -149,6 +153,7 @@ export const subscriptionApi = createApi({
       invalidatesTags: (result, error, { id }) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
+        'Analytics',
       ],
     }),
 

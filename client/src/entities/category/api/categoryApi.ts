@@ -9,7 +9,7 @@ import {
 export const categoryApi = createApi({
   reducerPath: 'categoryApi',
   baseQuery,
-  tagTypes: ['Category'],
+  tagTypes: ['Category', 'Analytics'],
   endpoints: builder => ({
     getCategories: builder.query<
       Category[],
@@ -77,7 +77,7 @@ export const categoryApi = createApi({
         }
         return response as Category;
       },
-      invalidatesTags: [{ type: 'Category', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Category', id: 'LIST' }, 'Analytics'],
     }),
 
     updateCategory: builder.mutation<
@@ -100,6 +100,7 @@ export const categoryApi = createApi({
       invalidatesTags: (_, __, { id }) => [
         { type: 'Category', id },
         { type: 'Category', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -111,6 +112,7 @@ export const categoryApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Category', id },
         { type: 'Category', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -122,6 +124,7 @@ export const categoryApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Category', id },
         { type: 'Category', id: 'LIST' },
+        'Analytics',
       ],
     }),
   }),

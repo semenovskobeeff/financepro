@@ -11,7 +11,7 @@ import {
 export const debtApi = createApi({
   reducerPath: 'debtApi',
   baseQuery,
-  tagTypes: ['Debt'],
+  tagTypes: ['Debt', 'Analytics'],
   endpoints: builder => ({
     getDebts: builder.query<Debt[], { status?: string } | void>({
       query: params => {
@@ -67,7 +67,7 @@ export const debtApi = createApi({
         }
         return response as Debt;
       },
-      invalidatesTags: [{ type: 'Debt', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Debt', id: 'LIST' }, 'Analytics'],
     }),
 
     updateDebt: builder.mutation<Debt, { id: string; data: UpdateDebtRequest }>(
@@ -88,6 +88,7 @@ export const debtApi = createApi({
         invalidatesTags: (_, __, { id }) => [
           { type: 'Debt', id },
           { type: 'Debt', id: 'LIST' },
+          'Analytics',
         ],
       }
     ),
@@ -100,6 +101,7 @@ export const debtApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -111,6 +113,7 @@ export const debtApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -132,6 +135,7 @@ export const debtApi = createApi({
       invalidatesTags: (_, __, { id }) => [
         { type: 'Debt', id },
         { type: 'Debt', id: 'LIST' },
+        'Analytics',
       ],
     }),
 

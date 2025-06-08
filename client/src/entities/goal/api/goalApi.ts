@@ -10,7 +10,7 @@ import {
 export const goalApi = createApi({
   reducerPath: 'goalApi',
   baseQuery,
-  tagTypes: ['Goal'],
+  tagTypes: ['Goal', 'Analytics'],
   endpoints: builder => ({
     getGoals: builder.query<Goal[], { status?: string } | void>({
       query: params => {
@@ -66,7 +66,7 @@ export const goalApi = createApi({
         }
         return response as Goal;
       },
-      invalidatesTags: [{ type: 'Goal', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Goal', id: 'LIST' }, 'Analytics'],
     }),
 
     updateGoal: builder.mutation<Goal, { id: string; data: UpdateGoalRequest }>(
@@ -87,6 +87,7 @@ export const goalApi = createApi({
         invalidatesTags: (_, __, { id }) => [
           { type: 'Goal', id },
           { type: 'Goal', id: 'LIST' },
+          'Analytics',
         ],
       }
     ),
@@ -99,6 +100,7 @@ export const goalApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -110,6 +112,7 @@ export const goalApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
+        'Analytics',
       ],
     }),
 
@@ -131,6 +134,7 @@ export const goalApi = createApi({
       invalidatesTags: (_, __, { id }) => [
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
+        'Analytics',
       ],
     }),
   }),
