@@ -189,8 +189,8 @@ const AccountCard: React.FC<AccountCardProps> = ({
               color={account.balance > 0 ? 'primary' : 'default'}
               variant="outlined"
               sx={{
-                color: account.balance < 0 ? '#d32f2f' : undefined,
-                borderColor: account.balance < 0 ? '#ef5350' : undefined,
+                color: account.balance < 0 ? '#ff6b6b' : undefined,
+                borderColor: account.balance < 0 ? '#ff8787' : undefined,
               }}
             />
           </Box>

@@ -106,7 +106,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
     return createTheme({
       palette: {
         mode: 'light',
-        // ... существующие настройки светлой темы
+        error: {
+          main: '#ff6b6b',
+          light: '#ff8787',
+          dark: '#f03e3e',
+        },
       },
       // Добавляем пастельные цвета в тему
       pastelColors: {
@@ -139,7 +143,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
     return createTheme({
       palette: {
         mode: 'dark',
-        // ... существующие настройки темной темы
+        error: {
+          main: '#ff7979',
+          light: '#fd9a9a',
+          dark: '#e85a5a',
+        },
       },
       // Добавляем пастельные цвета в темную тему (с прозрачностью)
       pastelColors: {
@@ -176,6 +184,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
 
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
+
+  const currentTheme = themeMode === 'light' ? getLightTheme() : getDarkTheme();
 
   return (
     <ThemeContext.Provider

@@ -201,11 +201,15 @@ function App() {
   // Состояние загрузки приложения
   const { isLoading, loadingMessage } = useAppLoading({ minLoadingTime: 800 });
 
-  // Генерация темы Material UI
+  // Генерация темы Material UI с правильными цветами
   const theme = createTheme({
     palette: {
       mode: themeMode,
-      // другие настройки палитры...
+      error: {
+        main: themeMode === 'dark' ? '#ff7979' : '#ff6b6b',
+        light: themeMode === 'dark' ? '#fd9a9a' : '#ff8787',
+        dark: themeMode === 'dark' ? '#e85a5a' : '#f03e3e',
+      },
     },
   });
 
