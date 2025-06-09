@@ -266,6 +266,17 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         '[TransactionForm] Invalidated analytics data after transaction operation'
       );
 
+      // Отправляем кастомное событие для обновления дашборда
+      window.dispatchEvent(
+        new CustomEvent('finance-app-data-updated', {
+          detail: {
+            type: 'transaction',
+            operation: transaction ? 'update' : 'create',
+          },
+        })
+      );
+      console.log('[TransactionForm] Dispatched custom data update event');
+
       // Дополнительная задержка для синхронизации
       setTimeout(() => {
         refreshAccounts();

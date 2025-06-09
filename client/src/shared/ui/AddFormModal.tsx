@@ -54,6 +54,14 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
         console.log(
           '[AddFormModal] Invalidated analytics data after transaction operation'
         );
+
+        // Отправляем кастомное событие для обновления дашборда
+        window.dispatchEvent(
+          new CustomEvent('finance-app-data-updated', {
+            detail: { type: 'transaction-form-closed' },
+          })
+        );
+        console.log('[AddFormModal] Dispatched custom data update event');
       }, 300);
     }
     onClose();

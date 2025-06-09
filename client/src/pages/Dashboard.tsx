@@ -1010,6 +1010,23 @@ const Dashboard: React.FC = () => {
     );
   }, [transactionsAnalytics]);
 
+  // Слушатель кастомного события для обновления данных
+  useEffect(() => {
+    const handleDataUpdate = () => {
+      console.log(
+        '[Dashboard] Received custom data update event, refreshing data...'
+      );
+      handleRefresh();
+    };
+
+    // Добавляем слушатель кастомного события
+    window.addEventListener('finance-app-data-updated', handleDataUpdate);
+
+    return () => {
+      window.removeEventListener('finance-app-data-updated', handleDataUpdate);
+    };
+  }, []);
+
   // Показываем индикатор загрузки
   if (isLoading) {
     return (
