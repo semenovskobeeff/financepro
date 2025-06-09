@@ -30,6 +30,8 @@ import {
   useUpdateTransactionMutation,
 } from '../../../entities/transaction/api/transactionApi';
 import { useAccountsRefresh } from '../../../shared/hooks/useAccountsRefresh';
+import { analyticsApi } from '../../../entities/analytics/api/analyticsApi';
+import { useDispatch } from 'react-redux';
 
 interface TransactionFormProps {
   transaction?: Transaction | null;
@@ -148,6 +150,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     useUpdateTransactionMutation();
 
   const { refreshAccounts, refreshAccountById } = useAccountsRefresh();
+  const dispatch = useDispatch();
 
   const isLoading =
     isCreating || isUpdating || accountsLoading || categoriesLoading;
@@ -250,6 +253,18 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           refreshAccountById(formData.toAccountId);
         }
       }
+
+      // Принудительно инвалидируем аналитические данные
+      dispatch(
+        analyticsApi.util.invalidateTags([
+          'Analytics',
+          'DashboardAnalytics',
+          'TransactionAnalytics',
+        ])
+      );
+      console.log(
+        '[TransactionForm] Invalidated analytics data after transaction operation'
+      );
 
       // Дополнительная задержка для синхронизации
       setTimeout(() => {

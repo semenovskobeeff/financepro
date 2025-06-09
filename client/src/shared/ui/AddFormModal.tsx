@@ -13,6 +13,10 @@ import SubscriptionFormContent from '../../features/subscriptions/components/Sub
 import TransferFundsForm from '../../features/accounts/components/TransferFundsForm';
 import ShoppingListForm from '../../entities/shopping-list/ui/ShoppingListForm';
 
+// Импорт для обновления аналитических данных
+import { analyticsApi } from '../../entities/analytics/api/analyticsApi';
+import { useDispatch } from 'react-redux';
+
 import { TransactionType } from '../../entities/transaction/model/types';
 import { CategoryType } from '../../entities/category/model/types';
 
@@ -30,6 +34,7 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
   onClose,
 }) => {
   const { refreshAccounts } = useAccountsRefresh();
+  const dispatch = useDispatch();
 
   const handleClose = () => {
     // Обновляем счета при закрытии формы транзакций
@@ -38,6 +43,17 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
     ) {
       setTimeout(() => {
         refreshAccounts();
+        // Принудительно инвалидируем аналитические данные
+        dispatch(
+          analyticsApi.util.invalidateTags([
+            'Analytics',
+            'DashboardAnalytics',
+            'TransactionAnalytics',
+          ])
+        );
+        console.log(
+          '[AddFormModal] Invalidated analytics data after transaction operation'
+        );
       }, 300);
     }
     onClose();

@@ -269,26 +269,37 @@ const Dashboard: React.FC = () => {
     isLoading: analyticsLoading,
     error: analyticsError,
     refetch: refetchAnalytics,
-  } = useGetDashboardAnalyticsQuery();
+  } = useGetDashboardAnalyticsQuery(undefined, {
+    // Принудительно перезапрашиваем данные при каждом рендере
+    refetchOnMountOrArgChange: true,
+  });
 
   // Получаем детальную аналитику транзакций за последние 6 месяцев
   const {
     data: transactionsAnalytics,
     isLoading: transactionsLoading,
     error: transactionsError,
-  } = useGetTransactionsAnalyticsQuery({
-    period: 'month',
-    startDate: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
-  });
+    refetch: refetchTransactionsAnalytics,
+  } = useGetTransactionsAnalyticsQuery(
+    {
+      period: 'month',
+      startDate: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
+    },
+    {
+      // Принудительно перезапрашиваем данные при каждом рендере
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   // Получаем предстоящие платежи по подпискам
   const {
     data: upcomingPayments,
     isLoading: paymentsLoading,
     error: paymentsError,
+    refetch: refetchPayments,
   } = useGetUpcomingSubscriptionPaymentsQuery(7);
 
   // Получаем предстоящие платежи по долгам
@@ -296,6 +307,7 @@ const Dashboard: React.FC = () => {
     data: upcomingDebtPayments,
     isLoading: debtPaymentsLoading,
     error: debtPaymentsError,
+    refetch: refetchDebtPayments,
   } = useGetUpcomingDebtPaymentsQuery({ days: 7 });
 
   // Получаем цели
@@ -303,6 +315,7 @@ const Dashboard: React.FC = () => {
     data: goalsData,
     isLoading: goalsLoading,
     error: goalsError,
+    refetch: refetchGoals,
   } = useGetGoalsQuery({ status: 'active' });
 
   // Проверяем ошибки авторизации
@@ -976,8 +989,26 @@ const Dashboard: React.FC = () => {
   };
 
   const handleRefresh = () => {
+    console.log('[Dashboard] Принудительное обновление всех данных');
     refetchAnalytics();
+    refetchTransactionsAnalytics();
+    refetchPayments();
+    refetchDebtPayments();
+    refetchGoals();
   };
+
+  // Автоматическое обновление данных при изменении analytics
+  useEffect(() => {
+    console.log('[Dashboard] Analytics data updated:', !!analytics);
+  }, [analytics]);
+
+  // Автоматическое обновление данных при изменении transactionsAnalytics
+  useEffect(() => {
+    console.log(
+      '[Dashboard] TransactionsAnalytics data updated:',
+      !!transactionsAnalytics
+    );
+  }, [transactionsAnalytics]);
 
   // Показываем индикатор загрузки
   if (isLoading) {
