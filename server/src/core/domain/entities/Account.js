@@ -72,16 +72,8 @@ const accountSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0,
-      validate: {
-        validator: function (value) {
-          // Для кредитных счетов разрешаем отрицательный баланс
-          if (this.type === 'credit') {
-            return true;
-          }
-          return value >= 0;
-        },
-        message: 'Баланс не может быть отрицательным для данного типа счета',
-      },
+      // Убираем валидацию - разрешаем отрицательные балансы для всех типов счетов
+      // Это позволяет корректно отражать реальную ситуацию, когда тратят больше чем есть
     },
     currency: {
       type: String,
