@@ -94,6 +94,7 @@ export const transactionApi = createApi({
       },
       invalidatesTags: [
         { type: 'Transaction', id: 'LIST' },
+        { type: 'Account', id: 'LIST' },
         'Account',
         'Analytics',
         'BalanceCheck',
@@ -123,6 +124,7 @@ export const transactionApi = createApi({
       invalidatesTags: (_, __, { id }) => [
         { type: 'Transaction', id },
         { type: 'Transaction', id: 'LIST' },
+        { type: 'Account', id: 'LIST' },
         'Account',
         'Analytics',
         'BalanceCheck',
@@ -138,6 +140,7 @@ export const transactionApi = createApi({
       invalidatesTags: (_, __, id) => [
         { type: 'Transaction', id },
         { type: 'Transaction', id: 'LIST' },
+        { type: 'Account', id: 'LIST' },
         'Account',
         'Analytics',
         'BalanceCheck',

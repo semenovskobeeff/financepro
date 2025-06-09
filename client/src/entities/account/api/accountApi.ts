@@ -112,6 +112,7 @@ export const accountApi = createApi({
       }) => response?.data,
       invalidatesTags: [
         { type: 'Account', id: 'LIST' },
+        'Account',
         'Analytics',
         'AccountHistory',
       ],
