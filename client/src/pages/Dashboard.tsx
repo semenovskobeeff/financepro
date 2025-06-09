@@ -47,6 +47,7 @@ ChartJS.register(
 import {
   ArrowUpward as IncomeIcon,
   ArrowDownward as ExpenseIcon,
+  CompareArrows as TransferIcon,
   AccountBalance as AccountIcon,
   CreditCard as DebtIcon,
   Subscriptions as SubscriptionIcon,
@@ -1096,51 +1097,60 @@ const Dashboard: React.FC = () => {
                 <Button
                   fullWidth
                   variant="outlined"
+                  startIcon={<IncomeIcon />}
                   onClick={() => handleQuickAction('income')}
                   sx={{
                     p: 2,
                     height: '80px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1,
+                    color: 'success.main',
+                    borderColor: 'success.main',
+                    '&:hover': {
+                      borderColor: 'success.main',
+                      backgroundColor: 'success.50',
+                    },
                   }}
                 >
-                  <PaymentIcon color="success" />
-                  <Typography variant="body2">ДОБАВИТЬ ДОХОД</Typography>
+                  ДОБАВИТЬ ДОХОД
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
                 <Button
                   fullWidth
                   variant="outlined"
+                  startIcon={<ExpenseIcon />}
                   onClick={() => handleQuickAction('expense')}
                   sx={{
                     p: 2,
                     height: '80px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1,
+                    color: 'error.main',
+                    borderColor: 'error.main',
+                    '&:hover': {
+                      borderColor: 'error.main',
+                      backgroundColor: 'error.50',
+                    },
                   }}
                 >
-                  <PaymentIcon color="error" />
-                  <Typography variant="body2">ДОБАВИТЬ РАСХОД</Typography>
+                  ДОБАВИТЬ РАСХОД
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
                 <Button
                   fullWidth
                   variant="outlined"
+                  startIcon={<TransferIcon />}
                   onClick={() => handleQuickAction('transfer')}
                   sx={{
                     p: 2,
                     height: '80px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1,
+                    color: 'primary.main',
+                    borderColor: 'primary.main',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      backgroundColor: 'primary.50',
+                    },
                   }}
                 >
-                  <PaymentIcon color="primary" />
-                  <Typography variant="body2">ДОБАВИТЬ ПЕРЕВОД</Typography>
+                  ДОБАВИТЬ ПЕРЕВОД
                 </Button>
               </Grid>
             </Grid>
