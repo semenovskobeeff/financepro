@@ -27,7 +27,8 @@ interface ApiResponse<T> {
 export const subscriptionApi = createApi({
   reducerPath: 'subscriptionApi',
   baseQuery,
-  tagTypes: ['Subscription', 'Analytics', 'Account'],
+  tagTypes: ['Subscription', 'Analytics', 'DashboardAnalytics', 'Account'],
+  keepUnusedDataFor: 0,
   endpoints: builder => ({
     getSubscriptions: builder.query<
       GetSubscriptionsResponse,
@@ -76,7 +77,11 @@ export const subscriptionApi = createApi({
         body: data,
       }),
       transformResponse: (response: ApiResponse<Subscription>) => response.data,
-      invalidatesTags: [{ type: 'Subscription', id: 'LIST' }, 'Analytics'],
+      invalidatesTags: [
+        { type: 'Subscription', id: 'LIST' },
+        'Analytics',
+        'DashboardAnalytics',
+      ],
     }),
 
     updateSubscription: builder.mutation<
@@ -93,6 +98,7 @@ export const subscriptionApi = createApi({
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
         'Analytics',
+        'DashboardAnalytics',
       ],
     }),
 
@@ -106,6 +112,7 @@ export const subscriptionApi = createApi({
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
         'Analytics',
+        'DashboardAnalytics',
       ],
     }),
 
@@ -119,6 +126,7 @@ export const subscriptionApi = createApi({
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
         'Analytics',
+        'DashboardAnalytics',
       ],
     }),
 
@@ -136,6 +144,7 @@ export const subscriptionApi = createApi({
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
         'Analytics',
+        'DashboardAnalytics',
       ],
     }),
 
@@ -154,6 +163,7 @@ export const subscriptionApi = createApi({
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
         'Analytics',
+        'DashboardAnalytics',
         'Account',
       ],
     }),

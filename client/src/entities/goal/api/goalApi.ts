@@ -10,7 +10,14 @@ import {
 export const goalApi = createApi({
   reducerPath: 'goalApi',
   baseQuery,
-  tagTypes: ['Goal', 'Analytics', 'Account'],
+  tagTypes: [
+    'Goal',
+    'Analytics',
+    'DashboardAnalytics',
+    'GoalsAnalytics',
+    'Account',
+  ],
+  keepUnusedDataFor: 0,
   endpoints: builder => ({
     getGoals: builder.query<Goal[], { status?: string } | void>({
       query: params => {
@@ -66,7 +73,12 @@ export const goalApi = createApi({
         }
         return response as Goal;
       },
-      invalidatesTags: [{ type: 'Goal', id: 'LIST' }, 'Analytics'],
+      invalidatesTags: [
+        { type: 'Goal', id: 'LIST' },
+        'Analytics',
+        'DashboardAnalytics',
+        'GoalsAnalytics',
+      ],
     }),
 
     updateGoal: builder.mutation<Goal, { id: string; data: UpdateGoalRequest }>(
@@ -88,6 +100,8 @@ export const goalApi = createApi({
           { type: 'Goal', id },
           { type: 'Goal', id: 'LIST' },
           'Analytics',
+          'DashboardAnalytics',
+          'GoalsAnalytics',
         ],
       }
     ),
@@ -101,6 +115,8 @@ export const goalApi = createApi({
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
         'Analytics',
+        'DashboardAnalytics',
+        'GoalsAnalytics',
       ],
     }),
 
@@ -113,6 +129,8 @@ export const goalApi = createApi({
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
         'Analytics',
+        'DashboardAnalytics',
+        'GoalsAnalytics',
       ],
     }),
 
@@ -135,6 +153,8 @@ export const goalApi = createApi({
         { type: 'Goal', id },
         { type: 'Goal', id: 'LIST' },
         'Analytics',
+        'DashboardAnalytics',
+        'GoalsAnalytics',
         'Account',
       ],
     }),

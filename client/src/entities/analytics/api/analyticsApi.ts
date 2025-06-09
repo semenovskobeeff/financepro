@@ -120,7 +120,14 @@ interface ApiResponse<T> {
 export const analyticsApi = createApi({
   reducerPath: 'analyticsApi',
   baseQuery,
-  tagTypes: ['Analytics'],
+  tagTypes: [
+    'Analytics',
+    'DashboardAnalytics',
+    'TransactionAnalytics',
+    'GoalsAnalytics',
+    'DebtsAnalytics',
+  ],
+  keepUnusedDataFor: 0, // Отключаем кэширование для мгновенного обновления
   endpoints: builder => ({
     // Аналитика транзакций
     getTransactionsAnalytics: builder.query<
@@ -150,7 +157,7 @@ export const analyticsApi = createApi({
           accounts: [],
         };
       },
-      providesTags: ['Analytics'],
+      providesTags: ['Analytics', 'TransactionAnalytics'],
     }),
 
     // Аналитика целей
@@ -180,7 +187,7 @@ export const analyticsApi = createApi({
           goals: [],
         };
       },
-      providesTags: ['Analytics'],
+      providesTags: ['Analytics', 'GoalsAnalytics'],
     }),
 
     // Аналитика долгов
@@ -211,7 +218,7 @@ export const analyticsApi = createApi({
           upcomingPayments: [],
         };
       },
-      providesTags: ['Analytics'],
+      providesTags: ['Analytics', 'DebtsAnalytics'],
     }),
 
     // Сводная аналитика для дашборда
@@ -247,7 +254,7 @@ export const analyticsApi = createApi({
           goals: { count: 0, totalTarget: 0, totalProgress: 0 },
         };
       },
-      providesTags: ['Analytics'],
+      providesTags: ['Analytics', 'DashboardAnalytics'],
     }),
 
     // Экспорт данных аналитики

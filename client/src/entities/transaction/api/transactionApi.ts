@@ -27,6 +27,8 @@ export const transactionApi = createApi({
     'Transaction',
     'Account',
     'Analytics',
+    'DashboardAnalytics',
+    'TransactionAnalytics',
     'BalanceCheck',
     'AccountHistory',
   ],
@@ -100,6 +102,8 @@ export const transactionApi = createApi({
           { type: 'Account' as const, id: arg.accountId },
           'Account' as const,
           'Analytics' as const,
+          'DashboardAnalytics' as const,
+          'TransactionAnalytics' as const,
           'BalanceCheck' as const,
           'AccountHistory' as const,
         ];
@@ -138,6 +142,8 @@ export const transactionApi = createApi({
           { type: 'Account' as const, id: 'LIST' },
           'Account' as const,
           'Analytics' as const,
+          'DashboardAnalytics' as const,
+          'TransactionAnalytics' as const,
           'BalanceCheck' as const,
           'AccountHistory' as const,
         ];
@@ -163,6 +169,8 @@ export const transactionApi = createApi({
         'Transaction' as const,
         'Account' as const,
         'Analytics' as const,
+        'DashboardAnalytics' as const,
+        'TransactionAnalytics' as const,
         'BalanceCheck' as const,
         'AccountHistory' as const,
       ],
@@ -196,6 +204,8 @@ export const transactionApi = createApi({
       invalidatesTags: [
         'Account',
         'Analytics',
+        'DashboardAnalytics',
+        'TransactionAnalytics',
         'BalanceCheck',
         'AccountHistory',
         { type: 'Transaction', id: 'LIST' },
@@ -252,6 +262,8 @@ export const transactionApi = createApi({
       invalidatesTags: [
         'Account',
         'Analytics',
+        'DashboardAnalytics',
+        'TransactionAnalytics',
         'BalanceCheck',
         'AccountHistory',
         { type: 'Transaction', id: 'LIST' },
@@ -285,6 +297,8 @@ export const transactionApi = createApi({
       invalidatesTags: [
         'Account',
         'Analytics',
+        'DashboardAnalytics',
+        'TransactionAnalytics',
         'BalanceCheck',
         'AccountHistory',
         { type: 'Transaction', id: 'LIST' },

@@ -16,10 +16,13 @@ export const accountApi = createApi({
   tagTypes: [
     'Account',
     'Analytics',
+    'DashboardAnalytics',
+    'TransactionAnalytics',
     'AccountHistory',
     'Transaction',
     'BalanceCheck',
   ],
+  keepUnusedDataFor: 0,
   endpoints: builder => ({
     getAccounts: builder.query<Account[], { status?: string } | void>({
       query: params => {
@@ -62,6 +65,8 @@ export const accountApi = createApi({
       invalidatesTags: [
         { type: 'Account' as const, id: 'LIST' },
         'Analytics' as const,
+        'DashboardAnalytics' as const,
+        'TransactionAnalytics' as const,
       ],
     }),
 
@@ -80,6 +85,8 @@ export const accountApi = createApi({
         { type: 'Account' as const, id },
         { type: 'Account' as const, id: 'LIST' },
         'Analytics' as const,
+        'DashboardAnalytics' as const,
+        'TransactionAnalytics' as const,
       ],
     }),
 
@@ -92,6 +99,8 @@ export const accountApi = createApi({
         { type: 'Account' as const, id },
         { type: 'Account' as const, id: 'LIST' },
         'Analytics' as const,
+        'DashboardAnalytics' as const,
+        'TransactionAnalytics' as const,
       ],
     }),
 
@@ -104,6 +113,8 @@ export const accountApi = createApi({
         { type: 'Account' as const, id },
         { type: 'Account' as const, id: 'LIST' },
         'Analytics' as const,
+        'DashboardAnalytics' as const,
+        'TransactionAnalytics' as const,
       ],
     }),
 
@@ -124,6 +135,8 @@ export const accountApi = createApi({
         { type: 'Account' as const, id: 'LIST' },
         'Account' as const,
         'Analytics' as const,
+        'DashboardAnalytics' as const,
+        'TransactionAnalytics' as const,
         'AccountHistory' as const,
       ],
     }),
