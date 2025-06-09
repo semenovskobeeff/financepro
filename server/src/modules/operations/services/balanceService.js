@@ -28,7 +28,7 @@ class BalanceService {
 
       // Пересчитываем баланс на основе транзакций
       transactions.forEach(transaction => {
-        if (transaction.accountId.toString() === accountId) {
+        if (transaction.accountId.toString() === accountId.toString()) {
           // Это исходящая операция или операция с данным счетом
           if (transaction.type === 'income') {
             calculatedBalance += transaction.amount;
@@ -39,7 +39,7 @@ class BalanceService {
           }
         } else if (
           transaction.toAccountId &&
-          transaction.toAccountId.toString() === accountId
+          transaction.toAccountId.toString() === accountId.toString()
         ) {
           // Это входящий перевод
           if (transaction.type === 'transfer') {
