@@ -960,10 +960,11 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // Подготовка всех данных для компонентов
   const financialData = getFinancialData();
   const distributionData = getDistributionData();
-  const trendData = getFinancialTrendData();
-  const budgetData = getBudgetAnalysisData();
+  const financialTrendData = getFinancialTrendData();
+  const budgetAnalysisData = getBudgetAnalysisData();
   const expenseStructureData = getExpenseStructureData();
   const goalsProgressData = getGoalsProgressData();
   const financialSummaryData = getFinancialSummaryData();
@@ -1241,12 +1242,12 @@ const Dashboard: React.FC = () => {
 
                 {/* График финансовых трендов */}
                 <Grid item xs={12}>
-                  <FinancialTrendChart data={trendData} height={350} />
+                  <FinancialTrendChart data={financialTrendData} height={350} />
                 </Grid>
 
                 {/* График анализа бюджета */}
                 <Grid item xs={12}>
-                  <BudgetAnalysisChart data={budgetData} />
+                  <BudgetAnalysisChart data={budgetAnalysisData} />
                 </Grid>
               </Grid>
             </Grid>
