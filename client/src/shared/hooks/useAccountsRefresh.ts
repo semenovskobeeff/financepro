@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '../../app/store/hooks';
 import { accountApi } from '../../entities/account/api/accountApi';
 
 /**
@@ -7,27 +6,23 @@ import { accountApi } from '../../entities/account/api/accountApi';
  * Используется после операций с транзакциями для обеспечения актуальности балансов
  */
 export const useAccountsRefresh = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const refreshAccounts = () => {
-    // Принудительно инвалидируем кэш счетов
-    dispatch(accountApi.util.invalidateTags(['Account', 'AccountHistory']));
-
-    // Принудительно перезапрашиваем данные
+    // Принудительно инвалидируем кэш счетов и связанных данных
     dispatch(
-      accountApi.endpoints.getAccounts.initiate({}, { forceRefetch: true })
+      accountApi.util.invalidateTags(['Account', 'AccountHistory', 'Analytics'])
     );
   };
 
   const refreshAccountById = (accountId: string) => {
-    // Инвалидируем конкретный счет
+    // Инвалидируем конкретный счет и связанные теги
     dispatch(
-      accountApi.util.invalidateTags([{ type: 'Account', id: accountId }])
-    );
-
-    // Принудительно перезапрашиваем данные
-    dispatch(
-      accountApi.endpoints.getAccounts.initiate({}, { forceRefetch: true })
+      accountApi.util.invalidateTags([
+        { type: 'Account', id: accountId },
+        { type: 'AccountHistory', id: accountId },
+        'Analytics',
+      ])
     );
   };
 
