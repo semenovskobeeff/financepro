@@ -224,7 +224,10 @@ const AccountDetails: React.FC = () => {
                   </Box>
                 </Box>
                 <Box>
-                  <Typography variant="h4" color="primary">
+                  <Typography
+                    variant="h4"
+                    color={account.balance < 0 ? 'error.main' : 'primary'}
+                  >
                     {formatCurrencyWithDots(account.balance, account.currency)}
                   </Typography>
                 </Box>

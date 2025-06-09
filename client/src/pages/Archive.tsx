@@ -118,7 +118,11 @@ const ArchiveItemCard: React.FC<ArchiveItemCardProps> = ({
             <Typography variant="body2" color="text.secondary">
               Тип: {item.type}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              color={item.balance < 0 ? 'error.main' : 'text.secondary'}
+              sx={{ fontWeight: item.balance < 0 ? 'bold' : 'normal' }}
+            >
               Баланс: {formatNumberWithDots(item.balance, 0)} ₽
             </Typography>
           </>
