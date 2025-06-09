@@ -30,6 +30,7 @@ export const transactionApi = createApi({
     'BalanceCheck',
     'AccountHistory',
   ],
+  keepUnusedDataFor: 0, // Отключаем кэширование для мгновенного обновления
   endpoints: builder => ({
     getTransactions: builder.query<
       GetTransactionsResponse,
@@ -92,14 +93,23 @@ export const transactionApi = createApi({
         }
         return response as Transaction;
       },
-      invalidatesTags: [
-        { type: 'Transaction', id: 'LIST' },
-        { type: 'Account', id: 'LIST' },
-        'Account',
-        'Analytics',
-        'BalanceCheck',
-        'AccountHistory',
-      ],
+      invalidatesTags: (result, error, arg) => {
+        const tags = [
+          { type: 'Transaction' as const, id: 'LIST' },
+          { type: 'Account' as const, id: 'LIST' },
+          { type: 'Account' as const, id: arg.accountId },
+          'Account' as const,
+          'Analytics' as const,
+          'BalanceCheck' as const,
+          'AccountHistory' as const,
+        ];
+
+        if (arg.toAccountId) {
+          tags.push({ type: 'Account' as const, id: arg.toAccountId });
+        }
+
+        return tags;
+      },
     }),
 
     updateTransaction: builder.mutation<
@@ -121,15 +131,27 @@ export const transactionApi = createApi({
         // Обработка ответа от MSW (прямой объект)
         return response as Transaction;
       },
-      invalidatesTags: (_, __, { id }) => [
-        { type: 'Transaction', id },
-        { type: 'Transaction', id: 'LIST' },
-        { type: 'Account', id: 'LIST' },
-        'Account',
-        'Analytics',
-        'BalanceCheck',
-        'AccountHistory',
-      ],
+      invalidatesTags: (result, error, { id, data }) => {
+        const tags = [
+          { type: 'Transaction' as const, id },
+          { type: 'Transaction' as const, id: 'LIST' },
+          { type: 'Account' as const, id: 'LIST' },
+          'Account' as const,
+          'Analytics' as const,
+          'BalanceCheck' as const,
+          'AccountHistory' as const,
+        ];
+
+        if (data.accountId) {
+          tags.push({ type: 'Account' as const, id: data.accountId });
+        }
+
+        if (data.toAccountId) {
+          tags.push({ type: 'Account' as const, id: data.toAccountId });
+        }
+
+        return tags;
+      },
     }),
 
     deleteTransaction: builder.mutation<void, string>({
@@ -137,14 +159,12 @@ export const transactionApi = createApi({
         url: `/transactions/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (_, __, id) => [
-        { type: 'Transaction', id },
-        { type: 'Transaction', id: 'LIST' },
-        { type: 'Account', id: 'LIST' },
-        'Account',
-        'Analytics',
-        'BalanceCheck',
-        'AccountHistory',
+      invalidatesTags: [
+        'Transaction' as const,
+        'Account' as const,
+        'Analytics' as const,
+        'BalanceCheck' as const,
+        'AccountHistory' as const,
       ],
     }),
 

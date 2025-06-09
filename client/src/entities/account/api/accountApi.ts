@@ -13,7 +13,13 @@ import { RootState } from 'app/store';
 export const accountApi = createApi({
   reducerPath: 'accountApi',
   baseQuery,
-  tagTypes: ['Account', 'Analytics', 'AccountHistory'],
+  tagTypes: [
+    'Account',
+    'Analytics',
+    'AccountHistory',
+    'Transaction',
+    'BalanceCheck',
+  ],
   endpoints: builder => ({
     getAccounts: builder.query<Account[], { status?: string } | void>({
       query: params => {
@@ -23,6 +29,7 @@ export const accountApi = createApi({
         }
         return { url };
       },
+      // Для поллинга используйте: useGetAccountsQuery(params, { pollingInterval: 5000 })
       transformResponse: (response: { status: string; data: Account[] }) =>
         response?.data || [],
       providesTags: result =>
@@ -32,16 +39,16 @@ export const accountApi = createApi({
                 type: 'Account' as const,
                 id,
               })),
-              { type: 'Account', id: 'LIST' },
+              { type: 'Account' as const, id: 'LIST' },
             ]
-          : [{ type: 'Account', id: 'LIST' }],
+          : [{ type: 'Account' as const, id: 'LIST' }],
     }),
 
     getAccountById: builder.query<Account, string>({
       query: id => ({ url: `/accounts/${id}` }),
       transformResponse: (response: { status: string; data: Account }) =>
         response?.data,
-      providesTags: (_, __, id) => [{ type: 'Account', id }],
+      providesTags: (_, __, id) => [{ type: 'Account' as const, id }],
     }),
 
     createAccount: builder.mutation<Account, CreateAccountRequest>({
@@ -52,7 +59,10 @@ export const accountApi = createApi({
       }),
       transformResponse: (response: { status: string; data: Account }) =>
         response?.data,
-      invalidatesTags: [{ type: 'Account', id: 'LIST' }, 'Analytics'],
+      invalidatesTags: [
+        { type: 'Account' as const, id: 'LIST' },
+        'Analytics' as const,
+      ],
     }),
 
     updateAccount: builder.mutation<
@@ -67,9 +77,9 @@ export const accountApi = createApi({
       transformResponse: (response: { status: string; data: Account }) =>
         response?.data,
       invalidatesTags: (_, __, { id }) => [
-        { type: 'Account', id },
-        { type: 'Account', id: 'LIST' },
-        'Analytics',
+        { type: 'Account' as const, id },
+        { type: 'Account' as const, id: 'LIST' },
+        'Analytics' as const,
       ],
     }),
 
@@ -79,9 +89,9 @@ export const accountApi = createApi({
         method: 'PUT',
       }),
       invalidatesTags: (_, __, id) => [
-        { type: 'Account', id },
-        { type: 'Account', id: 'LIST' },
-        'Analytics',
+        { type: 'Account' as const, id },
+        { type: 'Account' as const, id: 'LIST' },
+        'Analytics' as const,
       ],
     }),
 
@@ -91,9 +101,9 @@ export const accountApi = createApi({
         method: 'PUT',
       }),
       invalidatesTags: (_, __, id) => [
-        { type: 'Account', id },
-        { type: 'Account', id: 'LIST' },
-        'Analytics',
+        { type: 'Account' as const, id },
+        { type: 'Account' as const, id: 'LIST' },
+        'Analytics' as const,
       ],
     }),
 
@@ -111,10 +121,10 @@ export const accountApi = createApi({
         data: { fromAccount: Account; toAccount: Account };
       }) => response?.data,
       invalidatesTags: [
-        { type: 'Account', id: 'LIST' },
-        'Account',
-        'Analytics',
-        'AccountHistory',
+        { type: 'Account' as const, id: 'LIST' },
+        'Account' as const,
+        'Analytics' as const,
+        'AccountHistory' as const,
       ],
     }),
 
@@ -147,7 +157,7 @@ export const accountApi = createApi({
         };
       }) => response?.data || { history: [] },
       providesTags: (_, __, { accountId }) => [
-        { type: 'AccountHistory', id: accountId },
+        { type: 'AccountHistory' as const, id: accountId },
       ],
     }),
   }),

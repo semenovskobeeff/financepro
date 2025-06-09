@@ -4,6 +4,7 @@ import { Close as CloseIcon } from '@mui/icons-material';
 
 // Импорты форм
 import TransactionForm from '../../features/transactions/components/TransactionForm';
+import { useAccountsRefresh } from '../hooks/useAccountsRefresh';
 import AccountForm from '../../features/accounts/components/AccountForm';
 import CategoryForm from '../../features/categories/components/CategoryForm';
 import GoalForm from '../../features/goals/components/GoalForm';
@@ -28,6 +29,19 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
   open,
   onClose,
 }) => {
+  const { refreshAccounts } = useAccountsRefresh();
+
+  const handleClose = () => {
+    // Обновляем счета при закрытии формы транзакций
+    if (
+      ['income', 'expense', 'transfer', 'edit-transaction'].includes(type || '')
+    ) {
+      setTimeout(() => {
+        refreshAccounts();
+      }, 300);
+    }
+    onClose();
+  };
   if (!type || !open) return null;
 
   const getModalTitle = () => {
@@ -62,16 +76,16 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
   const getModalContent = () => {
     switch (type) {
       case 'income':
-        return <TransactionForm onClose={onClose} initialType="income" />;
+        return <TransactionForm onClose={handleClose} initialType="income" />;
 
       case 'expense':
-        return <TransactionForm onClose={onClose} initialType="expense" />;
+        return <TransactionForm onClose={handleClose} initialType="expense" />;
 
       case 'transfer':
-        return <TransferFundsForm onClose={onClose} />;
+        return <TransferFundsForm onClose={handleClose} />;
 
       case 'edit-transaction':
-        return <TransactionForm onClose={onClose} transaction={data} />;
+        return <TransactionForm onClose={handleClose} transaction={data} />;
 
       case 'account':
         return <AccountForm onClose={onClose} />;
@@ -111,11 +125,16 @@ const AddFormModal: React.FC<AddFormModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth={getMaxWidth()} fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth={getMaxWidth()}
+      fullWidth
+    >
       <DialogTitle>
         {getModalTitle()}
         <IconButton
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             position: 'absolute',
             right: 8,

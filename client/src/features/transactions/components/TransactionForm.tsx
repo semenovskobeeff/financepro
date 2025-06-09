@@ -29,6 +29,7 @@ import {
   useCreateTransactionMutation,
   useUpdateTransactionMutation,
 } from '../../../entities/transaction/api/transactionApi';
+import { useAccountsRefresh } from '../../../shared/hooks/useAccountsRefresh';
 
 interface TransactionFormProps {
   transaction?: Transaction | null;
@@ -146,6 +147,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const [updateTransaction, { isLoading: isUpdating, error: updateError }] =
     useUpdateTransactionMutation();
 
+  const { refreshAccounts, refreshAccountById } = useAccountsRefresh();
+
   const isLoading =
     isCreating || isUpdating || accountsLoading || categoriesLoading;
   const error = createError || updateError;
@@ -231,10 +234,28 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             description: formData.description,
           },
         }).unwrap();
+
+        // Принудительно обновляем данные счетов
+        refreshAccountById(formData.accountId);
+        if (formData.toAccountId) {
+          refreshAccountById(formData.toAccountId);
+        }
       } else {
         // Создаем новую транзакцию
         await createTransaction(formData).unwrap();
+
+        // Принудительно обновляем данные счетов
+        refreshAccountById(formData.accountId);
+        if (formData.toAccountId) {
+          refreshAccountById(formData.toAccountId);
+        }
       }
+
+      // Дополнительная задержка для синхронизации
+      setTimeout(() => {
+        refreshAccounts();
+      }, 500);
+
       onClose();
     } catch (err) {
       console.error('Failed to save transaction:', err);

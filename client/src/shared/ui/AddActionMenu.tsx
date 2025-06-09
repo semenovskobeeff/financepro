@@ -1,23 +1,10 @@
 import React from 'react';
+import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import {
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-} from '@mui/material';
-import {
-  AccountBalance as AccountIcon,
-  Category as CategoryIcon,
-  Savings as GoalIcon,
-  CreditCard as DebtIcon,
-  Subscriptions as SubscriptionIcon,
   TrendingUp as IncomeIcon,
   TrendingDown as ExpenseIcon,
   CompareArrows as TransferIcon,
-  ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
-import { useLocation } from 'react-router-dom';
 
 interface AddActionMenuProps {
   anchorEl: HTMLElement | null;
@@ -32,135 +19,27 @@ const AddActionMenu: React.FC<AddActionMenuProps> = ({
   onClose,
   onAction,
 }) => {
-  const location = useLocation();
-
-  // Определяем доступные действия в зависимости от текущей страницы
-  const getAvailableActions = () => {
-    const path = location.pathname;
-
-    switch (path) {
-      case '/':
-        // Главная страница - показываем основные действия
-        return [
-          {
-            key: 'income',
-            label: 'Доход',
-            icon: <IncomeIcon />,
-            color: 'success',
-          },
-          {
-            key: 'expense',
-            label: 'Расход',
-            icon: <ExpenseIcon />,
-            color: 'error',
-          },
-          {
-            key: 'transfer',
-            label: 'Перевод',
-            icon: <TransferIcon />,
-            color: 'info',
-          },
-        ];
-
-      case '/accounts':
-        return [
-          { key: 'account', label: 'Новый счет', icon: <AccountIcon /> },
-          'divider',
-          {
-            key: 'transfer',
-            label: 'Перевод между счетами',
-            icon: <TransferIcon />,
-          },
-        ];
-
-      case '/transactions':
-        return [
-          {
-            key: 'income',
-            label: 'Доход',
-            icon: <IncomeIcon />,
-            color: 'success',
-          },
-          {
-            key: 'expense',
-            label: 'Расход',
-            icon: <ExpenseIcon />,
-            color: 'error',
-          },
-          {
-            key: 'transfer',
-            label: 'Перевод',
-            icon: <TransferIcon />,
-            color: 'info',
-          },
-        ];
-
-      case '/categories':
-        return [
-          {
-            key: 'category-income',
-            label: 'Категория доходов',
-            icon: <CategoryIcon />,
-            data: { type: 'income' },
-          },
-          {
-            key: 'category-expense',
-            label: 'Категория расходов',
-            icon: <CategoryIcon />,
-            data: { type: 'expense' },
-          },
-        ];
-
-      case '/goals':
-        return [{ key: 'goal', label: 'Новая цель', icon: <GoalIcon /> }];
-
-      case '/debts':
-        return [{ key: 'debt', label: 'Новый долг', icon: <DebtIcon /> }];
-
-      case '/subscriptions':
-        return [
-          {
-            key: 'subscription',
-            label: 'Новая подписка',
-            icon: <SubscriptionIcon />,
-          },
-        ];
-
-      case '/shopping-lists':
-        return [
-          {
-            key: 'shopping-list',
-            label: 'Новый список покупок',
-            icon: <ShoppingCartIcon />,
-          },
-        ];
-
-      default:
-        // Универсальные действия для остальных страниц
-        return [
-          {
-            key: 'income',
-            label: 'Доход',
-            icon: <IncomeIcon />,
-            color: 'success',
-          },
-          {
-            key: 'expense',
-            label: 'Расход',
-            icon: <ExpenseIcon />,
-            color: 'error',
-          },
-          {
-            key: 'transfer',
-            label: 'Перевод',
-            icon: <TransferIcon />,
-            color: 'info',
-          },
-        ];
-    }
-  };
-
-  const actions = getAvailableActions();
+  // Всегда показываем базовые действия с транзакциями
+  const actions = [
+    {
+      key: 'income',
+      label: 'Доход',
+      icon: <IncomeIcon />,
+      color: 'success',
+    },
+    {
+      key: 'expense',
+      label: 'Расход',
+      icon: <ExpenseIcon />,
+      color: 'error',
+    },
+    {
+      key: 'transfer',
+      label: 'Перевод',
+      icon: <TransferIcon />,
+      color: 'info',
+    },
+  ];
 
   const handleActionClick = (actionKey: string, actionData?: any) => {
     onAction(actionKey, actionData);
@@ -194,17 +73,13 @@ const AddActionMenu: React.FC<AddActionMenuProps> = ({
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
-      {actions.map((action, index) => {
-        if (action === 'divider') {
-          return <Divider key={`divider-${index}`} />;
-        }
-
-        const { key, label, icon, color, data } = action as any;
+      {actions.map(action => {
+        const { key, label, icon, color } = action;
 
         return (
           <MenuItem
             key={key}
-            onClick={() => handleActionClick(key, data)}
+            onClick={() => handleActionClick(key)}
             sx={{
               color: color ? `var(--text-${color})` : 'inherit',
             }}
