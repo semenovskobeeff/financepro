@@ -319,24 +319,71 @@ const Dashboard: React.FC = () => {
     refetch: refetchGoals,
   } = useGetGoalsQuery({ status: 'active' });
 
-  // Проверяем ошибки авторизации
-  const hasAuthErrors =
-    isAuthError(analyticsError) ||
-    isAuthError(transactionsError) ||
-    isAuthError(paymentsError) ||
-    isAuthError(debtPaymentsError) ||
-    isAuthError(goalsError);
+  // ИСПРАВЛЕНИЕ: все хуки должны быть ДО любых условных returns
+  // Обработчики для быстрых действий (определяем до early returns)
+  const handleQuickAction = (actionType: string) => {
+    setFormType(actionType);
+    setFormModalOpen(true);
+  };
 
-  // Проверяем общее состояние загрузки
-  const isLoading =
-    analyticsLoading ||
-    transactionsLoading ||
-    paymentsLoading ||
-    debtPaymentsLoading ||
-    goalsLoading;
+  const handleCloseForm = () => {
+    setFormModalOpen(false);
+    setFormType(null);
+    setQuickActionType(null);
+  };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setSelectedTab(newValue);
+  };
+
+  const handleRefresh = () => {
+    console.log('[Dashboard] Принудительное обновление всех данных');
+    refetchAnalytics();
+    refetchTransactionsAnalytics();
+    refetchPayments();
+    refetchDebtPayments();
+    refetchGoals();
+  };
+
+  // Автоматическое обновление данных при изменении analytics
+  useEffect(() => {
+    console.log('[Dashboard] Analytics data updated:', !!analytics);
+  }, [analytics]);
+
+  // Автоматическое обновление данных при изменении transactionsAnalytics
+  useEffect(() => {
+    console.log(
+      '[Dashboard] TransactionsAnalytics data updated:',
+      !!transactionsAnalytics
+    );
+  }, [transactionsAnalytics]);
+
+  // Слушатель кастомного события для обновления данных
+  useEffect(() => {
+    const handleDataUpdate = () => {
+      console.log(
+        '[Dashboard] Received custom data update event, refreshing data...'
+      );
+      handleRefresh();
+    };
+
+    // Добавляем слушатель кастомного события
+    window.addEventListener('finance-app-data-updated', handleDataUpdate);
+
+    return () => {
+      window.removeEventListener('finance-app-data-updated', handleDataUpdate);
+    };
+  }, []);
 
   // Отладочная информация (только при загрузке)
   useEffect(() => {
+    const hasAuthErrors =
+      isAuthError(analyticsError) ||
+      isAuthError(transactionsError) ||
+      isAuthError(paymentsError) ||
+      isAuthError(debtPaymentsError) ||
+      isAuthError(goalsError);
+
     if (hasAuthErrors) {
       console.warn(
         '[Dashboard] Ошибки авторизации - перенаправление на страницу входа'
@@ -354,12 +401,36 @@ const Dashboard: React.FC = () => {
       });
     }
   }, [
-    hasAuthErrors,
-    !!analytics,
-    !!transactionsAnalytics,
-    !!goalsData,
+    analyticsError,
+    transactionsError,
+    paymentsError,
+    debtPaymentsError,
+    goalsError,
+    analytics,
+    transactionsAnalytics,
+    goalsData,
     navigate,
   ]);
+
+  // Проверяем ошибки авторизации (вычисляем после хуков)
+  const hasAuthErrors =
+    isAuthError(analyticsError) ||
+    isAuthError(transactionsError) ||
+    isAuthError(paymentsError) ||
+    isAuthError(debtPaymentsError) ||
+    isAuthError(goalsError);
+
+  // Проверяем общее состояние загрузки (вычисляем после хуков)
+  const isLoading =
+    analyticsLoading ||
+    transactionsLoading ||
+    paymentsLoading ||
+    debtPaymentsLoading ||
+    goalsLoading;
+
+  // Форматирование суммы в рубли (функция-помощник)
+  const formatCurrency = (amount: number) =>
+    `${formatNumberWithDots(amount)} ₽`;
 
   // Подготовка данных для графика трендов
   const getFinancialTrendData = () => {
@@ -969,65 +1040,6 @@ const Dashboard: React.FC = () => {
   const goalsProgressData = getGoalsProgressData();
   const financialSummaryData = getFinancialSummaryData();
   const smartNotificationsData = getSmartNotificationsData();
-
-  // Форматирование суммы в рубли
-  const formatCurrency = (amount: number) =>
-    `${formatNumberWithDots(amount)} ₽`;
-
-  // Обработчики для быстрых действий
-  const handleQuickAction = (actionType: string) => {
-    setFormType(actionType);
-    setFormModalOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setFormModalOpen(false);
-    setFormType(null);
-    setQuickActionType(null);
-  };
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue);
-  };
-
-  const handleRefresh = () => {
-    console.log('[Dashboard] Принудительное обновление всех данных');
-    refetchAnalytics();
-    refetchTransactionsAnalytics();
-    refetchPayments();
-    refetchDebtPayments();
-    refetchGoals();
-  };
-
-  // Автоматическое обновление данных при изменении analytics
-  useEffect(() => {
-    console.log('[Dashboard] Analytics data updated:', !!analytics);
-  }, [analytics]);
-
-  // Автоматическое обновление данных при изменении transactionsAnalytics
-  useEffect(() => {
-    console.log(
-      '[Dashboard] TransactionsAnalytics data updated:',
-      !!transactionsAnalytics
-    );
-  }, [transactionsAnalytics]);
-
-  // Слушатель кастомного события для обновления данных
-  useEffect(() => {
-    const handleDataUpdate = () => {
-      console.log(
-        '[Dashboard] Received custom data update event, refreshing data...'
-      );
-      handleRefresh();
-    };
-
-    // Добавляем слушатель кастомного события
-    window.addEventListener('finance-app-data-updated', handleDataUpdate);
-
-    return () => {
-      window.removeEventListener('finance-app-data-updated', handleDataUpdate);
-    };
-  }, []);
 
   // Показываем индикатор загрузки
   if (isLoading) {

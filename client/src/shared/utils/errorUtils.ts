@@ -277,7 +277,9 @@ export const setupGlobalErrorHandlers = (): void => {
     // Обработка ошибок кеширования
     if (
       event.reason?.message?.includes('setWithHTTL') ||
-      event.reason?.message?.includes('cache')
+      event.reason?.message?.includes('cache') ||
+      event.reason?.message?.includes('FILE_ERROR_NO_SPACE') ||
+      event.reason?.message?.includes('ChromeMethodBFE')
     ) {
       console.error(
         'Ошибка кеширования - возможно переполнение или повреждение кеша'
@@ -285,9 +287,56 @@ export const setupGlobalErrorHandlers = (): void => {
       handleIOError(event.reason, 'Ошибка кеширования');
 
       // Предотвращаем показ ошибки пользователю для некритичных ошибок кеша
-      if (event.reason?.message?.includes('setWithHTTL failed')) {
-        event.preventDefault();
+      event.preventDefault();
+    }
+
+    // Специальная обработка React ошибок
+    if (event.reason?.message?.includes('Minified React error')) {
+      console.error('🔧 Обнаружена минифицированная ошибка React');
+
+      // Если это ошибка хуков (#310), логируем дополнительную информацию
+      if (event.reason?.message?.includes('#310')) {
+        console.error('🔧 React Error #310 - проблема с порядком хуков');
+        console.error(
+          '💡 Проверьте что все хуки вызываются в одинаковом порядке'
+        );
+        console.error('💡 Убедитесь что нет условных хуков или early returns');
       }
     }
   });
+
+  // Дополнительная защита от переполнения localStorage
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function (key: string, value: string) {
+    try {
+      return originalSetItem.call(this, key, value);
+    } catch (error) {
+      console.warn(`Ошибка записи в localStorage для ключа ${key}:`, error);
+
+      if (
+        error instanceof DOMException &&
+        error.name === 'QuotaExceededError'
+      ) {
+        console.log('Попытка очистки localStorage...');
+        // Очищаем старые данные
+        const keysToRemove = ['errorLogs', 'debug', 'configLogged'];
+        keysToRemove.forEach(k => {
+          try {
+            localStorage.removeItem(k);
+          } catch (e) {
+            // Игнорируем ошибки очистки
+          }
+        });
+
+        // Повторная попытка записи
+        try {
+          return originalSetItem.call(this, key, value);
+        } catch (retryError) {
+          console.error('Не удалось записать даже после очистки');
+        }
+      }
+
+      throw error;
+    }
+  };
 };

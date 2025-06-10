@@ -108,12 +108,35 @@ export const baseQuery: BaseQueryFn<
   } else if (config.debug && result.data) {
     // Логирование успешных ответов в режиме отладки
     const endpoint = typeof args === 'string' ? args : args.url;
-    console.log('[API] ✅ Успешный запрос:', {
-      endpoint,
-      dataType: Array.isArray(result.data)
-        ? `array[${result.data.length}]`
-        : typeof result.data,
-    });
+
+    // Проверяем размер ответа для предотвращения проблем с кешированием
+    try {
+      const dataSize = JSON.stringify(result.data).length;
+      const sizeInMB = dataSize / (1024 * 1024);
+
+      if (sizeInMB > 5) {
+        console.warn(
+          `[API] ⚠️ Большой ответ (${sizeInMB.toFixed(2)}MB) для ${endpoint}`
+        );
+        console.warn('Возможны проблемы с кешированием');
+      }
+
+      console.log('[API] ✅ Успешный запрос:', {
+        endpoint,
+        dataType: Array.isArray(result.data)
+          ? `array[${result.data.length}]`
+          : typeof result.data,
+        size: `${(dataSize / 1024).toFixed(1)}KB`,
+      });
+    } catch (sizeError) {
+      console.log('[API] ✅ Успешный запрос:', {
+        endpoint,
+        dataType: Array.isArray(result.data)
+          ? `array[${result.data.length}]`
+          : typeof result.data,
+        note: 'Не удалось вычислить размер',
+      });
+    }
   }
 
   return result;
