@@ -1,4 +1,5 @@
 // Утилита для диагностики и исправления проблем с аналитическими данными
+import { safeLocalStorage } from '../shared/utils/errorUtils';
 
 interface AnalyticsDataCheck {
   useMocks: boolean;
@@ -17,14 +18,21 @@ export const cleanupLocalStorage = (): void => {
       'debug',
       'networkErrorTipShown',
       'configLogged',
+      'redux-localstorage-simple',
     ];
 
     keysToRemove.forEach(key => {
-      localStorage.removeItem(key);
+      if (localStorage.getItem(key)) {
+        safeLocalStorage.removeItem(key);
+      }
     });
 
     // Очищаем sessionStorage
-    sessionStorage.clear();
+    try {
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn('Не удалось очистить sessionStorage:', e);
+    }
 
     console.log('🧹 localStorage очищен от избыточных данных');
   } catch (error) {
@@ -37,9 +45,10 @@ export const diagnoseAnalyticsData = (): AnalyticsDataCheck => {
   const fixes: string[] = [];
 
   // Проверяем настройки localStorage
-  const useMocks = localStorage.getItem('useMocks') === 'true';
+  const useMocks = safeLocalStorage.getItem('useMocks') === 'true';
   const mockDataType =
-    (localStorage.getItem('mockDataType') as 'filled' | 'empty') || 'filled';
+    (safeLocalStorage.getItem('mockDataType') as 'filled' | 'empty') ||
+    'filled';
 
   console.log('🔍 Диагностика аналитических данных:');
   console.log('- useMocks:', useMocks);
@@ -70,13 +79,18 @@ export const fixAnalyticsData = (): void => {
   console.log('🔧 Исправление настроек аналитических данных...');
 
   // Принудительно устанавливаем правильные настройки
-  localStorage.setItem('useMocks', 'true');
-  localStorage.setItem('mockDataType', 'filled');
+  const mockSuccess = safeLocalStorage.setItem('useMocks', 'true');
+  const dataTypeSuccess = safeLocalStorage.setItem('mockDataType', 'filled');
 
-  console.log('✅ Настройки исправлены:');
-  console.log('- useMocks: true');
-  console.log('- mockDataType: filled');
-  console.log('💡 Настройки применятся при следующем запросе к API');
+  if (mockSuccess && dataTypeSuccess) {
+    console.log('✅ Настройки исправлены:');
+    console.log('- useMocks: true');
+    console.log('- mockDataType: filled');
+    console.log('💡 Настройки применятся при следующем запросе к API');
+  } else {
+    console.error('❌ Не удалось сохранить настройки в localStorage');
+    console.error('Возможно переполнение или ограничения браузера');
+  }
 };
 
 // Автоматическая диагностика при импорте
@@ -109,10 +123,7 @@ if (typeof window !== 'undefined') {
         console.log(
           '🔧 Автоматическое исправление настроек аналитики (development)...'
         );
-        // Принудительно устанавливаем правильные настройки только для разработки
-        localStorage.setItem('useMocks', 'true');
-        localStorage.setItem('mockDataType', 'filled');
-        console.log('✅ Настройки автоматически исправлены для разработки');
+        fixAnalyticsData();
       }
     } else {
       console.log('✅ Настройки аналитических данных корректны');

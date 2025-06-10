@@ -10,9 +10,43 @@ import { store } from './app/store';
 import { ThemeProvider } from './shared/config/ThemeContext';
 import ErrorBoundary from './shared/ui/ErrorBoundary';
 import { config } from './config/environment';
+import {
+  setupGlobalErrorHandlers,
+  safeLocalStorage,
+} from './shared/utils/errorUtils';
 
 // Флаг для отслеживания инициализации
 let isAppInitialized = false;
+
+// Настройка глобальных обработчиков ошибок
+setupGlobalErrorHandlers();
+
+// Безопасная очистка старых данных при старте
+const cleanupOnStart = () => {
+  try {
+    // Очищаем потенциально большие или устаревшие данные
+    const keysToCleanup = [
+      'persist:root', // Старые данные Redux persist
+      'redux-localstorage-simple', // Устаревшие данные
+      'debug', // Отладочные данные
+    ];
+
+    keysToCleanup.forEach(key => {
+      if (localStorage.getItem(key)) {
+        safeLocalStorage.removeItem(key);
+        console.log(`🧹 Очищен ключ localStorage: ${key}`);
+      }
+    });
+
+    // Очищаем sessionStorage от временных данных
+    sessionStorage.clear();
+  } catch (error) {
+    console.warn('Ошибка при очистке localStorage при старте:', error);
+  }
+};
+
+// Выполняем очистку
+cleanupOnStart();
 
 // Глобальная обработка ошибок
 window.addEventListener('error', event => {

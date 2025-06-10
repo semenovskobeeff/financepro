@@ -229,7 +229,18 @@ export const analyticsApi = createApi({
 
         // Проверяем, что ответ содержит данные
         if (response && response.data) {
-          return response.data;
+          // Валидация структуры данных
+          const data = response.data;
+          if (
+            data.accounts &&
+            data.monthStats &&
+            data.subscriptions &&
+            data.debts &&
+            data.goals
+          ) {
+            return data;
+          }
+          console.warn('📊 [API] Неполная структура данных в response.data');
         }
 
         // Если response является самими данными (без обертки)
@@ -238,8 +249,24 @@ export const analyticsApi = createApi({
           typeof response === 'object' &&
           'accounts' in response
         ) {
-          console.log('📊 [API] Response is direct data, using as is');
-          return response as unknown as DashboardAnalytics;
+          console.log('📊 [API] Response is direct data, validating structure');
+          const data = response as unknown as DashboardAnalytics;
+
+          // Проверяем и исправляем структуру данных
+          const validatedData = {
+            accounts: data.accounts || { count: 0, totalBalance: 0 },
+            monthStats: data.monthStats || {
+              income: 0,
+              expense: 0,
+              balance: 0,
+            },
+            subscriptions: data.subscriptions || { count: 0, monthlyAmount: 0 },
+            debts: data.debts || { count: 0, totalAmount: 0 },
+            goals: data.goals || { count: 0, totalTarget: 0, totalProgress: 0 },
+          };
+
+          console.log('📊 [API] Validated data structure:', validatedData);
+          return validatedData;
         }
 
         // Фоллбэк с базовыми данными только если ответ действительно пустой
@@ -255,6 +282,15 @@ export const analyticsApi = createApi({
         };
       },
       providesTags: ['Analytics', 'DashboardAnalytics'],
+      // Добавляем обработку ошибок
+      onQueryStarted: async (arg, { queryFulfilled }) => {
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          console.error('📊 [API] Ошибка загрузки аналитики дашборда:', error);
+          // Ошибка будет обработана автоматически RTK Query
+        }
+      },
     }),
 
     // Экспорт данных аналитики

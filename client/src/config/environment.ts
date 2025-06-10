@@ -1,3 +1,5 @@
+import { safeLocalStorage } from '../shared/utils/errorUtils';
+
 // Функция для получения настройки использования моков
 const getUseMocks = (): boolean => {
   // В production НИКОГДА не используем моки
@@ -7,7 +9,7 @@ const getUseMocks = (): boolean => {
 
   // В development проверяем localStorage
   if (typeof window !== 'undefined') {
-    const localStorageSetting = localStorage.getItem('useMocks');
+    const localStorageSetting = safeLocalStorage.getItem('useMocks');
     if (localStorageSetting !== null) {
       return localStorageSetting === 'true';
     }
@@ -20,7 +22,7 @@ const getUseMocks = (): boolean => {
 // Функция для получения типа моковых данных
 const getMockDataType = (): 'filled' | 'empty' => {
   if (typeof window !== 'undefined') {
-    const localStorageSetting = localStorage.getItem('mockDataType');
+    const localStorageSetting = safeLocalStorage.getItem('mockDataType');
     if (localStorageSetting === 'filled' || localStorageSetting === 'empty') {
       return localStorageSetting;
     }
@@ -33,8 +35,8 @@ const getMockDataType = (): 'filled' | 'empty' => {
 // Функция для принудительного сброса настроек к заполненным данным
 const forceFilledDataMode = (): void => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('mockDataType', 'filled');
-    localStorage.setItem('useMocks', 'true');
+    safeLocalStorage.setItem('mockDataType', 'filled');
+    safeLocalStorage.setItem('useMocks', 'true');
     console.log('[CONFIG] Принудительно установлен режим заполненных данных');
   }
 };
@@ -71,7 +73,7 @@ class AppConfig {
   set useMocks(value: boolean) {
     this._useMocks = value;
     if (typeof window !== 'undefined') {
-      localStorage.setItem('useMocks', value.toString());
+      safeLocalStorage.setItem('useMocks', value.toString());
     }
   }
 
@@ -82,7 +84,7 @@ class AppConfig {
   set mockDataType(value: 'filled' | 'empty') {
     this._mockDataType = value;
     if (typeof window !== 'undefined') {
-      localStorage.setItem('mockDataType', value);
+      safeLocalStorage.setItem('mockDataType', value);
     }
   }
 

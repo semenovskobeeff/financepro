@@ -84,6 +84,7 @@ const ApiModeToggle: React.FC = () => {
   };
 
   useEffect(() => {
+    // Всегда выполняем effect, но логику внутри делаем условной
     if (!useMocks) {
       checkApiStatus();
     } else {
@@ -91,7 +92,7 @@ const ApiModeToggle: React.FC = () => {
       setApiError(null);
       setHasApiError(false);
     }
-  }, [useMocks]);
+  }, [useMocks]); // Зависимость остается та же
 
   const handleToggle = () => {
     const newUseMocks = !useMocks;

@@ -162,3 +162,132 @@ export const isServerError = (error: ApiError | any): boolean => {
 export const isClientError = (error: ApiError | any): boolean => {
   return error?.status >= 400 && error?.status < 500;
 };
+
+/**
+ * Безопасная работа с localStorage с обработкой ошибок
+ */
+export const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.warn(`[safeLocalStorage] Ошибка чтения ${key}:`, error);
+      return null;
+    }
+  },
+
+  setItem: (key: string, value: string): boolean => {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      console.error(`[safeLocalStorage] Ошибка записи ${key}:`, error);
+      if (error instanceof DOMException) {
+        if (error.code === 22 || error.name === 'QuotaExceededError') {
+          console.error(
+            'Превышена квота localStorage. Очищаем старые данные...'
+          );
+          try {
+            // Очищаем неважные ключи
+            const keysToRemove = ['errorLogs', 'configLogged', 'debug'];
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+            // Повторяем попытку записи
+            localStorage.setItem(key, value);
+            return true;
+          } catch (retryError) {
+            console.error(
+              'Не удалось записать даже после очистки:',
+              retryError
+            );
+          }
+        }
+      }
+      return false;
+    }
+  },
+
+  removeItem: (key: string): boolean => {
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch (error) {
+      console.warn(`[safeLocalStorage] Ошибка удаления ${key}:`, error);
+      return false;
+    }
+  },
+};
+
+/**
+ * Обработка IO ошибок (файловые операции, кеш)
+ */
+export const handleIOError = (
+  error: any,
+  context: string = 'IO операция'
+): void => {
+  console.error(`[IO Error] ${context}:`, error);
+
+  // Специфичные ошибки IO
+  if (error?.message?.includes('FILE_ERROR_NO_SPACE')) {
+    console.error('Недостаточно места на диске');
+  } else if (error?.message?.includes('ChromeMethodBFE: 3')) {
+    console.error('Ошибка Chrome File API - возможно проблема с кешем');
+    // Попытка очистить кеш
+    if ('caches' in window) {
+      caches
+        .keys()
+        .then(names => {
+          names.forEach(name => {
+            caches.delete(name);
+          });
+        })
+        .catch(e => console.warn('Не удалось очистить кеш:', e));
+    }
+  } else if (error?.name === 'DataCloneError') {
+    console.error('Ошибка клонирования данных - возможно циклические ссылки');
+  }
+};
+
+/**
+ * Глобальный обработчик для неперехваченных ошибок
+ */
+export const setupGlobalErrorHandlers = (): void => {
+  // Обработка неперехваченных ошибок JavaScript
+  window.addEventListener('error', event => {
+    console.error('🚨 Глобальная ошибка JavaScript:', {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+      error: event.error,
+    });
+
+    // Специальная обработка IO ошибок
+    if (
+      event.message.includes('IO error') ||
+      event.message.includes('FILE_ERROR')
+    ) {
+      handleIOError(event.error, 'Глобальная IO ошибка');
+    }
+  });
+
+  // Обработка неперехваченных Promise rejection
+  window.addEventListener('unhandledrejection', event => {
+    console.error('🚨 Неперехваченное отклонение Promise:', event.reason);
+
+    // Обработка ошибок кеширования
+    if (
+      event.reason?.message?.includes('setWithHTTL') ||
+      event.reason?.message?.includes('cache')
+    ) {
+      console.error(
+        'Ошибка кеширования - возможно переполнение или повреждение кеша'
+      );
+      handleIOError(event.reason, 'Ошибка кеширования');
+
+      // Предотвращаем показ ошибки пользователю для некритичных ошибок кеша
+      if (event.reason?.message?.includes('setWithHTTL failed')) {
+        event.preventDefault();
+      }
+    }
+  });
+};
