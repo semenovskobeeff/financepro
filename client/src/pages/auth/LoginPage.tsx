@@ -24,7 +24,7 @@ const LoginPage: React.FC = () => {
             Финансы PRO
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
-            Управляйте своими финансами эффективно
+            Управляй своими финансами эффективно
           </Typography>
         </Box>
         <LoginForm />
