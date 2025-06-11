@@ -1486,16 +1486,16 @@ const Dashboard: React.FC = () => {
       {selectedTab === 1 && (
         <>
           {/* Детальная аналитика */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Box sx={{ mb: 4 }}>
             {/* Структура доходов */}
-            <Grid item xs={12}>
+            <Box sx={{ mb: 3 }}>
               <IncomeStructureWidget data={incomeStructureData} />
-            </Grid>
+            </Box>
             {/* Структура расходов */}
-            <Grid item xs={12}>
+            <Box>
               <ExpenseStructureWidget data={expenseStructureData} />
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </>
       )}
 
