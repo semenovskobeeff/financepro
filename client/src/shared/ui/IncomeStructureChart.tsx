@@ -325,79 +325,93 @@ const IncomeStructureChart: React.FC<IncomeStructureChartProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              overflow: 'hidden',
+              overflow: 'visible',
               mb: 2,
             }}
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={120}
-                  paddingAngle={1}
-                  dataKey="total"
-                  onClick={handlePieClick}
-                  style={{ cursor: interactive ? 'pointer' : 'default' }}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                      stroke={
-                        selectedCategory === entry.categoryId
-                          ? theme.palette.success.main
-                          : 'none'
-                      }
-                      strokeWidth={
-                        selectedCategory === entry.categoryId ? 3 : 0
-                      }
-                    />
-                  ))}
-                </Pie>
-                <RechartsTooltip content={<CustomTooltip />} />
-                <Legend
-                  content={<CustomLegend />}
-                  layout="horizontal"
-                  align="center"
-                  verticalAlign="bottom"
-                />
-              </PieChart>
-            </ResponsiveContainer>
-
-            {/* Центральная информация */}
             <Box
               sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center',
-                pointerEvents: 'none',
-                backgroundColor: 'background.default',
-                borderRadius: '50%',
-                width: 120,
-                height: 120,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1,
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+                minWidth: 300,
+                minHeight: 300,
               }}
             >
-              <Typography
-                variant="h6"
-                component="div"
-                fontWeight="bold"
-                sx={{ fontSize: '1rem' }}
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="45%"
+                    innerRadius={60}
+                    outerRadius={110}
+                    paddingAngle={1}
+                    dataKey="total"
+                    onClick={handlePieClick}
+                    style={{ cursor: interactive ? 'pointer' : 'default' }}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        stroke={
+                          selectedCategory === entry.categoryId
+                            ? theme.palette.success.main
+                            : 'none'
+                        }
+                        strokeWidth={
+                          selectedCategory === entry.categoryId ? 3 : 0
+                        }
+                      />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  {showLegend && (
+                    <Legend
+                      content={<CustomLegend />}
+                      layout="horizontal"
+                      align="center"
+                      verticalAlign="bottom"
+                      wrapperStyle={{ paddingTop: '20px' }}
+                    />
+                  )}
+                </PieChart>
+              </ResponsiveContainer>
+
+              {/* Центральная информация */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '45%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  textAlign: 'center',
+                  pointerEvents: 'none',
+                  backgroundColor: 'background.default',
+                  borderRadius: '50%',
+                  width: 120,
+                  height: 120,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                }}
               >
-                {formatNumber(totalAmount)}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                ₽ доходов
-              </Typography>
+                <Typography
+                  variant="h6"
+                  component="div"
+                  fontWeight="bold"
+                  sx={{ fontSize: '1rem' }}
+                >
+                  {formatNumber(totalAmount)}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  ₽ доходов
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Grid>
