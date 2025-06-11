@@ -403,7 +403,12 @@ const IncomeStructureChart: React.FC<IncomeStructureChartProps> = ({
                   pointerEvents: 'none',
                   backgroundColor: 'background.default',
                   borderRadius: '50%',
-                  padding: '8px',
+                  width: 120,
+                  height: 120,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   zIndex: 1,
                 }}
               >
