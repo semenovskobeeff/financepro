@@ -237,35 +237,32 @@ const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
             <Box
               sx={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
+                alignItems: 'center',
                 mb: 1,
                 pr: 4,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <SubscriptionsIcon
-                  sx={{
-                    mr: 1,
-                    color: isArchived ? 'text.disabled' : 'primary.main',
-                  }}
-                />
-                <Typography
-                  variant="h6"
-                  component="div"
-                  sx={{ fontWeight: 500 }}
-                >
-                  {subscription.name}
-                </Typography>
-              </Box>
+              <SubscriptionsIcon
+                sx={{
+                  mr: 1,
+                  color: isArchived ? 'text.disabled' : 'primary.main',
+                }}
+              />
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ fontWeight: 500 }}
+              >
+                {subscription.name}
+              </Typography>
+            </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Chip
-                  size="small"
-                  label={statusProps.label}
-                  color={statusProps.color}
-                />
-              </Box>
+            <Box sx={{ mb: 1 }}>
+              <Chip
+                size="small"
+                label={statusProps.label}
+                color={statusProps.color}
+              />
             </Box>
 
             <Typography
