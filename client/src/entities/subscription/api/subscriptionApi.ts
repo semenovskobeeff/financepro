@@ -41,13 +41,20 @@ export const subscriptionApi = createApi({
         }
         return url;
       },
-      transformResponse: (response: ApiResponse<GetSubscriptionsResponse>) => {
-        return (
-          response.data || {
-            subscriptions: [],
-            pagination: { total: 0, totalPages: 0, currentPage: 1, limit: 10 },
-          }
-        );
+      transformResponse: (response: any) => {
+        // Обрабатываем случай когда мок возвращает данные напрямую
+        const data = response.data || response;
+        return data && data.subscriptions
+          ? data
+          : {
+              subscriptions: [],
+              pagination: {
+                total: 0,
+                totalPages: 0,
+                currentPage: 1,
+                limit: 10,
+              },
+            };
       },
       providesTags: result =>
         result
@@ -63,7 +70,7 @@ export const subscriptionApi = createApi({
 
     getSubscriptionById: builder.query<Subscription, string>({
       query: id => `subscriptions/${id}`,
-      transformResponse: (response: ApiResponse<Subscription>) => response.data,
+      transformResponse: (response: any) => response.data || response,
       providesTags: (result, error, id) => [{ type: 'Subscription', id }],
     }),
 
@@ -76,7 +83,7 @@ export const subscriptionApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Subscription>) => response.data,
+      transformResponse: (response: any) => response.data || response,
       invalidatesTags: [
         { type: 'Subscription', id: 'LIST' },
         'Analytics',
@@ -93,7 +100,7 @@ export const subscriptionApi = createApi({
         method: 'PUT',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<Subscription>) => response.data,
+      transformResponse: (response: any) => response.data || response,
       invalidatesTags: (result, error, { id }) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
@@ -107,7 +114,7 @@ export const subscriptionApi = createApi({
         url: `subscriptions/${id}/archive`,
         method: 'POST',
       }),
-      transformResponse: (response: ApiResponse<Subscription>) => response.data,
+      transformResponse: (response: any) => response.data || response,
       invalidatesTags: (result, error, id) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
@@ -121,7 +128,7 @@ export const subscriptionApi = createApi({
         url: `subscriptions/${id}/restore`,
         method: 'POST',
       }),
-      transformResponse: (response: ApiResponse<Subscription>) => response.data,
+      transformResponse: (response: any) => response.data || response,
       invalidatesTags: (result, error, id) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
@@ -139,7 +146,7 @@ export const subscriptionApi = createApi({
         method: 'POST',
         body: { status },
       }),
-      transformResponse: (response: ApiResponse<Subscription>) => response.data,
+      transformResponse: (response: any) => response.data || response,
       invalidatesTags: (result, error, { id }) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
@@ -157,8 +164,7 @@ export const subscriptionApi = createApi({
         method: 'POST',
         body: data,
       }),
-      transformResponse: (response: ApiResponse<MakePaymentResponse>) =>
-        response.data,
+      transformResponse: (response: any) => response.data || response,
       invalidatesTags: (result, error, { id }) => [
         { type: 'Subscription', id },
         { type: 'Subscription', id: 'LIST' },
@@ -170,8 +176,10 @@ export const subscriptionApi = createApi({
 
     getUpcomingPayments: builder.query<Subscription[], number | void>({
       query: (days = 7) => `subscriptions/upcoming?days=${days}`,
-      transformResponse: (response: ApiResponse<Subscription[]>) =>
-        response.data || [],
+      transformResponse: (response: any) => {
+        // Обрабатываем случай когда мок возвращает данные напрямую
+        return response.data || response || [];
+      },
       providesTags: [{ type: 'Subscription', id: 'UPCOMING' }],
     }),
 
@@ -180,7 +188,7 @@ export const subscriptionApi = createApi({
         url: 'subscriptions/stats',
         method: 'GET',
       }),
-      transformResponse: (response: ApiResponse<SubscriptionStatsResponse>) => {
+      transformResponse: (response: any) => {
         // Убедимся, что response имеет правильный формат
         const defaultValue = {
           activeCount: 0,
@@ -191,10 +199,12 @@ export const subscriptionApi = createApi({
           byCurrency: [],
         };
 
-        // Проверяем, что ответ не null и имеет нужные поля
-        if (!response?.data) return defaultValue;
+        // Обрабатываем случай когда мок возвращает данные напрямую
+        const data = response.data || response;
 
-        const data = response.data;
+        // Проверяем, что ответ не null и имеет нужные поля
+        if (!data) return defaultValue;
+
         return {
           activeCount: data.activeCount || 0,
           pausedCount: data.pausedCount || 0,
@@ -212,9 +222,7 @@ export const subscriptionApi = createApi({
       string | void
     >({
       query: (period = 'month') => `subscriptions/analytics?period=${period}`,
-      transformResponse: (
-        response: ApiResponse<SubscriptionAnalyticsResponse>
-      ) => response.data,
+      transformResponse: (response: any) => response.data || response,
       providesTags: [{ type: 'Subscription', id: 'ANALYTICS' }],
     }),
   }),

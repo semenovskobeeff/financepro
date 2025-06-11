@@ -61,6 +61,9 @@ const Subscriptions: React.FC = () => {
     status: filter === 'active' ? 'active,paused' : 'archived',
   });
 
+  // Отладка для понимания что приходит с API
+  console.log('Subscriptions page data:', { data, isLoading, error, filter });
+
   const {
     data: statsData,
     isLoading: statsLoading,
