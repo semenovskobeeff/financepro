@@ -317,212 +317,201 @@ const IncomeStructureChart: React.FC<IncomeStructureChartProps> = ({
 
       <Grid container spacing={3}>
         {/* Круговая диаграмма */}
-        {
-          <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              height: 400,
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              mb: 2,
+            }}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={120}
+                  paddingAngle={1}
+                  dataKey="total"
+                  onClick={handlePieClick}
+                  style={{ cursor: interactive ? 'pointer' : 'default' }}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      stroke={
+                        selectedCategory === entry.categoryId
+                          ? theme.palette.success.main
+                          : 'none'
+                      }
+                      strokeWidth={
+                        selectedCategory === entry.categoryId ? 3 : 0
+                      }
+                    />
+                  ))}
+                </Pie>
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Legend
+                  content={<CustomLegend />}
+                  layout="horizontal"
+                  align="center"
+                  verticalAlign="bottom"
+                />
+              </PieChart>
+            </ResponsiveContainer>
+
+            {/* Центральная информация */}
             <Box
               sx={{
-                height: 400,
-                position: 'relative',
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center',
+                pointerEvents: 'none',
+                backgroundColor: 'background.default',
+                borderRadius: '50%',
+                width: 120,
+                height: 120,
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                overflow: 'hidden',
-                mb: 2,
+                zIndex: 1,
               }}
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
-                    paddingAngle={1}
-                    dataKey="total"
-                    onClick={handlePieClick}
-                    style={{ cursor: interactive ? 'pointer' : 'default' }}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.color}
-                        stroke={
-                          selectedCategory === entry.categoryId
-                            ? theme.palette.success.main
-                            : 'none'
-                        }
-                        strokeWidth={
-                          selectedCategory === entry.categoryId ? 3 : 0
-                        }
-                      />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip content={<CustomTooltip />} />
-                  <Legend
-                    content={<CustomLegend />}
-                    layout="horizontal"
-                    align="center"
-                    verticalAlign="bottom"
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-
-              {/* Центральная информация */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  textAlign: 'center',
-                  pointerEvents: 'none',
-                  backgroundColor: 'background.default',
-                  borderRadius: '50%',
-                  width: 120,
-                  height: 120,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1,
-                }}
+              <Typography
+                variant="h6"
+                component="div"
+                fontWeight="bold"
+                sx={{ fontSize: '1rem' }}
               >
-                <Typography
-                  variant="h6"
-                  component="div"
-                  fontWeight="bold"
-                  sx={{ fontSize: '1rem' }}
-                >
-                  {formatNumber(totalAmount)}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  ₽ доходов
-                </Typography>
-              </Box>
+                {formatNumber(totalAmount)}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                ₽ доходов
+              </Typography>
             </Box>
-          </Grid>
-        }
+          </Box>
+        </Grid>
 
         {/* Список категорий */}
-        {
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                maxHeight: 400,
-                overflow: 'auto',
-                '&::-webkit-scrollbar': {
-                  width: '6px',
+        <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              height: 400,
+              overflow: 'auto',
+              '&::-webkit-scrollbar': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: 'action.hover',
+                borderRadius: '3px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'action.disabled',
+                borderRadius: '3px',
+                '&:hover': {
+                  backgroundColor: 'action.selected',
                 },
-                '&::-webkit-scrollbar-track': {
-                  backgroundColor: 'action.hover',
-                  borderRadius: '3px',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: 'action.disabled',
-                  borderRadius: '3px',
-                  '&:hover': {
-                    backgroundColor: 'action.selected',
-                  },
-                },
-              }}
-            >
-              <List dense>
-                {chartData.map((category, index) => {
-                  const isSelected = selectedCategory === category.categoryId;
-                  return (
-                    <ListItem
-                      key={category.categoryId || index}
-                      sx={{
-                        cursor: interactive ? 'pointer' : 'default',
-                        borderRadius: 1,
-                        mb: 0.5,
-                        py: 1,
-                        px: 1.5,
-                        backgroundColor: isSelected
-                          ? 'action.selected'
-                          : 'transparent',
-                        '&:hover': interactive
-                          ? { backgroundColor: 'action.hover' }
-                          : {},
-                        border: isSelected
-                          ? `1px solid ${theme.palette.success.main}`
-                          : '1px solid transparent',
-                      }}
-                      onClick={() => interactive && handlePieClick(category)}
-                    >
-                      <ListItemIcon sx={{ minWidth: 32 }}>
+              },
+            }}
+          >
+            <List dense>
+              {chartData.map((category, index) => {
+                const isSelected = selectedCategory === category.categoryId;
+                return (
+                  <ListItem
+                    key={category.categoryId || index}
+                    sx={{
+                      cursor: interactive ? 'pointer' : 'default',
+                      borderRadius: 1,
+                      mb: 0.5,
+                      py: 1,
+                      px: 1.5,
+                      backgroundColor: isSelected
+                        ? 'action.selected'
+                        : 'transparent',
+                      '&:hover': interactive
+                        ? { backgroundColor: 'action.hover' }
+                        : {},
+                      border: isSelected
+                        ? `1px solid ${theme.palette.success.main}`
+                        : '1px solid transparent',
+                    }}
+                    onClick={() => interactive && handlePieClick(category)}
+                  >
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      <Box
+                        sx={{
+                          width: 14,
+                          height: 14,
+                          backgroundColor: category.color,
+                          borderRadius: '50%',
+                          border: isSelected
+                            ? `2px solid ${theme.palette.success.main}`
+                            : 'none',
+                        }}
+                      />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" fontWeight="medium" noWrap>
+                          {category.displayName}
+                        </Typography>
+                      }
+                      secondary={
                         <Box
                           sx={{
-                            width: 14,
-                            height: 14,
-                            backgroundColor: category.color,
-                            borderRadius: '50%',
-                            border: isSelected
-                              ? `2px solid ${theme.palette.success.main}`
-                              : 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            mt: 0.5,
                           }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
+                        >
                           <Typography
-                            variant="body2"
-                            fontWeight="medium"
-                            noWrap
+                            variant="h6"
+                            fontWeight="bold"
+                            color="text.primary"
                           >
-                            {category.displayName}
+                            {formatNumber(category.total)} ₽
                           </Typography>
-                        }
-                        secondary={
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                              mt: 0.5,
-                            }}
-                          >
-                            <Typography
-                              variant="h6"
-                              fontWeight="bold"
-                              color="text.primary"
-                            >
-                              {formatNumber(category.total)} ₽
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              • {category.count} операций
-                            </Typography>
-                          </Box>
-                        }
-                        sx={{ flexGrow: 1, minWidth: 0 }}
+                          <Typography variant="caption" color="text.secondary">
+                            • {category.count} операций
+                          </Typography>
+                        </Box>
+                      }
+                      sx={{ flexGrow: 1, minWidth: 0 }}
+                    />
+                    {showPercentages && (
+                      <Chip
+                        label={`${category.percentage.toFixed(1)}%`}
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                        sx={{
+                          height: 24,
+                          fontSize: '0.75rem',
+                          fontWeight: 'medium',
+                          '& .MuiChip-label': {
+                            px: 1,
+                          },
+                        }}
                       />
-                      {showPercentages && (
-                        <Chip
-                          label={`${category.percentage.toFixed(1)}%`}
-                          size="small"
-                          variant="outlined"
-                          color="success"
-                          sx={{
-                            height: 24,
-                            fontSize: '0.75rem',
-                            fontWeight: 'medium',
-                            '& .MuiChip-label': {
-                              px: 1,
-                            },
-                          }}
-                        />
-                      )}
-                    </ListItem>
-                  );
-                })}
-              </List>
-            </Box>
-          </Grid>
-        }
+                    )}
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Box>
+        </Grid>
       </Grid>
 
       {/* Дополнительная статистика */}
