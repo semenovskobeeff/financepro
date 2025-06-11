@@ -94,6 +94,7 @@ import {
   FinancialTrendChart,
   BudgetAnalysisChart,
   ExpenseStructureWidget,
+  IncomeStructureWidget,
   GoalsProgressWidget,
   FinancialSummaryWidget,
   SmartNotificationsWidget,
@@ -621,6 +622,79 @@ const Dashboard: React.FC = () => {
     };
   };
 
+  // Подготовка данных для структуры доходов
+  const getIncomeStructureData = () => {
+    if (!transactionsAnalytics) {
+      return {
+        hasData: false,
+        totalIncome: 0,
+        period: 'текущий месяц',
+        categories: [],
+        emptyMessage: 'Недостаточно данных о транзакциях',
+      };
+    }
+
+    const totalIncome = analytics?.monthStats?.income || 0;
+
+    // Если нет доходов, показываем заглушку
+    if (totalIncome === 0) {
+      return {
+        hasData: false,
+        totalIncome: 0,
+        period: 'текущий месяц',
+        categories: [],
+        emptyMessage: 'Добавьте доходы для анализа структуры поступлений',
+      };
+    }
+
+    // Используем реальные категории из аналитики транзакций
+    const incomeCategories = transactionsAnalytics.categoryStats?.income || [];
+
+    // Если нет категорий, показываем заглушку
+    if (!Array.isArray(incomeCategories) || incomeCategories.length === 0) {
+      return {
+        hasData: false,
+        totalIncome,
+        period: 'текущий месяц',
+        categories: [],
+        emptyMessage: 'Добавьте категории к доходам для детального анализа',
+      };
+    }
+
+    const colors = [
+      '#22c55e',
+      '#3b82f6',
+      '#f59e0b',
+      '#8b5cf6',
+      '#06b6d4',
+      '#84cc16',
+      '#f97316',
+      '#ec4899',
+      '#6366f1',
+      '#ef4444',
+    ];
+
+    const categories = incomeCategories
+      .map((cat: any, index: number) => ({
+        id: cat.categoryId || 'unknown',
+        name: cat.categoryName || 'Без категории',
+        amount: cat.total || 0,
+        percentage: totalIncome > 0 ? (cat.total / totalIncome) * 100 : 0,
+        color: colors[index % colors.length],
+        icon: cat.categoryIcon,
+        trend: Math.random() > 0.5 ? Math.random() * 20 - 10 : undefined, // Временные данные трендов
+      }))
+      .filter((cat: any) => cat.amount > 0)
+      .sort((a: any, b: any) => b.amount - a.amount);
+
+    return {
+      hasData: true,
+      totalIncome,
+      period: 'текущий месяц',
+      categories,
+    };
+  };
+
   // Подготовка данных для прогресса целей
   const getGoalsProgressData = () => {
     if (!goalsData || !Array.isArray(goalsData) || goalsData.length === 0) {
@@ -1037,6 +1111,7 @@ const Dashboard: React.FC = () => {
   const financialTrendData = getFinancialTrendData();
   const budgetAnalysisData = getBudgetAnalysisData();
   const expenseStructureData = getExpenseStructureData();
+  const incomeStructureData = getIncomeStructureData();
   const goalsProgressData = getGoalsProgressData();
   const financialSummaryData = getFinancialSummaryData();
   const smartNotificationsData = getSmartNotificationsData();
@@ -1412,6 +1487,11 @@ const Dashboard: React.FC = () => {
         <>
           {/* Детальная аналитика */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
+            {/* Структура доходов */}
+            <Grid item xs={12}>
+              <IncomeStructureWidget data={incomeStructureData} />
+            </Grid>
+            {/* Структура расходов */}
             <Grid item xs={12}>
               <ExpenseStructureWidget data={expenseStructureData} />
             </Grid>

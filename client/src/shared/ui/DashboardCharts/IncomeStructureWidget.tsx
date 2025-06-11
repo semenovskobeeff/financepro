@@ -2,36 +2,27 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  IconButton,
-  Tooltip,
   List,
   ListItem,
   ListItemText,
   Chip,
   Button,
-  Collapse,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import { Doughnut } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip as ChartTooltip,
-  Legend,
-} from 'chart.js';
-import {
-  Info as InfoIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
+  Info as InfoIcon,
 } from '@mui/icons-material';
 import { NotionCard } from '../NotionCard';
 import { formatNumber } from '../../utils/formatUtils';
 import { useTheme } from '../../config/ThemeContext';
 
-ChartJS.register(ArcElement, ChartTooltip, Legend);
-
-interface CategoryExpense {
+interface CategoryIncome {
   id: string;
   name: string;
   amount: number;
@@ -41,20 +32,20 @@ interface CategoryExpense {
   trend?: number; // изменение по сравнению с прошлым месяцем в %
 }
 
-interface ExpenseStructureData {
+interface IncomeStructureData {
   hasData?: boolean;
-  totalExpense: number;
-  categories: CategoryExpense[];
+  totalIncome: number;
+  categories: CategoryIncome[];
   period: string;
   emptyMessage?: string;
 }
 
-interface ExpenseStructureWidgetProps {
-  data: ExpenseStructureData;
+interface IncomeStructureWidgetProps {
+  data: IncomeStructureData;
   maxCategoriesVisible?: number;
 }
 
-const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
+const IncomeStructureWidget: React.FC<IncomeStructureWidgetProps> = ({
   data,
   maxCategoriesVisible = 5,
 }) => {
@@ -70,23 +61,23 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
   const displayData = isEmpty
     ? {
         categories: [],
-        totalExpense: 0,
+        totalIncome: 0,
         period: data.period || 'текущий месяц',
       }
     : data;
 
   // Предопределенные цвета для категорий
   const categoryColors = [
-    '#3b82f6',
-    '#ef4444',
     '#22c55e',
+    '#3b82f6',
     '#f59e0b',
     '#8b5cf6',
     '#06b6d4',
-    '#f97316',
     '#84cc16',
+    '#f97316',
     '#ec4899',
     '#6366f1',
+    '#ef4444',
   ];
 
   // Подготовка данных для графика
@@ -123,7 +114,7 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
         callbacks: {
           label: (context: any) => {
             const percentage = (
-              (context.parsed / data.totalExpense) *
+              (context.parsed / data.totalIncome) *
               100
             ).toFixed(1);
             return `${context.label}: ${formatNumber(
@@ -153,14 +144,14 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
     displayData.categories.length - maxCategoriesVisible
   );
 
-  // Общая сумма расходов
-  const totalExpense = displayData.totalExpense || 0;
+  // Общая сумма доходов
+  const totalIncome = displayData.totalIncome || 0;
 
   return (
     <NotionCard
-      title="Структура расходов"
-      color={isEmpty ? 'gray' : 'red'}
-      subtitle={`Распределение расходов за ${displayData.period}`}
+      title="Структура доходов"
+      color={isEmpty ? 'gray' : 'green'}
+      subtitle={`Распределение доходов за ${displayData.period}`}
     >
       {/* График и список категорий */}
       <Box
@@ -189,7 +180,7 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
               Всего
             </Typography>
             <Typography variant="h6" fontWeight="bold">
-              {formatNumber(totalExpense)} ₽
+              {formatNumber(totalIncome)} ₽
             </Typography>
           </Box>
         </Box>
@@ -204,8 +195,8 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
             {isEmpty ? (
               <ListItem sx={{ px: 0, py: 1 }}>
                 <ListItemText
-                  primary="Нет данных о расходах"
-                  secondary="Добавьте транзакции для анализа структуры расходов"
+                  primary="Нет данных о доходах"
+                  secondary="Добавьте транзакции для анализа структуры доходов"
                   primaryTypographyProps={{
                     variant: 'body2',
                     color: 'text.secondary',
@@ -225,7 +216,7 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
                     py: 1,
                     backgroundColor:
                       selectedCategory === category.id
-                        ? 'rgba(59, 130, 246, 0.1)'
+                        ? 'rgba(34, 197, 94, 0.1)'
                         : 'transparent',
                     borderRadius: 1,
                     transition: 'all 0.2s ease',
@@ -263,24 +254,24 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
                               {category.trend >= 0 ? (
                                 <TrendingUpIcon
                                   fontSize="small"
-                                  color={
-                                    category.trend > 10 ? 'error' : 'warning'
-                                  }
+                                  color="success"
                                 />
                               ) : (
                                 <TrendingDownIcon
                                   fontSize="small"
-                                  color="success"
+                                  color={
+                                    category.trend < -10 ? 'error' : 'warning'
+                                  }
                                 />
                               )}
                               <Typography
                                 variant="caption"
                                 color={
                                   category.trend >= 0
-                                    ? category.trend > 10
-                                      ? 'error.main'
-                                      : 'warning.main'
-                                    : 'success.main'
+                                    ? 'success.main'
+                                    : category.trend < -10
+                                    ? 'error.main'
+                                    : 'warning.main'
                                 }
                                 sx={{ ml: 0.5 }}
                               >
@@ -295,7 +286,7 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
                             size="small"
                             variant="outlined"
                             color={
-                              category.percentage > 30 ? 'error' : 'default'
+                              category.percentage > 50 ? 'success' : 'default'
                             }
                           />
                         </Box>
@@ -355,7 +346,7 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-        <Tooltip title="Структура расходов показывает, на что вы тратите больше всего денег. Анализируйте тренды и контролируйте крупные категории расходов.">
+        <Tooltip title="Структура доходов показывает, откуда вы получаете больше всего денег. Анализируйте источники доходов для планирования бюджета.">
           <IconButton size="small">
             <InfoIcon fontSize="small" />
           </IconButton>
@@ -368,4 +359,4 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
   );
 };
 
-export default ExpenseStructureWidget;
+export default IncomeStructureWidget;
