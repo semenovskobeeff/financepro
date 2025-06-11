@@ -160,13 +160,23 @@ const IncomeStructureWidget: React.FC<IncomeStructureWidgetProps> = ({
           flexDirection: 'row',
           gap: 3,
           mb: 3,
+          width: '100%',
+          flexWrap: 'nowrap',
           '@media (max-width: 768px)': {
             flexDirection: 'column',
           },
         }}
       >
         {/* График */}
-        <Box sx={{ flex: '0 0 250px', height: 250, position: 'relative' }}>
+        <Box
+          sx={{
+            flex: '0 0 250px',
+            height: 250,
+            position: 'relative',
+            minWidth: 250,
+            maxWidth: 250,
+          }}
+        >
           <Doughnut data={chartData} options={chartOptions} />
 
           {/* Центральная информация в графике */}
@@ -189,7 +199,14 @@ const IncomeStructureWidget: React.FC<IncomeStructureWidgetProps> = ({
         </Box>
 
         {/* Список категорий */}
-        <Box sx={{ flex: 1 }}>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            width: 'auto',
+            overflow: 'hidden',
+          }}
+        >
           <Typography variant="body2" fontWeight="medium" gutterBottom>
             Детализация по категориям
           </Typography>
