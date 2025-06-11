@@ -494,33 +494,47 @@ const IncomeStructureChart: React.FC<IncomeStructureChartProps> = ({
                           </Typography>
                         }
                         secondary={
-                          <Typography variant="caption" color="text.secondary">
-                            {category.count} операций
-                          </Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              mt: 0.5,
+                            }}
+                          >
+                            <Typography
+                              variant="h6"
+                              fontWeight="bold"
+                              color="text.primary"
+                            >
+                              {formatNumber(category.total)} ₽
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              • {category.count} операций
+                            </Typography>
+                          </Box>
                         }
                         sx={{ flexGrow: 1, minWidth: 0 }}
                       />
-                      <Box sx={{ textAlign: 'right', ml: 1 }}>
-                        <Typography variant="body2" fontWeight="medium" noWrap>
-                          {formatNumber(category.total)} ₽
-                        </Typography>
-                        {showPercentages && (
-                          <Chip
-                            label={`${category.percentage.toFixed(1)}%`}
-                            size="small"
-                            variant="outlined"
-                            color="success"
-                            sx={{
-                              mt: 0.5,
-                              height: 18,
-                              fontSize: '0.7rem',
-                              '& .MuiChip-label': {
-                                px: 0.75,
-                              },
-                            }}
-                          />
-                        )}
-                      </Box>
+                      {showPercentages && (
+                        <Chip
+                          label={`${category.percentage.toFixed(1)}%`}
+                          size="small"
+                          variant="outlined"
+                          color="success"
+                          sx={{
+                            height: 24,
+                            fontSize: '0.75rem',
+                            fontWeight: 'medium',
+                            '& .MuiChip-label': {
+                              px: 1,
+                            },
+                          }}
+                        />
+                      )}
                     </ListItem>
                   );
                 })}
