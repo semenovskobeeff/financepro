@@ -270,14 +270,23 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
   }
 
   return (
-    <Paper elevation={1} sx={{ p: 3 }}>
+    <Paper
+      elevation={1}
+      sx={{
+        p: { xs: 2, sm: 3 },
+        height: 'fit-content',
+        overflow: 'hidden',
+      }}
+    >
       {/* Заголовок и контролы */}
       <Box
         sx={{
           display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: { xs: 'flex-start', sm: 'center' },
           mb: 2,
+          gap: { xs: 1, sm: 0 },
         }}
       >
         <Box>
@@ -333,16 +342,25 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
         {/* Круговая диаграмма */}
         {(viewMode === 'chart' || viewMode === 'both') && (
           <Grid item xs={12} md={viewMode === 'both' ? 7 : 12}>
-            <Box sx={{ height: 400, position: 'relative' }}>
+            <Box
+              sx={{
+                height: 400,
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+            >
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                   <Pie
                     data={chartData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
-                    outerRadius={140}
-                    paddingAngle={2}
+                    outerRadius={120}
+                    paddingAngle={1}
                     dataKey="total"
                     onClick={handlePieClick}
                     style={{ cursor: interactive ? 'pointer' : 'default' }}
@@ -364,7 +382,12 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
                   </Pie>
                   <RechartsTooltip content={<CustomTooltip />} />
                   {viewMode === 'chart' && (
-                    <Legend content={<CustomLegend />} />
+                    <Legend
+                      content={<CustomLegend />}
+                      layout="horizontal"
+                      align="center"
+                      verticalAlign="bottom"
+                    />
                   )}
                 </PieChart>
               </ResponsiveContainer>
@@ -378,12 +401,21 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
                   transform: 'translate(-50%, -50%)',
                   textAlign: 'center',
                   pointerEvents: 'none',
+                  backgroundColor: 'background.default',
+                  borderRadius: '50%',
+                  padding: '8px',
+                  zIndex: 1,
                 }}
               >
-                <Typography variant="h5" component="div" fontWeight="bold">
+                <Typography
+                  variant="h6"
+                  component="div"
+                  fontWeight="bold"
+                  sx={{ fontSize: '1rem' }}
+                >
                   {formatNumber(totalAmount)}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="caption" color="text.secondary">
                   ₽ расходов
                 </Typography>
               </Box>
@@ -394,60 +426,106 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
         {/* Список категорий */}
         {(viewMode === 'list' || viewMode === 'both') && (
           <Grid item xs={12} md={viewMode === 'both' ? 5 : 12}>
-            <List sx={{ maxHeight: 400, overflow: 'auto' }}>
-              {chartData.map((category, index) => {
-                const isSelected = selectedCategory === category.categoryId;
-                return (
-                  <ListItem
-                    key={category.categoryId || index}
-                    sx={{
-                      cursor: interactive ? 'pointer' : 'default',
-                      borderRadius: 1,
-                      mb: 0.5,
-                      backgroundColor: isSelected
-                        ? 'action.selected'
-                        : 'transparent',
-                      '&:hover': interactive
-                        ? { backgroundColor: 'action.hover' }
-                        : {},
-                    }}
-                    onClick={() => interactive && handlePieClick(category)}
-                  >
-                    <ListItemIcon sx={{ minWidth: 40 }}>
-                      <Box
-                        sx={{
-                          width: 16,
-                          height: 16,
-                          backgroundColor: category.color,
-                          borderRadius: '50%',
-                          border: isSelected
-                            ? `2px solid ${theme.palette.primary.main}`
-                            : 'none',
-                        }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={category.displayName}
-                      secondary={`${category.count} операций`}
-                      sx={{ flexGrow: 1 }}
-                    />
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography variant="body1" fontWeight="medium">
-                        {formatNumber(category.total)} ₽
-                      </Typography>
-                      {showPercentages && (
-                        <Chip
-                          label={`${category.percentage.toFixed(1)}%`}
-                          size="small"
-                          variant="outlined"
-                          sx={{ mt: 0.5 }}
+            <Box
+              sx={{
+                maxHeight: 400,
+                overflow: 'auto',
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'action.hover',
+                  borderRadius: '3px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'action.disabled',
+                  borderRadius: '3px',
+                  '&:hover': {
+                    backgroundColor: 'action.selected',
+                  },
+                },
+              }}
+            >
+              <List dense>
+                {chartData.map((category, index) => {
+                  const isSelected = selectedCategory === category.categoryId;
+                  return (
+                    <ListItem
+                      key={category.categoryId || index}
+                      sx={{
+                        cursor: interactive ? 'pointer' : 'default',
+                        borderRadius: 1,
+                        mb: 0.5,
+                        py: 1,
+                        px: 1.5,
+                        backgroundColor: isSelected
+                          ? 'action.selected'
+                          : 'transparent',
+                        '&:hover': interactive
+                          ? { backgroundColor: 'action.hover' }
+                          : {},
+                        border: isSelected
+                          ? `1px solid ${theme.palette.primary.main}`
+                          : '1px solid transparent',
+                      }}
+                      onClick={() => interactive && handlePieClick(category)}
+                    >
+                      <ListItemIcon sx={{ minWidth: 32 }}>
+                        <Box
+                          sx={{
+                            width: 14,
+                            height: 14,
+                            backgroundColor: category.color,
+                            borderRadius: '50%',
+                            border: isSelected
+                              ? `2px solid ${theme.palette.primary.main}`
+                              : 'none',
+                          }}
                         />
-                      )}
-                    </Box>
-                  </ListItem>
-                );
-              })}
-            </List>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body2"
+                            fontWeight="medium"
+                            noWrap
+                          >
+                            {category.displayName}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="caption" color="text.secondary">
+                            {category.count} операций
+                          </Typography>
+                        }
+                        sx={{ flexGrow: 1, minWidth: 0 }}
+                      />
+                      <Box sx={{ textAlign: 'right', ml: 1 }}>
+                        <Typography variant="body2" fontWeight="medium" noWrap>
+                          {formatNumber(category.total)} ₽
+                        </Typography>
+                        {showPercentages && (
+                          <Chip
+                            label={`${category.percentage.toFixed(1)}%`}
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            sx={{
+                              mt: 0.5,
+                              height: 18,
+                              fontSize: '0.7rem',
+                              '& .MuiChip-label': {
+                                px: 0.75,
+                              },
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </Box>
           </Grid>
         )}
       </Grid>

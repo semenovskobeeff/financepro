@@ -154,34 +154,80 @@ const Analytics: React.FC = () => {
     return (
       <Box>
         {/* Сводная информация */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={6} sm={6} md={3}>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minHeight: 100,
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                color="text.secondary"
+              >
                 Доходы
               </Typography>
-              <Typography variant="h4" color="success.main">
-                {transactionsData.summary.income.toFixed(2)} ₽
+              <Typography variant="h5" color="success.main" fontWeight="bold">
+                {transactionsData.summary.income.toFixed(0)} ₽
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+          <Grid item xs={6} sm={6} md={3}>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minHeight: 100,
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                color="text.secondary"
+              >
                 Расходы
               </Typography>
-              <Typography variant="h4" color="error.main">
-                {transactionsData.summary.expense.toFixed(2)} ₽
+              <Typography variant="h5" color="error.main" fontWeight="bold">
+                {Math.abs(transactionsData.summary.expense).toFixed(0)} ₽
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+          <Grid item xs={6} sm={6} md={3}>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minHeight: 100,
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                color="text.secondary"
+              >
                 Баланс
               </Typography>
               <Typography
-                variant="h4"
+                variant="h5"
+                fontWeight="bold"
                 color={
                   transactionsData.summary.income -
                     transactionsData.summary.expense >=
@@ -193,18 +239,33 @@ const Analytics: React.FC = () => {
                 {(
                   transactionsData.summary.income -
                   transactionsData.summary.expense
-                ).toFixed(2)}{' '}
+                ).toFixed(0)}{' '}
                 ₽
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+          <Grid item xs={6} sm={6} md={3}>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minHeight: 100,
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                color="text.secondary"
+              >
                 Всего на счетах
               </Typography>
-              <Typography variant="h4">
-                {transactionsData.summary.balance.toFixed(2)} ₽
+              <Typography variant="h5" fontWeight="bold">
+                {transactionsData.summary.balance.toFixed(0)} ₽
               </Typography>
             </Paper>
           </Grid>
@@ -213,8 +274,8 @@ const Analytics: React.FC = () => {
         {/* Компактные диаграммы с кнопками детального анализа */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           {/* Структура доходов */}
-          <Grid item xs={12} md={6}>
-            <Box>
+          <Grid item xs={12} lg={6}>
+            <Box sx={{ height: 'fit-content' }}>
               <IncomeStructureChart
                 data={transactionsData.categoryStats.income}
                 title="Структура доходов"
@@ -230,10 +291,13 @@ const Analytics: React.FC = () => {
                   startIcon={<TrendingUpIcon />}
                   onClick={handleOpenDetailedIncome}
                   color="success"
+                  size="small"
                   sx={{
                     borderRadius: 2,
                     textTransform: 'none',
                     fontWeight: 500,
+                    minWidth: 'fit-content',
+                    px: 2,
                   }}
                 >
                   Детальный анализ доходов
@@ -243,8 +307,8 @@ const Analytics: React.FC = () => {
           </Grid>
 
           {/* Структура расходов */}
-          <Grid item xs={12} md={6}>
-            <Box>
+          <Grid item xs={12} lg={6}>
+            <Box sx={{ height: 'fit-content' }}>
               <ExpenseStructureChart
                 data={transactionsData.categoryStats.expense}
                 title="Структура расходов"
@@ -260,10 +324,13 @@ const Analytics: React.FC = () => {
                   startIcon={<TrendingDownIcon />}
                   onClick={handleOpenDetailedExpense}
                   color="error"
+                  size="small"
                   sx={{
                     borderRadius: 2,
                     textTransform: 'none',
                     fontWeight: 500,
+                    minWidth: 'fit-content',
+                    px: 2,
                   }}
                 >
                   Детальный анализ расходов
