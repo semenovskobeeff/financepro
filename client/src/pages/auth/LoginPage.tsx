@@ -37,7 +37,7 @@ const LoginPage: React.FC = () => {
             onClick={() => setShowDiagnostics(!showDiagnostics)}
             sx={{ fontSize: '0.8rem' }}
           >
-            {showDiagnostics ? 'Скрыть диагностику' : 'Проблемы с входом?'}
+            {showDiagnostics ? 'Скрыть диагностику' : 'Проблемы со входом?'}
           </Button>
         </Box>
       </Container>
