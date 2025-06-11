@@ -83,7 +83,7 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
 }) => {
   const theme = useTheme();
   const [sortBy, setSortBy] = useState<'amount' | 'count' | 'name'>('amount');
-  const [viewMode, setViewMode] = useState<'chart' | 'list' | 'both'>('both');
+  const viewMode = 'both';
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Подготовка данных для диаграммы
@@ -276,7 +276,8 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
         p: { xs: 2, sm: 3 },
         height: 'auto',
         overflow: 'hidden',
-        minHeight: 500,
+        minHeight: 600,
+        mb: 3,
       }}
     >
       {/* Заголовок и контролы */}
@@ -300,49 +301,24 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Сортировка</InputLabel>
-            <Select
-              value={sortBy}
-              label="Сортировка"
-              onChange={e => setSortBy(e.target.value as any)}
-            >
-              <MenuItem value="amount">По сумме</MenuItem>
-              <MenuItem value="count">По количеству</MenuItem>
-              <MenuItem value="name">По названию</MenuItem>
-            </Select>
-          </FormControl>
-
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(_, value) => value && setViewMode(value)}
-            size="small"
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Сортировка</InputLabel>
+          <Select
+            value={sortBy}
+            label="Сортировка"
+            onChange={e => setSortBy(e.target.value as any)}
           >
-            <ToggleButton value="chart">
-              <Tooltip title="Только диаграмма">
-                <ViewIcon />
-              </Tooltip>
-            </ToggleButton>
-            <ToggleButton value="list">
-              <Tooltip title="Только список">
-                <CategoryIcon />
-              </Tooltip>
-            </ToggleButton>
-            <ToggleButton value="both">
-              <Tooltip title="Диаграмма и список">
-                <ViewIcon />
-              </Tooltip>
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+            <MenuItem value="amount">По сумме</MenuItem>
+            <MenuItem value="count">По количеству</MenuItem>
+            <MenuItem value="name">По названию</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
       <Grid container spacing={3}>
         {/* Круговая диаграмма */}
-        {(viewMode === 'chart' || viewMode === 'both') && (
-          <Grid item xs={12} md={viewMode === 'both' ? 7 : 12}>
+        {
+          <Grid item xs={12}>
             <Box
               sx={{
                 height: 400,
@@ -373,7 +349,7 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
                         fill={entry.color}
                         stroke={
                           selectedCategory === entry.categoryId
-                            ? theme.palette.primary.main
+                            ? theme.palette.error.main
                             : 'none'
                         }
                         strokeWidth={
@@ -383,14 +359,12 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
                     ))}
                   </Pie>
                   <RechartsTooltip content={<CustomTooltip />} />
-                  {viewMode === 'chart' && (
-                    <Legend
-                      content={<CustomLegend />}
-                      layout="horizontal"
-                      align="center"
-                      verticalAlign="bottom"
-                    />
-                  )}
+                  <Legend
+                    content={<CustomLegend />}
+                    layout="horizontal"
+                    align="center"
+                    verticalAlign="bottom"
+                  />
                 </PieChart>
               </ResponsiveContainer>
 
@@ -428,11 +402,11 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
               </Box>
             </Box>
           </Grid>
-        )}
+        }
 
         {/* Список категорий */}
         {(viewMode === 'list' || viewMode === 'both') && (
-          <Grid item xs={12} md={viewMode === 'both' ? 5 : 12}>
+          <Grid item xs={12}>
             <Box
               sx={{
                 maxHeight: 400,

@@ -268,73 +268,69 @@ const Analytics: React.FC = () => {
         </Grid>
 
         {/* Компактные диаграммы с кнопками детального анализа */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Box sx={{ mb: 4 }}>
           {/* Структура доходов */}
-          <Grid item xs={12} lg={6}>
-            <Box sx={{ height: 'auto', mb: { xs: 2, lg: 0 } }}>
-              <IncomeStructureChart
-                data={transactionsData.categoryStats.income}
-                title="Структура доходов"
-                period={getPeriodLabel(period)}
-                showPercentages={true}
-                showLegend={false}
-                interactive={true}
-                minSlicePercentage={1}
-              />
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<TrendingUpIcon />}
-                  onClick={handleOpenDetailedIncome}
-                  color="success"
-                  size="small"
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    minWidth: 'fit-content',
-                    px: 2,
-                  }}
-                >
-                  Детальный анализ доходов
-                </Button>
-              </Box>
+          <Box sx={{ mb: 4 }}>
+            <IncomeStructureChart
+              data={transactionsData.categoryStats.income}
+              title="Структура доходов"
+              period={getPeriodLabel(period)}
+              showPercentages={true}
+              showLegend={false}
+              interactive={true}
+              minSlicePercentage={1}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+              <Button
+                variant="outlined"
+                startIcon={<TrendingUpIcon />}
+                onClick={handleOpenDetailedIncome}
+                color="success"
+                size="small"
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  minWidth: 'fit-content',
+                  px: 2,
+                }}
+              >
+                Детальный анализ доходов
+              </Button>
             </Box>
-          </Grid>
+          </Box>
 
           {/* Структура расходов */}
-          <Grid item xs={12} lg={6}>
-            <Box sx={{ height: 'auto', mb: { xs: 2, lg: 0 } }}>
-              <ExpenseStructureChart
-                data={transactionsData.categoryStats.expense}
-                title="Структура расходов"
-                period={getPeriodLabel(period)}
-                showPercentages={true}
-                showLegend={false}
-                interactive={true}
-                minSlicePercentage={1}
-              />
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<TrendingDownIcon />}
-                  onClick={handleOpenDetailedExpense}
-                  color="error"
-                  size="small"
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    minWidth: 'fit-content',
-                    px: 2,
-                  }}
-                >
-                  Детальный анализ расходов
-                </Button>
-              </Box>
+          <Box sx={{ mb: 4 }}>
+            <ExpenseStructureChart
+              data={transactionsData.categoryStats.expense}
+              title="Структура расходов"
+              period={getPeriodLabel(period)}
+              showPercentages={true}
+              showLegend={false}
+              interactive={true}
+              minSlicePercentage={1}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+              <Button
+                variant="outlined"
+                startIcon={<TrendingDownIcon />}
+                onClick={handleOpenDetailedExpense}
+                color="error"
+                size="small"
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  minWidth: 'fit-content',
+                  px: 2,
+                }}
+              >
+                Детальный анализ расходов
+              </Button>
             </Box>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Кнопка экспорта */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 4, mt: 2 }}>
