@@ -806,8 +806,8 @@ const Analytics: React.FC = () => {
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'row' },
             alignItems: { xs: 'stretch', sm: 'center' },
-            px: 2,
-            py: { xs: 1, sm: 0 },
+            px: 3,
+            py: { xs: 2, sm: 1 },
             justifyContent: 'space-between',
             gap: { xs: 2, sm: 0 },
           }}
