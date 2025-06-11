@@ -19,4 +19,7 @@ router.get('/:type', auth, archiveController.getArchivedItems);
 // Восстановление объекта из архива
 router.patch('/:type/:id/restore', auth, archiveController.restoreFromArchive);
 
+// Полное удаление объекта из архива
+router.delete('/:type/:id', auth, archiveController.deleteFromArchive);
+
 module.exports = router;

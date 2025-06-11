@@ -51,6 +51,9 @@ class DatabaseSeeder {
       // Создаем тестовые подписки
       await this.createTestSubscriptions();
 
+      // Создаем архивированные данные
+      await this.createArchivedData();
+
       console.log('✅ База данных успешно заполнена тестовыми данными');
       return await this.getTestUser();
     } catch (error) {
@@ -145,6 +148,7 @@ class DatabaseSeeder {
       await this.createTestGoals();
       await this.createTestDebts();
       await this.createTestSubscriptions();
+      await this.createArchivedData();
 
       console.log('✅ Все тестовые данные успешно пересозданы');
       return { userId: this.testUserId };
@@ -660,6 +664,90 @@ class DatabaseSeeder {
 
     const createdSubscriptions = await Subscription.insertMany(subscriptions);
     console.log(`✅ Создано ${createdSubscriptions.length} тестовых подписок`);
+  }
+
+  async createArchivedData() {
+    console.log('🗃️ Создание архивированных данных...');
+
+    // Создание архивированного счета
+    const archivedAccount = new Account({
+      userId: this.testUserId,
+      name: 'Старый банковский счет',
+      type: 'bank',
+      currency: 'RUB',
+      balance: 0,
+      status: 'archived',
+      createdAt: new Date('2023-01-15'),
+      updatedAt: new Date('2023-06-20'),
+    });
+    await archivedAccount.save();
+
+    // Создание архивированной категории
+    const archivedCategory = new Category({
+      userId: this.testUserId,
+      name: 'Устаревшие расходы',
+      type: 'expense',
+      color: '#ff5722',
+      icon: 'category',
+      status: 'archived',
+      createdAt: new Date('2023-02-10'),
+      updatedAt: new Date('2023-07-15'),
+    });
+    await archivedCategory.save();
+
+    // Создание архивированной цели
+    const archivedGoal = new Goal({
+      userId: this.testUserId,
+      name: 'Поездка в отпуск 2023',
+      targetAmount: 100000,
+      currentAmount: 85000,
+      deadline: new Date('2023-08-01'),
+      status: 'archived',
+      createdAt: new Date('2023-01-01'),
+      updatedAt: new Date('2023-08-15'),
+    });
+    await archivedGoal.save();
+
+    // Создание архивированного долга
+    const archivedDebt = new Debt({
+      userId: this.testUserId,
+      name: 'Старый кредит',
+      type: 'loan',
+      initialAmount: 50000,
+      currentAmount: 0,
+      interestRate: 15.0,
+      startDate: new Date('2022-12-01'),
+      endDate: new Date('2023-12-31'),
+      lenderName: 'Банк ABC',
+      status: 'archived',
+      createdAt: new Date('2022-12-01'),
+      updatedAt: new Date('2023-11-30'),
+    });
+    await archivedDebt.save();
+
+    // Создание архивированной подписки
+    const archivedSubscription = new Subscription({
+      userId: this.testUserId,
+      name: 'Старый стриминг сервис',
+      description: 'Ранее использовавшийся сервис',
+      amount: 299,
+      currency: 'RUB',
+      frequency: 'monthly',
+      startDate: new Date('2022-05-01'),
+      nextPaymentDate: new Date('2023-05-01'),
+      provider: 'OldStreamService',
+      status: 'archived',
+      createdAt: new Date('2022-05-01'),
+      updatedAt: new Date('2023-04-30'),
+    });
+    await archivedSubscription.save();
+
+    console.log('✅ Архивированные данные созданы успешно:');
+    console.log('- 1 счет');
+    console.log('- 1 категория');
+    console.log('- 1 цель');
+    console.log('- 1 долг');
+    console.log('- 1 подписка');
   }
 
   async clearDatabase() {

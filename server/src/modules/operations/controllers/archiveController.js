@@ -128,12 +128,14 @@ const getArchivedItems = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     res.json({
-      items,
-      pagination: {
-        total,
-        page: parseInt(page),
-        totalPages,
-        limit: parseInt(limit),
+      data: {
+        items,
+        pagination: {
+          total,
+          page: parseInt(page),
+          totalPages,
+          limit: parseInt(limit),
+        },
       },
     });
   } catch (error) {
@@ -226,8 +228,10 @@ const restoreFromArchive = async (req, res) => {
     }
 
     res.json({
-      message: 'Объект успешно восстановлен',
-      item,
+      data: {
+        message: 'Объект успешно восстановлен',
+        item,
+      },
     });
   } catch (error) {
     console.error('Ошибка при восстановлении из архива:', error);
@@ -288,21 +292,23 @@ const getArchiveStats = async (req, res) => {
       Subscription,
     ].reduce(async (oldestPromise, Model) => {
       const oldest = await oldestPromise;
-      const item = await Model.findOne(query).sort({ archivedAt: 1 }).limit(1);
+      const item = await Model.findOne(query).sort({ updatedAt: 1 }).limit(1);
       if (!item) return oldest;
-      return !oldest || item.archivedAt < oldest ? item.archivedAt : oldest;
+      return !oldest || item.updatedAt < oldest ? item.updatedAt : oldest;
     }, Promise.resolve(null));
 
     res.json({
-      total: totalItems,
-      byType: {
-        accounts: accountsCount,
-        categories: categoriesCount,
-        goals: goalsCount,
-        debts: debtsCount,
-        subscriptions: subscriptionsCount,
+      data: {
+        total: totalItems,
+        byType: {
+          accounts: accountsCount,
+          categories: categoriesCount,
+          goals: goalsCount,
+          debts: debtsCount,
+          subscriptions: subscriptionsCount,
+        },
+        oldestDate,
       },
-      oldestDate,
     });
   } catch (error) {
     console.error('Ошибка при получении статистики архива:', error);
@@ -312,8 +318,103 @@ const getArchiveStats = async (req, res) => {
   }
 };
 
+/**
+ * Полное удаление объекта из архива
+ * @swagger
+ * /api/archive/{type}/{id}:
+ *   delete:
+ *     tags:
+ *       - Archive
+ *     summary: Полностью удалить объект из архива
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [accounts, categories, goals, debts, subscriptions]
+ *         required: true
+ *         description: Тип архивного объекта
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID архивного объекта
+ *     responses:
+ *       200:
+ *         description: Объект успешно удален
+ */
+const deleteFromArchive = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { type, id } = req.params;
+
+    let item;
+
+    // Удаляем объект в зависимости от типа
+    switch (type) {
+      case 'accounts':
+        item = await Account.findOneAndDelete({
+          _id: id,
+          userId,
+          status: 'archived',
+        });
+        break;
+
+      case 'categories':
+        item = await Category.findOneAndDelete({
+          _id: id,
+          userId,
+          status: 'archived',
+        });
+        break;
+      case 'goals':
+        item = await Goal.findOneAndDelete({
+          _id: id,
+          userId,
+          status: 'archived',
+        });
+        break;
+      case 'debts':
+        item = await Debt.findOneAndDelete({
+          _id: id,
+          userId,
+          status: 'archived',
+        });
+        break;
+      case 'subscriptions':
+        item = await Subscription.findOneAndDelete({
+          _id: id,
+          userId,
+          status: 'archived',
+        });
+        break;
+      default:
+        return res
+          .status(400)
+          .json({ message: 'Неизвестный тип архивного объекта' });
+    }
+
+    if (!item) {
+      return res.status(404).json({ message: 'Архивный объект не найден' });
+    }
+
+    res.json({
+      data: {
+        message: 'Объект успешно удален из архива',
+      },
+    });
+  } catch (error) {
+    console.error('Ошибка при удалении из архива:', error);
+    res.status(500).json({ message: 'Ошибка сервера при удалении из архива' });
+  }
+};
+
 module.exports = {
   getArchivedItems,
   restoreFromArchive,
   getArchiveStats,
+  deleteFromArchive,
 };
