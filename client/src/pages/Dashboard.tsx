@@ -123,14 +123,17 @@ const COLORS = [
 ];
 
 // Вспомогательные функции для расчета финансового здоровья
-const calculateHealthScore = (analytics: any): number => {
-  if (!analytics) return 0;
+const calculateHealthScore = (
+  analytics: any,
+  transactionsAnalytics: any
+): number => {
+  if (!analytics && !transactionsAnalytics) return 0;
 
-  const balance = analytics.monthStats?.balance || 0;
-  const income = analytics.monthStats?.income || 0;
-  const expense = Math.abs(analytics.monthStats?.expense || 0);
-  const accountsCount = analytics.accounts?.count || 0;
-  const debtsAmount = analytics.debts?.totalAmount || 0;
+  const balance = transactionsAnalytics?.summary?.balance || 0;
+  const income = transactionsAnalytics?.summary?.income || 0;
+  const expense = Math.abs(transactionsAnalytics?.summary?.expense || 0);
+  const accountsCount = analytics?.accounts?.count || 0;
+  const debtsAmount = analytics?.debts?.totalAmount || 0;
 
   // Если нет никаких данных о финансовой активности, возвращаем 0
   if (
@@ -175,6 +178,7 @@ const getHealthStatus = (
 
 const getFinancialInsights = (
   analytics: any,
+  transactionsAnalytics: any,
   goalsData: any
 ): Array<{ type: 'positive' | 'neutral' | 'negative'; message: string }> => {
   const insights: Array<{
@@ -182,13 +186,13 @@ const getFinancialInsights = (
     message: string;
   }> = [];
 
-  if (!analytics) return insights;
+  if (!analytics && !transactionsAnalytics) return insights;
 
-  const income = analytics.monthStats?.income || 0;
-  const expense = Math.abs(analytics.monthStats?.expense || 0);
-  const balance = analytics.monthStats?.balance || 0;
-  const accountsCount = analytics.accounts?.count || 0;
-  const debtsAmount = analytics.debts?.totalAmount || 0;
+  const income = transactionsAnalytics?.summary?.income || 0;
+  const expense = Math.abs(transactionsAnalytics?.summary?.expense || 0);
+  const balance = transactionsAnalytics?.summary?.balance || 0;
+  const accountsCount = analytics?.accounts?.count || 0;
+  const debtsAmount = analytics?.debts?.totalAmount || 0;
 
   // Если нет финансовой активности, не показываем инсайты
   if (
@@ -562,7 +566,7 @@ const Dashboard: React.FC = () => {
       };
     }
 
-    const totalExpense = Math.abs(analytics?.monthStats?.expense || 0);
+    const totalExpense = Math.abs(transactionsAnalytics?.summary?.expense || 0);
 
     // Если нет расходов, показываем заглушку
     if (totalExpense === 0) {
@@ -634,7 +638,7 @@ const Dashboard: React.FC = () => {
       };
     }
 
-    const totalIncome = analytics?.monthStats?.income || 0;
+    const totalIncome = transactionsAnalytics?.summary?.income || 0;
 
     // Если нет доходов, показываем заглушку
     if (totalIncome === 0) {
@@ -750,9 +754,9 @@ const Dashboard: React.FC = () => {
 
     return {
       totalBalance: analytics.accounts?.totalBalance || 0,
-      monthlyIncome: analytics.monthStats?.income || 0,
-      monthlyExpense: analytics.monthStats?.expense || 0,
-      monthlyBalance: analytics.monthStats?.balance || 0,
+      monthlyIncome: transactionsAnalytics?.summary?.income || 0,
+      monthlyExpense: transactionsAnalytics?.summary?.expense || 0,
+      monthlyBalance: transactionsAnalytics?.summary?.balance || 0,
       accountsCount: analytics.accounts?.count || 0,
       subscriptionsCount: analytics.subscriptions?.count || 0,
       subscriptionsAmount: analytics.subscriptions?.monthlyAmount || 0,
@@ -838,14 +842,16 @@ const Dashboard: React.FC = () => {
     return {
       period: 'текущий месяц',
       healthScore: {
-        current: calculateHealthScore(analytics),
+        current: calculateHealthScore(analytics, transactionsAnalytics),
         target: 85,
-        status: getHealthStatus(calculateHealthScore(analytics)),
+        status: getHealthStatus(
+          calculateHealthScore(analytics, transactionsAnalytics)
+        ),
       },
       metrics: [
         {
           label: 'Чистый доход',
-          value: analytics.monthStats?.balance || 0,
+          value: transactionsAnalytics?.summary?.balance || 0,
           previousValue: 0, // Нет данных за прошлый месяц пока
           format: 'currency' as const,
           color: 'success' as const,
@@ -853,9 +859,9 @@ const Dashboard: React.FC = () => {
         },
         {
           label: 'Норма сбережений',
-          value: analytics.monthStats?.income
-            ? ((analytics.monthStats.balance || 0) /
-                analytics.monthStats.income) *
+          value: transactionsAnalytics?.summary?.income
+            ? ((transactionsAnalytics?.summary?.balance || 0) /
+                transactionsAnalytics?.summary?.income) *
               100
             : 0,
           target: 20,
@@ -882,7 +888,11 @@ const Dashboard: React.FC = () => {
           icon: <AccountIcon />,
         },
       ],
-      insights: getFinancialInsights(analytics, goalsData),
+      insights: getFinancialInsights(
+        analytics,
+        transactionsAnalytics,
+        goalsData
+      ),
     };
   };
 
@@ -902,12 +912,12 @@ const Dashboard: React.FC = () => {
     console.log('🔍 DEBUG: Analytics data:', analytics);
 
     // Создаем уведомления на основе реальных данных
-    if (analytics && analytics.monthStats) {
-      const income = analytics.monthStats.income || 0;
-      const balance = analytics.monthStats.balance || 0;
+    if (transactionsAnalytics && transactionsAnalytics.summary) {
+      const income = transactionsAnalytics.summary.income || 0;
+      const balance = transactionsAnalytics.summary.balance || 0;
 
       // Отладочная информация
-      console.log('monthStats:', analytics.monthStats);
+      console.log('transactionsSummary:', transactionsAnalytics.summary);
       console.log('Income:', income, 'Balance:', balance);
       if (income > 0) {
         const savingsRate = (balance / income) * 100;
