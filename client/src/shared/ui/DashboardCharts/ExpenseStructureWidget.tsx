@@ -166,13 +166,16 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
       <Box
         sx={{
           display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
+          flexDirection: 'row',
           gap: 3,
           mb: 3,
+          '@media (max-width: 768px)': {
+            flexDirection: 'column',
+          },
         }}
       >
         {/* График */}
-        <Box sx={{ flex: '0 0 300px', height: 300, position: 'relative' }}>
+        <Box sx={{ flex: '0 0 250px', height: 250, position: 'relative' }}>
           <Doughnut data={chartData} options={chartOptions} />
 
           {/* Центральная информация в графике */}
@@ -200,7 +203,7 @@ const ExpenseStructureWidget: React.FC<ExpenseStructureWidgetProps> = ({
             Детализация по категориям
           </Typography>
 
-          <List dense sx={{ p: 0, maxHeight: 250, overflow: 'auto' }}>
+          <List dense sx={{ p: 0, maxHeight: 200, overflow: 'auto' }}>
             {isEmpty ? (
               <ListItem sx={{ px: 0, py: 1 }}>
                 <ListItemText
