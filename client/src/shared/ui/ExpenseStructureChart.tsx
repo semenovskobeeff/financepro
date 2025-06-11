@@ -405,7 +405,7 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
         }
 
         {/* Список категорий */}
-        {(viewMode === 'list' || viewMode === 'both') && (
+        {
           <Grid item xs={12}>
             <Box
               sx={{
@@ -522,7 +522,7 @@ const ExpenseStructureChart: React.FC<ExpenseStructureChartProps> = ({
               </List>
             </Box>
           </Grid>
-        )}
+        }
       </Grid>
 
       {/* Дополнительная статистика */}
