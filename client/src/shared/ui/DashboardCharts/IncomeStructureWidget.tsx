@@ -211,7 +211,7 @@ const IncomeStructureWidget: React.FC<IncomeStructureWidgetProps> = ({
             Детализация по категориям
           </Typography>
 
-          <List dense sx={{ p: 0, maxHeight: 200, overflow: 'auto' }}>
+          <List dense sx={{ p: 0 }}>
             {isEmpty ? (
               <ListItem sx={{ px: 0, py: 1 }}>
                 <ListItemText
