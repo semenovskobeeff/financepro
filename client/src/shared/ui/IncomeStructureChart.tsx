@@ -274,8 +274,9 @@ const IncomeStructureChart: React.FC<IncomeStructureChartProps> = ({
       elevation={1}
       sx={{
         p: { xs: 2, sm: 3 },
-        height: 'fit-content',
+        height: 'auto',
         overflow: 'hidden',
+        minHeight: 500,
       }}
     >
       {/* Заголовок и контролы */}
@@ -350,6 +351,7 @@ const IncomeStructureChart: React.FC<IncomeStructureChartProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
+                mb: 2,
               }}
             >
               <ResponsiveContainer width="100%" height="100%">

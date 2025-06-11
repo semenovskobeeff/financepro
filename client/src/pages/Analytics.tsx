@@ -154,18 +154,17 @@ const Analytics: React.FC = () => {
     return (
       <Box>
         {/* Сводная информация */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={6} md={3}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={1}
               sx={{
                 p: 2,
-                height: '100%',
+                height: 120,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 textAlign: 'center',
-                minHeight: 100,
               }}
             >
               <Typography
@@ -180,17 +179,16 @@ const Analytics: React.FC = () => {
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={1}
               sx={{
                 p: 2,
-                height: '100%',
+                height: 120,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 textAlign: 'center',
-                minHeight: 100,
               }}
             >
               <Typography
@@ -205,17 +203,16 @@ const Analytics: React.FC = () => {
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={1}
               sx={{
                 p: 2,
-                height: '100%',
+                height: 120,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 textAlign: 'center',
-                minHeight: 100,
               }}
             >
               <Typography
@@ -244,17 +241,16 @@ const Analytics: React.FC = () => {
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={1}
               sx={{
                 p: 2,
-                height: '100%',
+                height: 120,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 textAlign: 'center',
-                minHeight: 100,
               }}
             >
               <Typography
@@ -272,10 +268,10 @@ const Analytics: React.FC = () => {
         </Grid>
 
         {/* Компактные диаграммы с кнопками детального анализа */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Структура доходов */}
           <Grid item xs={12} lg={6}>
-            <Box sx={{ height: 'fit-content' }}>
+            <Box sx={{ height: 'auto', mb: { xs: 2, lg: 0 } }}>
               <IncomeStructureChart
                 data={transactionsData.categoryStats.income}
                 title="Структура доходов"
@@ -308,7 +304,7 @@ const Analytics: React.FC = () => {
 
           {/* Структура расходов */}
           <Grid item xs={12} lg={6}>
-            <Box sx={{ height: 'fit-content' }}>
+            <Box sx={{ height: 'auto', mb: { xs: 2, lg: 0 } }}>
               <ExpenseStructureChart
                 data={transactionsData.categoryStats.expense}
                 title="Структура расходов"
@@ -341,13 +337,18 @@ const Analytics: React.FC = () => {
         </Grid>
 
         {/* Кнопка экспорта */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 4, mt: 2 }}>
           <Button
             variant="outlined"
             startIcon={<FileDownloadIcon />}
             component="a"
             href={`/api/analytics/export?type=transactions&format=csv&period=${period}`}
             target="_blank"
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 500,
+            }}
           >
             Экспортировать данные
           </Button>
@@ -448,11 +449,11 @@ const Analytics: React.FC = () => {
         </Grid>
 
         {/* График прогресса целей */}
-        <Paper elevation={1} sx={{ p: 2, mb: 3 }}>
+        <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
           <Typography variant="h6" gutterBottom>
             Прогресс целей
           </Typography>
-          <Box sx={{ height: 400 }}>
+          <Box sx={{ height: 400, overflow: 'hidden' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={goalsProgressData}
@@ -482,11 +483,11 @@ const Analytics: React.FC = () => {
         </Paper>
 
         {/* Список целей с детальной информацией */}
-        <Paper elevation={1} sx={{ p: 2 }}>
+        <Paper elevation={1} sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             Активные цели
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={3}>
             {goalsData.goals.map(goal => (
               <Grid item xs={12} sm={6} md={4} key={goal.id}>
                 <Paper elevation={2} sx={{ p: 2 }}>
@@ -579,43 +580,99 @@ const Analytics: React.FC = () => {
     return (
       <Box>
         {/* Сводная информация */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                height: 120,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                color="text.secondary"
+              >
                 Активные долги
               </Typography>
-              <Typography variant="h4">
+              <Typography variant="h5" fontWeight="bold">
                 {debtsData.summary.activeCount}
               </Typography>
             </Paper>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                height: 120,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                color="text.secondary"
+              >
                 Выплаченные
               </Typography>
-              <Typography variant="h4">
+              <Typography variant="h5" fontWeight="bold">
                 {debtsData.summary.paidCount}
               </Typography>
             </Paper>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                height: 120,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                color="text.secondary"
+              >
                 Остаток
               </Typography>
-              <Typography variant="h4" color="error.main">
+              <Typography variant="h5" color="error.main" fontWeight="bold">
                 {debtsData.summary.totalCurrentAmount.toFixed(2)} ₽
               </Typography>
             </Paper>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Paper elevation={1} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                height: 120,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                gutterBottom
+                color="text.secondary"
+              >
                 Выплачено
               </Typography>
-              <Typography variant="h4" color="success.main">
+              <Typography variant="h5" color="success.main" fontWeight="bold">
                 {debtsData.summary.totalPayments.toFixed(2)} ₽
               </Typography>
             </Paper>
@@ -623,11 +680,11 @@ const Analytics: React.FC = () => {
         </Grid>
 
         {/* График долгов по типам */}
-        <Paper elevation={1} sx={{ p: 2, mb: 3 }}>
+        <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
           <Typography variant="h6" gutterBottom>
             Долги по типам
           </Typography>
-          <Box sx={{ height: 400 }}>
+          <Box sx={{ height: 400, overflow: 'hidden' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={debtTypeData}
@@ -651,14 +708,14 @@ const Analytics: React.FC = () => {
 
         {/* Ближайшие платежи */}
         {debtsData.upcomingPayments.length > 0 && (
-          <Paper elevation={1} sx={{ p: 2 }}>
+          <Paper elevation={1} sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Ближайшие платежи
             </Typography>
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
               {debtsData.upcomingPayments.map(payment => (
                 <Grid item xs={12} sm={6} md={4} key={payment.id}>
-                  <Paper elevation={2} sx={{ p: 2 }}>
+                  <Paper elevation={2} sx={{ p: 2, minHeight: 160 }}>
                     <Typography variant="subtitle1" gutterBottom>
                       {payment.name}
                     </Typography>
@@ -747,13 +804,16 @@ const Analytics: React.FC = () => {
       }}
     >
       {/* Табы для выбора типа аналитики */}
-      <Paper sx={{ mb: 3 }}>
+      <Paper sx={{ mb: 3, overflow: 'hidden' }}>
         <Box
           sx={{
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'center' },
             px: 2,
+            py: { xs: 1, sm: 0 },
             justifyContent: 'space-between',
+            gap: { xs: 2, sm: 0 },
           }}
         >
           <Tabs
@@ -761,6 +821,13 @@ const Analytics: React.FC = () => {
             onChange={handleTabChange}
             variant="scrollable"
             scrollButtons="auto"
+            sx={{
+              minHeight: 48,
+              '& .MuiTab-root': {
+                minHeight: 48,
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+              },
+            }}
           >
             <Tab
               icon={<TimelineIcon />}
@@ -775,7 +842,11 @@ const Analytics: React.FC = () => {
             <FormControl
               variant="outlined"
               size="small"
-              sx={{ minWidth: 120, ml: 2 }}
+              sx={{
+                minWidth: 120,
+                ml: { xs: 0, sm: 2 },
+                alignSelf: { xs: 'flex-start', sm: 'center' },
+              }}
             >
               <InputLabel>Период</InputLabel>
               <Select
@@ -794,7 +865,7 @@ const Analytics: React.FC = () => {
       </Paper>
 
       {/* Контент аналитики */}
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: { xs: 2, sm: 3 }, overflow: 'hidden' }}>
         {activeTab === 0 && renderTransactionsAnalytics()}
         {activeTab === 1 && renderGoalsAnalytics()}
         {activeTab === 2 && renderDebtsAnalytics()}
